@@ -22,7 +22,10 @@
     <Project Path="src/Shared/Lexora.Shared/Lexora.Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Lexora.Api.IntegrationTests/Lexora.Api.IntegrationTests.csproj" />
     <Project Path="tests/Lexora.Application.UnitTests/Lexora.Application.UnitTests.csproj" />
     <Project Path="tests/Lexora.Domain.UnitTests/Lexora.Domain.UnitTests.csproj" />
+    <Project Path="tests/Lexora.Infrastructure.IntegrationTests/Lexora.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/Lexora.TestKit/Lexora.TestKit.csproj" />
   </Folder>
 </Solution>

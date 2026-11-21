@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Shouldly" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.AI\Lexora.Infrastructure.AI.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.Caching\Lexora.Infrastructure.Caching.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.DocumentProcessing\Lexora.Infrastructure.DocumentProcessing.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.Identity\Lexora.Infrastructure.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.Messaging\Lexora.Infrastructure.Messaging.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.Persistence\Lexora.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Lexora.Infrastructure.Storage\Lexora.Infrastructure.Storage.csproj" />
+    <ProjectReference Include="..\Lexora.TestKit\Lexora.TestKit.csproj" />
+  </ItemGroup>
+
+</Project>
