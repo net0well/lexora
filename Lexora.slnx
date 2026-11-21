@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Core/">
+    <Project Path="src/Core/Lexora.Application/Lexora.Application.csproj" />
     <Project Path="src/Core/Lexora.Domain/Lexora.Domain.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">

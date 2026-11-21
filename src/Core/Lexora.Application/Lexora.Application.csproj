@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="WolverineFx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lexora.Domain\Lexora.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\Lexora.Shared\Lexora.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
