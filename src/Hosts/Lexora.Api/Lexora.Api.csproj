@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lexora.Hosting\Lexora.Hosting.csproj" />
+    <ProjectReference Include="..\..\Core\Lexora.Application\Lexora.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.AI\Lexora.Infrastructure.AI.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.Caching\Lexora.Infrastructure.Caching.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.DocumentProcessing\Lexora.Infrastructure.DocumentProcessing.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.Identity\Lexora.Infrastructure.Identity.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.Messaging\Lexora.Infrastructure.Messaging.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.Persistence\Lexora.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.Storage\Lexora.Infrastructure.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

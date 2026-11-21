@@ -5,6 +5,7 @@
     <Project Path="src/Core/Lexora.Domain/Lexora.Domain.csproj" />
   </Folder>
   <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/Lexora.Api/Lexora.Api.csproj" />
     <Project Path="src/Hosts/Lexora.Hosting/Lexora.Hosting.csproj" />
   </Folder>
   <Folder Name="/src/Infrastructure/">
