@@ -6,6 +6,7 @@
   </Folder>
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/Lexora.Infrastructure.AI/Lexora.Infrastructure.AI.csproj" />
+    <Project Path="src/Infrastructure/Lexora.Infrastructure.Caching/Lexora.Infrastructure.Caching.csproj" />
     <Project Path="src/Infrastructure/Lexora.Infrastructure.DocumentProcessing/Lexora.Infrastructure.DocumentProcessing.csproj" />
     <Project Path="src/Infrastructure/Lexora.Infrastructure.Identity/Lexora.Infrastructure.Identity.csproj" />
     <Project Path="src/Infrastructure/Lexora.Infrastructure.Messaging/Lexora.Infrastructure.Messaging.csproj" />
