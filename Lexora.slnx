@@ -7,6 +7,7 @@
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/Lexora.Infrastructure.Messaging/Lexora.Infrastructure.Messaging.csproj" />
     <Project Path="src/Infrastructure/Lexora.Infrastructure.Persistence/Lexora.Infrastructure.Persistence.csproj" />
+    <Project Path="src/Infrastructure/Lexora.Infrastructure.Storage/Lexora.Infrastructure.Storage.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/Lexora.Shared/Lexora.Shared.csproj" />
