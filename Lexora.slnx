@@ -7,6 +7,7 @@
   <Folder Name="/src/Hosts/">
     <Project Path="src/Hosts/Lexora.Api/Lexora.Api.csproj" />
     <Project Path="src/Hosts/Lexora.Hosting/Lexora.Hosting.csproj" />
+    <Project Path="src/Hosts/Lexora.Worker/Lexora.Worker.csproj" />
   </Folder>
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/Lexora.Infrastructure.AI/Lexora.Infrastructure.AI.csproj" />
