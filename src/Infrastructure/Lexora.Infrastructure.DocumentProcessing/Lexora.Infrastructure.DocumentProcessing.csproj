@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Lexora.Application\Lexora.Application.csproj" />
+    <ProjectReference Include="..\..\Core\Lexora.Domain\Lexora.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\Lexora.Shared\Lexora.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
