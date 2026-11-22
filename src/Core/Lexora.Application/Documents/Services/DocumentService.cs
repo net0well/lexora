@@ -3,6 +3,8 @@ using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.Abstractions.Processing;
 using Lexora.Application.Abstractions.Storage;
 using Lexora.Application.Common.Options;
+using Lexora.Application.Documents.DeleteDocument;
+using Lexora.Application.Documents.ReprocessDocument;
 using Lexora.Application.Documents.UploadDocument;
 using Lexora.Application.KnowledgeBases;
 using Lexora.Domain.Documents;
@@ -66,6 +68,29 @@ public sealed class DocumentService(
         }
 
         return await StoreAsync(knowledgeBase, fileName.Value.Value, format!.Value, hash, content, cancellationToken);
+    }
+
+    public async Task<Result> DeleteAsync(DeleteDocumentCommand command, CancellationToken cancellationToken)
+    {
+        var document = await documents.GetByIdAsync(command.Id, cancellationToken);
+
+        return document is null ? Result.Failure(DocumentNotifications.NotFound) : document.Delete(timeProvider.GetUtcNow());
+    }
+
+    public async Task<Result<ReprocessDocumentResponse>> ReprocessAsync(ReprocessDocumentCommand command, CancellationToken cancellationToken)
+    {
+        var document = await documents.GetByIdAsync(command.Id, cancellationToken);
+
+        if (document is null)
+        {
+            return Result.Failure<ReprocessDocumentResponse>(DocumentNotifications.NotFound);
+        }
+
+        var requested = document.RequestReprocess(timeProvider.GetUtcNow());
+
+        return requested.IsFailure
+            ? Result.Failure<ReprocessDocumentResponse>(requested.Notifications)
+            : new ReprocessDocumentResponse(document.Id, document.Status, document.ProcessingVersion);
     }
 
     private async Task<Result<UploadDocumentResponse>> StoreAsync(
