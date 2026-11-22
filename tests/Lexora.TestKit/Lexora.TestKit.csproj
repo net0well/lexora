@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Aliases="OpenXml" PrivateAssets="compile" />
+    <PackageReference Include="DocumentFormat.OpenXml.Framework" Aliases="OpenXml" PrivateAssets="compile" />
     <PackageReference Include="PdfPig" />
     <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
