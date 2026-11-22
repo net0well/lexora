@@ -1,4 +1,5 @@
 using JasperFx.Core;
+using Lexora.Application.Users.Abstractions;
 using Lexora.Domain.Abstractions;
 using Lexora.Domain.ApiKeys;
 using Lexora.Domain.Chunks;
@@ -7,6 +8,7 @@ using Lexora.Domain.Documents;
 using Lexora.Domain.KnowledgeBases;
 using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
+using Lexora.Infrastructure.Persistence.Queries;
 using Lexora.Infrastructure.Persistence.Repositories;
 using Lexora.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -76,5 +78,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentChunkRepository, DocumentChunkRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
+
+        services.AddScoped<IUserQueries, UserQueries>();
     }
 }
