@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" PrivateAssets="compile" />
     <PackageReference Include="DocumentFormat.OpenXml" Aliases="OpenXml" PrivateAssets="compile" />
     <PackageReference Include="DocumentFormat.OpenXml.Framework" Aliases="OpenXml" PrivateAssets="compile" />
     <PackageReference Include="PdfPig" />
