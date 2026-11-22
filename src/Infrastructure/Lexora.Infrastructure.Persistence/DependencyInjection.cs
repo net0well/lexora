@@ -1,4 +1,12 @@
 using Lexora.Domain.Abstractions;
+using Lexora.Domain.ApiKeys;
+using Lexora.Domain.Chunks;
+using Lexora.Domain.Conversations;
+using Lexora.Domain.Documents;
+using Lexora.Domain.KnowledgeBases;
+using Lexora.Domain.RefreshTokens;
+using Lexora.Domain.Users;
+using Lexora.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +31,19 @@ public static class DependencyInjection
 
         options.Services.AddScoped<IUnitOfWork>(services => services.GetRequiredService<LexoraDbContext>());
 
+        AddRepositories(options.Services);
+
         return options;
+    }
+
+    private static void AddRepositories(IServiceCollection services)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+        services.AddScoped<IKnowledgeBaseRepository, KnowledgeBaseRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IDocumentChunkRepository, DocumentChunkRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
     }
 }
