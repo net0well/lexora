@@ -1,6 +1,9 @@
 using Lexora.Application;
+using Lexora.Infrastructure.Messaging.Validation;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
+using Wolverine.FluentValidation;
 using Wolverine.RabbitMQ;
 
 namespace Lexora.Infrastructure.Messaging;
@@ -28,6 +31,9 @@ public static class DependencyInjection
         };
 
         options.Discovery.IncludeAssembly(typeof(ApplicationAssembly).Assembly);
+
+        options.UseFluentValidation();
+        options.Services.AddSingleton(typeof(IFailureAction<>), typeof(NotificationFailureAction<>));
 
         options.Policies.AutoApplyTransactions();
         options.Policies.UseDurableLocalQueues();
