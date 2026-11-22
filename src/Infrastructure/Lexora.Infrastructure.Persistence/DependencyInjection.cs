@@ -1,3 +1,4 @@
+using JasperFx.Core;
 using Lexora.Domain.Abstractions;
 using Lexora.Domain.ApiKeys;
 using Lexora.Domain.Chunks;
@@ -11,8 +12,10 @@ using Lexora.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Wolverine;
 using Wolverine.EntityFrameworkCore;
+using Wolverine.ErrorHandling;
 using Wolverine.Persistence;
 using Wolverine.Postgresql;
 
@@ -48,9 +51,20 @@ public static class DependencyInjection
 
         options.PublishDomainEventsFromEntityFrameworkCore<AggregateRoot>(aggregate => aggregate.DomainEvents);
 
+        AddDatabaseErrorPolicies(options);
         AddRepositories(options.Services);
 
         return options;
+    }
+
+    private static void AddDatabaseErrorPolicies(WolverineOptions options)
+    {
+        options.Policies.OnException<DbUpdateConcurrencyException>()
+            .RetryWithCooldown(100.Milliseconds(), 250.Milliseconds(), 500.Milliseconds());
+
+        options.Policies.OnException<NpgsqlException>(exception => exception.IsTransient)
+            .RetryWithCooldown(500.Milliseconds(), 2.Seconds(), 5.Seconds())
+            .Then.MoveToErrorQueue();
     }
 
     private static void AddRepositories(IServiceCollection services)
