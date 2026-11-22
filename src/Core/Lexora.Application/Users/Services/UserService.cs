@@ -17,6 +17,7 @@ public sealed class UserService(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,
     IPasswordHasher passwordHasher,
+    ICurrentUser currentUser,
     TimeProvider timeProvider) : IUserService
 {
     public async Task<Result<UserResponse>> CreateAsync(CreateUserCommand command, CancellationToken cancellationToken)
@@ -66,6 +67,11 @@ public sealed class UserService(
         if (user is null)
         {
             return Result.Failure<UserResponse>(UserNotifications.NotFound);
+        }
+
+        if (user.Id == currentUser.UserId)
+        {
+            return Result.Failure<UserResponse>(UserNotifications.SelfDeactivation);
         }
 
         if (await IsLastActiveAdminAsync(user, cancellationToken))
