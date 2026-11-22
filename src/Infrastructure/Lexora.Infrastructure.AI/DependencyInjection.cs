@@ -2,6 +2,7 @@ using Lexora.Application.Abstractions.Ai;
 using Lexora.Infrastructure.AI.Adapters;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
+using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Providers.Ollama;
 using Lexora.Infrastructure.AI.Registry;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         services.AddSingleton<IValidateOptions<AiOptions>, AiOptionsValidator>();
 
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
+        services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
 
