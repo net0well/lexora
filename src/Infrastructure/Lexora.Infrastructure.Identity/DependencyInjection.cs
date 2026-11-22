@@ -27,6 +27,9 @@ public static class DependencyInjection
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddSingleton<ISecretTokenGenerator, SecretTokenGenerator>();
 
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+
         AddAuthentication(services);
         AddAuthorization(services);
 
