@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Lexora.Domain\Lexora.Domain.csproj" />
+    <ProjectReference Include="..\Lexora.TestKit\Lexora.TestKit.csproj" />
   </ItemGroup>
 
 </Project>
