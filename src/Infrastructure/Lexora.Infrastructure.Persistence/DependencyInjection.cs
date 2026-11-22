@@ -1,4 +1,5 @@
 using JasperFx.Core;
+using Lexora.Application.Documents.Abstractions;
 using Lexora.Application.KnowledgeBases.Abstractions;
 using Lexora.Application.Users.Abstractions;
 using Lexora.Domain.Abstractions;
@@ -80,6 +81,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentChunkRepository, DocumentChunkRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
 
+        services.AddScoped<IDocumentQueries, DocumentQueries>();
         services.AddScoped<IKnowledgeBaseQueries, KnowledgeBaseQueries>();
         services.AddScoped<IUserQueries, UserQueries>();
     }
