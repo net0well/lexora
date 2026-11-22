@@ -5,6 +5,9 @@ namespace Lexora.Infrastructure.Persistence;
 
 public sealed class LexoraDbContext(DbContextOptions<LexoraDbContext> options) : DbContext(options), IUnitOfWork
 {
-    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema(SchemaHelper.Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LexoraDbContext).Assembly);
+    }
 }
