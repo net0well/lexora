@@ -1,8 +1,11 @@
 using Lexora.Application.Abstractions.Identity;
+using Lexora.Application.Auth.ChangePassword;
 using Lexora.Application.Auth.Login;
+using Lexora.Application.Auth.Logout;
 using Lexora.Application.Auth.Mappers;
 using Lexora.Application.Auth.RefreshSession;
 using Lexora.Application.Common.Options;
+using Lexora.Application.Common.Validation;
 using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
 using Lexora.Shared.Results;
@@ -17,6 +20,7 @@ public sealed class AuthService(
     IPasswordHasher passwordHasher,
     IAccessTokenIssuer accessTokenIssuer,
     ISecretTokenGenerator secretTokenGenerator,
+    ICurrentUser currentUser,
     IOptions<AuthOptions> options,
     TimeProvider timeProvider,
     ILogger<AuthService> logger) : IAuthService
@@ -123,6 +127,53 @@ public sealed class AuthService(
             user.ToAuthenticatedUser(),
             nextToken.Value,
             replacement.Value.ExpiresAt);
+    }
+
+    public async Task<Result> LogoutAsync(LogoutCommand command, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(command.RefreshToken))
+        {
+            return Result.Success();
+        }
+
+        var token = await refreshTokens.GetByHashAsync(secretTokenGenerator.Hash(command.RefreshToken), cancellationToken);
+
+        if (token is not null && token.UserId == currentUser.UserId)
+        {
+            token.Revoke(RefreshTokenRevocationReason.Logout, timeProvider.GetUtcNow());
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ChangePasswordAsync(ChangePasswordCommand command, CancellationToken cancellationToken)
+    {
+        var user = await users.GetByIdAsync(currentUser.UserId, cancellationToken);
+
+        if (user is null)
+        {
+            return Result.Failure(AuthNotifications.InvalidCredentials);
+        }
+
+        if (passwordHasher.Verify(user.PasswordHash, command.CurrentPassword) == PasswordVerification.Failed)
+        {
+            return Result.Failure(AuthNotifications.CurrentPasswordInvalid);
+        }
+
+        if (!PasswordPolicy.IsStrong(command.NewPassword, user.Email.Value))
+        {
+            return Result.Failure(Notification.Validation(PasswordRuleExtensions.WeakPasswordKey, PasswordPolicy.Description));
+        }
+
+        var now = timeProvider.GetUtcNow();
+        user.ChangePassword(passwordHasher.Hash(command.NewPassword), now);
+
+        foreach (var token in await refreshTokens.ListUnrevokedByUserAsync(user.Id, cancellationToken))
+        {
+            token.Revoke(RefreshTokenRevocationReason.PasswordChanged, now);
+        }
+
+        return Result.Success();
     }
 
     private async Task RevokeFamilyAsync(RefreshToken reused, DateTimeOffset now, CancellationToken cancellationToken)

@@ -35,6 +35,7 @@ public sealed class AuthServiceRefreshTests
             _hasher,
             new FakeAccessTokenIssuer(_time),
             new FakeSecretTokenGenerator(),
+            new FakeCurrentUser(),
             Options.Create(_options),
             _time,
             NullLogger<AuthService>.Instance);
