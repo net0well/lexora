@@ -78,11 +78,11 @@ Prerequisites: Docker, .NET 10 SDK, `dotnet-ef`, Node.js LTS.
 
 ```bash
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build
 docker compose --profile ai-local up -d
 ```
 
-The `migrator` service applies the EF Core migrations and runs the admin seed before the API starts. Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` first.
+Fill `.env` first: `JWT_SIGNING_KEY` (generate one with `openssl rand -base64 64`), `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (at least 12 characters with upper and lower case letters and a number). The `migrator` service applies the EF Core migrations, sets up the messaging tables and creates the first admin before the API starts; running it again changes nothing.
 
 | Service | URL |
 |---|---|
@@ -95,6 +95,14 @@ The `migrator` service applies the EF Core migrations and runs the admin seed be
 ### Local (without the app containers)
 
 ```bash
+dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 64)" --project src/Hosts/Lexora.Api
+dotnet user-secrets set "Seed:Admin:Email" "admin@lexora.local" --project src/Hosts/Lexora.Api
+dotnet user-secrets set "Seed:Admin:Name" "Administrator" --project src/Hosts/Lexora.Api
+dotnet user-secrets set "Seed:Admin:Password" "<a strong password>" --project src/Hosts/Lexora.Api
+dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 64)" --project src/Hosts/Lexora.Worker
+```
+
+```bash
 docker compose up -d postgres rabbitmq redis seaweedfs seaweedfs-init seq
 dotnet ef database update --project src/Infrastructure/Lexora.Infrastructure.Persistence --startup-project src/Hosts/Lexora.Api --context LexoraDbContext
 dotnet run --project src/Hosts/Lexora.Api -- resources setup
@@ -103,7 +111,7 @@ dotnet run --project src/Hosts/Lexora.Api
 dotnet run --project src/Hosts/Lexora.Worker
 ```
 
-The first three commands apply the EF Core migrations, create the messaging tables and create the first admin (credentials come from user secrets: `Seed:Admin:Email`, `Seed:Admin:Name`, `Seed:Admin:Password`).
+Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes) and the first admin's credentials. The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
 
 ### Migrations
 
