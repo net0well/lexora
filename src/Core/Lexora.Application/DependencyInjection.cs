@@ -3,6 +3,7 @@ using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
 using Lexora.Application.Documents.Services;
+using Lexora.Application.Ingestion.Services;
 using Lexora.Application.KnowledgeBases.Services;
 using Lexora.Application.Users.Services;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISeedAdminService, SeedAdminService>();
         services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<IIngestionService, IngestionService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
