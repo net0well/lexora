@@ -136,7 +136,7 @@ npx @modelcontextprotocol/inspector
 
 ## Roadmap
 
-- [ ] Foundation and solution skeleton
+- [x] Foundation and solution skeleton
 - [ ] Domain model
 - [ ] Persistence, migrations and admin seed
 - [ ] Wolverine, authentication and REST API
