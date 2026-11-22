@@ -1,6 +1,7 @@
 using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.Auth.Login;
 using Lexora.Application.Auth.Mappers;
+using Lexora.Application.Auth.RefreshSession;
 using Lexora.Application.Common.Options;
 using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
@@ -67,6 +68,73 @@ public sealed class AuthService(
         logger.SignedIn(user.Id);
 
         return new LoginResponse(accessToken.Value, accessToken.ExpiresAt, user.ToAuthenticatedUser(), refreshToken.Value, session.ExpiresAt);
+    }
+
+    public async Task<Result<RefreshSessionResponse>> RefreshAsync(RefreshSessionCommand command, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(command.RefreshToken))
+        {
+            return Result.Failure<RefreshSessionResponse>(AuthNotifications.InvalidRefreshToken);
+        }
+
+        var current = await refreshTokens.GetByHashAsync(secretTokenGenerator.Hash(command.RefreshToken), cancellationToken);
+
+        if (current is null)
+        {
+            return Result.Failure<RefreshSessionResponse>(AuthNotifications.InvalidRefreshToken);
+        }
+
+        var now = timeProvider.GetUtcNow();
+
+        if (current.WasRotated)
+        {
+            await RevokeFamilyAsync(current, now, cancellationToken);
+            return Result.Failure<RefreshSessionResponse>(AuthNotifications.InvalidRefreshToken);
+        }
+
+        if (!current.IsActive(now))
+        {
+            return Result.Failure<RefreshSessionResponse>(AuthNotifications.InvalidRefreshToken);
+        }
+
+        var user = await users.GetByIdAsync(current.UserId, cancellationToken);
+
+        if (user is not { IsActive: true })
+        {
+            current.Revoke(RefreshTokenRevocationReason.UserDeactivated, now);
+            return Result.Failure<RefreshSessionResponse>(AuthNotifications.UserInactive);
+        }
+
+        var nextToken = secretTokenGenerator.Generate();
+        var replacement = current.Rotate(nextToken.Hash, now + options.Value.RefreshTokenLifetime, now);
+
+        if (replacement.IsFailure)
+        {
+            return Result.Failure<RefreshSessionResponse>(replacement.Notifications);
+        }
+
+        await refreshTokens.AddAsync(replacement.Value, cancellationToken);
+
+        var accessToken = accessTokenIssuer.Issue(user);
+
+        return new RefreshSessionResponse(
+            accessToken.Value,
+            accessToken.ExpiresAt,
+            user.ToAuthenticatedUser(),
+            nextToken.Value,
+            replacement.Value.ExpiresAt);
+    }
+
+    private async Task RevokeFamilyAsync(RefreshToken reused, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var family = await refreshTokens.ListUnrevokedByFamilyAsync(reused.FamilyId, cancellationToken);
+
+        foreach (var token in family)
+        {
+            token.Revoke(RefreshTokenRevocationReason.ReuseDetected, now);
+        }
+
+        logger.RefreshTokenReuseDetected(reused.UserId, reused.FamilyId);
     }
 
     private Result<LoginResponse> RejectWrongPassword(User user, DateTimeOffset now)

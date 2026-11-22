@@ -15,4 +15,7 @@ internal static partial class AuthLog
 
     [LoggerMessage(EventId = 1004, Level = LogLevel.Warning, Message = "User {UserId} locked out after repeated failed sign-ins")]
     public static partial void LockedOut(this ILogger logger, Guid userId);
+
+    [LoggerMessage(EventId = 1005, Level = LogLevel.Warning, Message = "Refresh token reuse detected for user {UserId}; session family {FamilyId} revoked")]
+    public static partial void RefreshTokenReuseDetected(this ILogger logger, Guid userId, Guid familyId);
 }
