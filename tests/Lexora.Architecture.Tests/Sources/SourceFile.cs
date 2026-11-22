@@ -4,20 +4,32 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Lexora.Architecture.Tests.Sources;
 
-internal sealed record SourceFile(string RelativePath, IReadOnlyList<string> TopLevelTypeNames)
+internal sealed record SourceFile(string RelativePath, IReadOnlyList<string> TopLevelTypeNames, IReadOnlyList<string> InvokedMethodNames)
 {
     private static readonly CSharpParseOptions _parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest);
 
     public string ExpectedTypeName => Path.GetFileNameWithoutExtension(RelativePath);
 
+    public bool IsProductionCode => RelativePath.StartsWith($"src{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
     public static SourceFile Parse(string path)
     {
         var root = CSharpSyntaxTree.ParseText(File.ReadAllText(path), _parseOptions).GetCompilationUnitRoot();
+        var nodes = root.DescendantNodes().ToArray();
 
-        string[] typeNames = [.. root.DescendantNodes().Where(IsTopLevelType).Select(TypeNameOf)];
+        string[] typeNames = [.. nodes.Where(IsTopLevelType).Select(TypeNameOf)];
+        string[] invokedMethodNames = [.. nodes.OfType<InvocationExpressionSyntax>().Select(InvokedMethodNameOf).OfType<string>()];
 
-        return new SourceFile(Path.GetRelativePath(RepositoryRoot.FullPath, path), typeNames);
+        return new SourceFile(Path.GetRelativePath(RepositoryRoot.FullPath, path), typeNames, invokedMethodNames);
     }
+
+    private static string? InvokedMethodNameOf(InvocationExpressionSyntax invocation) => invocation.Expression switch
+    {
+        MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
+        MemberBindingExpressionSyntax memberBinding => memberBinding.Name.Identifier.Text,
+        SimpleNameSyntax name => name.Identifier.Text,
+        _ => null,
+    };
 
     private static bool IsTopLevelType(SyntaxNode node) =>
         node is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax

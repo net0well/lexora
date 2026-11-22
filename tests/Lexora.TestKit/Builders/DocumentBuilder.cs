@@ -10,6 +10,8 @@ public sealed class DocumentBuilder
     public const int DefaultPageCount = 3;
 
     private Guid _knowledgeBaseId = Guid.CreateVersion7();
+    private Guid _uploadedBy = Guid.CreateVersion7();
+    private ContentHash? _contentHash;
     private string _fileName = "contract.pdf";
     private DocumentFormat _format = DocumentFormat.Pdf;
     private long _sizeBytes = 2048;
@@ -27,6 +29,18 @@ public sealed class DocumentBuilder
     {
         _fileName = fileName;
         _format = format;
+        return this;
+    }
+
+    public DocumentBuilder UploadedBy(Guid userId)
+    {
+        _uploadedBy = userId;
+        return this;
+    }
+
+    public DocumentBuilder WithContentHash(ContentHash contentHash)
+    {
+        _contentHash = contentHash;
         return this;
     }
 
@@ -64,9 +78,9 @@ public sealed class DocumentBuilder
             _format,
             "application/pdf",
             _sizeBytes,
-            ContentHash.FromHex(Convert.ToHexStringLower(SHA256.HashData(id.ToByteArray()))),
+            _contentHash ?? ContentHash.FromHex(Convert.ToHexStringLower(SHA256.HashData(id.ToByteArray()))),
             $"knowledge-bases/{_knowledgeBaseId}/documents/{id}/original",
-            Guid.CreateVersion7(),
+            _uploadedBy,
             _now).Value;
 
         MoveTo(document, _status);
