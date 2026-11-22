@@ -1,8 +1,12 @@
 using Lexora.Application.Abstractions.Identity;
+using Lexora.Domain.Users;
 using Lexora.Infrastructure.Identity.Hashing;
 using Lexora.Infrastructure.Identity.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Lexora.Infrastructure.Identity;
 
@@ -23,6 +27,47 @@ public static class DependencyInjection
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddSingleton<ISecretTokenGenerator, SecretTokenGenerator>();
 
+        AddAuthentication(services);
+        AddAuthorization(services);
+
         return services;
     }
+
+    private static void AddAuthentication(IServiceCollection services)
+    {
+        services.AddAuthentication(AuthenticationSchemes.Bearer).AddJwtBearer();
+
+        services.AddOptions<JwtBearerOptions>(AuthenticationSchemes.Bearer)
+            .Configure<IOptions<JwtOptions>, JwtSigningKeyProvider>((bearer, jwtOptions, signingKeys) =>
+            {
+                var jwt = jwtOptions.Value;
+
+                bearer.MapInboundClaims = false;
+                bearer.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
+                    IssuerSigningKey = signingKeys.Key,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ClockSkew = jwt.ClockSkew,
+                    NameClaimType = ClaimNames.Name,
+                    RoleClaimType = ClaimNames.Role,
+                };
+            });
+    }
+
+    private static void AddAuthorization(IServiceCollection services) =>
+        services.AddAuthorizationBuilder()
+            .AddPolicy(AuthorizationPolicies.RequireAdmin, policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(nameof(UserRole.Admin)))
+            .AddPolicy(AuthorizationPolicies.RequireMember, policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(nameof(UserRole.Admin), nameof(UserRole.Member)))
+            .AddPolicy(AuthorizationPolicies.RequireViewer, policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(nameof(UserRole.Admin), nameof(UserRole.Member), nameof(UserRole.Viewer)));
 }

@@ -6,6 +6,9 @@ public static class ApiPipeline
 {
     public static WebApplication UseApi(this WebApplication app)
     {
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.MapControllers();
         app.MapHealthEndpoints();
 
