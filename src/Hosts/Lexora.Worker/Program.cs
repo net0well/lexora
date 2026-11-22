@@ -2,6 +2,7 @@ using JasperFx;
 using Lexora.Application;
 using Lexora.Domain;
 using Lexora.Hosting;
+using Lexora.Hosting.Health;
 using Lexora.Infrastructure.AI;
 using Lexora.Infrastructure.Caching;
 using Lexora.Infrastructure.DocumentProcessing;
@@ -32,5 +33,7 @@ builder.Host.UseWolverine(options => options
     .AddPersistenceAdapter(builder.Configuration));
 
 var app = builder.Build();
+
+app.MapHealthEndpoints();
 
 return await app.RunJasperFxCommands(args);
