@@ -1,5 +1,6 @@
 using Lexora.Application;
 using Lexora.Infrastructure.Messaging.Policies;
+using Lexora.Infrastructure.Messaging.Routing;
 using Lexora.Infrastructure.Messaging.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,11 @@ public static class DependencyInjection
         options.UseRabbitMq(new Uri(rabbitMq)).AutoProvision();
 
         ErrorHandlingPolicies.Apply(options);
+
+        if (role == MessagingHostRole.Api)
+        {
+            ApiRouting.Apply(options);
+        }
 
         return options;
     }
