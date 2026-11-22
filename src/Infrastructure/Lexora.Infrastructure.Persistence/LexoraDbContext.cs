@@ -8,6 +8,7 @@ public sealed class LexoraDbContext(DbContextOptions<LexoraDbContext> options) :
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaHelper.Schema);
+        modelBuilder.HasPostgresExtension("vector");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LexoraDbContext).Assembly);
     }
 }
