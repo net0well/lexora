@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using Lexora.Api.ExceptionHandling;
+using Lexora.Api.OpenApi;
 using Lexora.Api.Results;
 using Microsoft.AspNetCore.Authorization;
 
@@ -13,6 +15,11 @@ public static class DependencyInjection
         services.AddControllers().AddJsonOptions(options => ConfigureJson(options.JsonSerializerOptions));
         services.ConfigureHttpJsonOptions(options => ConfigureJson(options.SerializerOptions));
 
+        AddVersioning(services);
+
+        services.AddSwaggerGen();
+        services.ConfigureOptions<ConfigureSwaggerOptions>();
+
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, EnvelopeAuthorizationResultHandler>();
 
         services.AddExceptionHandler<InputValidationExceptionHandler>();
@@ -20,6 +27,21 @@ public static class DependencyInjection
 
         return services;
     }
+
+    private static void AddVersioning(IServiceCollection services) =>
+        services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = false;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddMvc()
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
 
     private static void ConfigureJson(JsonSerializerOptions options)
     {

@@ -10,6 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Lexora.Hosting\Lexora.Hosting.csproj" />
     <ProjectReference Include="..\..\Core\Lexora.Application\Lexora.Application.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Lexora.Infrastructure.AI\Lexora.Infrastructure.AI.csproj" />
