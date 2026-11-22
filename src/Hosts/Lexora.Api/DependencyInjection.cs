@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Lexora.Api.ExceptionHandling;
 using Lexora.Api.Results;
 using Microsoft.AspNetCore.Authorization;
 
@@ -13,6 +14,9 @@ public static class DependencyInjection
         services.ConfigureHttpJsonOptions(options => ConfigureJson(options.SerializerOptions));
 
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, EnvelopeAuthorizationResultHandler>();
+
+        services.AddExceptionHandler<InputValidationExceptionHandler>();
+        services.AddExceptionHandler<UnhandledExceptionHandler>();
 
         return services;
     }

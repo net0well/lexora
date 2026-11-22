@@ -6,6 +6,8 @@ public static class ApiPipeline
 {
     public static WebApplication UseApi(this WebApplication app)
     {
+        app.UseExceptionHandler(_ => { });
+
         app.UseAuthentication();
         app.UseAuthorization();
 
