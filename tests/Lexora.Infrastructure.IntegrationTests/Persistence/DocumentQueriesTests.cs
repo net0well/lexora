@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Lexora.Application.Common.Paging;
+using Lexora.Application.Documents.Abstractions;
 using Lexora.Application.Documents.ListDocumentChunks;
 using Lexora.Application.Documents.ListDocuments;
 using Lexora.Domain.Chunks;
@@ -44,6 +45,19 @@ public sealed class DocumentQueriesTests(DatabaseFixture database) : DatabaseTes
         await using var context = Database.CreateContext();
 
         (await new DocumentQueries(context).GetByIdAsync(document.Id, CancellationToken)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetStoredFileAsync_ExistingDocument_ReturnsWhereAndHowItIsStored()
+    {
+        var (knowledgeBase, owner) = await SaveBaseAsync();
+        var document = NewDocument(knowledgeBase, owner, "manual.pdf");
+        await SaveAsync(document);
+
+        await using var context = Database.CreateContext();
+        var file = await new DocumentQueries(context).GetStoredFileAsync(document.Id, CancellationToken);
+
+        file.ShouldBe(new StoredDocumentFile(document.StorageKey, "manual.pdf", document.ContentType));
     }
 
     [Fact]

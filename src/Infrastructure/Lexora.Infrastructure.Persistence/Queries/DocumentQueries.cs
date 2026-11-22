@@ -32,6 +32,13 @@ public sealed class DocumentQueries(LexoraDbContext context) : IDocumentQueries
                 document.UpdatedAt))
             .FirstOrDefaultAsync(cancellationToken);
 
+    public Task<StoredDocumentFile?> GetStoredFileAsync(Guid id, CancellationToken cancellationToken) =>
+        context.Documents
+            .AsNoTracking()
+            .Where(document => document.Id == id && document.DeletedAt == null)
+            .Select(document => new StoredDocumentFile(document.StorageKey, document.FileName.Value, document.ContentType))
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task<PagedResponse<DocumentListItemResponse>?> ListAsync(ListDocumentsQuery query, CancellationToken cancellationToken)
     {
         if (!await context.KnowledgeBases.AnyAsync(knowledgeBase => knowledgeBase.Id == query.KnowledgeBaseId, cancellationToken))

@@ -12,4 +12,6 @@ public interface IDocumentQueries
     Task<PagedResponse<DocumentListItemResponse>?> ListAsync(ListDocumentsQuery query, CancellationToken cancellationToken);
 
     Task<PagedResponse<DocumentChunkResponse>?> ListChunksAsync(ListDocumentChunksQuery query, CancellationToken cancellationToken);
+
+    Task<StoredDocumentFile?> GetStoredFileAsync(Guid id, CancellationToken cancellationToken);
 }
