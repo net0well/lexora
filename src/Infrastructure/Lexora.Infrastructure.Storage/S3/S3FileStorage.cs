@@ -16,6 +16,9 @@ public sealed class S3FileStorage(
 
     private readonly string _bucket = s3Options.Value.Bucket;
 
+    private readonly Protocol _publicProtocol =
+        (s3Options.Value.PublicUrl ?? s3Options.Value.ServiceUrl)?.Scheme == Uri.UriSchemeHttp ? Protocol.HTTP : Protocol.HTTPS;
+
     public async Task<StoredFile> SaveAsync(string key, Stream content, string contentType, CancellationToken cancellationToken)
     {
         var start = content.Position;
@@ -82,6 +85,7 @@ public sealed class S3FileStorage(
             BucketName = _bucket,
             Key = key,
             Verb = HttpVerb.GET,
+            Protocol = _publicProtocol,
             Expires = expiresAt.UtcDateTime,
             ResponseHeaderOverrides = new ResponseHeaderOverrides
             {
