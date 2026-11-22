@@ -1,3 +1,4 @@
+using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,11 @@ public static class DependencyInjection
                 $"'{AuthOptions.SectionName}' durations must be positive.")
             .ValidateOnStart();
 
+        AddServices(services);
+
         return services;
     }
+
+    private static void AddServices(IServiceCollection services) =>
+        services.AddScoped<IAuthService, AuthService>();
 }
