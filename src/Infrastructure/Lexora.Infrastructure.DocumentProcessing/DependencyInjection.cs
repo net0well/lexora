@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton<IFormatTextExtractor, PlainTextExtractor>();
         services.AddSingleton<IFormatTextExtractor, MarkdownTextExtractor>();
         services.AddSingleton<IFormatTextExtractor, CsvTextExtractor>();
+        services.AddSingleton<IFormatTextExtractor, PdfTextExtractor>();
         services.AddSingleton<IDocumentTextExtractor, DocumentTextExtractor>();
 
         return services;
