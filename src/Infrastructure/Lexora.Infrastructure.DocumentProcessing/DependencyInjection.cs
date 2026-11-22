@@ -9,6 +9,14 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDocumentProcessingAdapter(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOptions<DocumentProcessingOptions>()
+            .Bind(configuration.GetSection(DocumentProcessingOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<IFormatTextExtractor, PlainTextExtractor>();
+        services.AddSingleton<IFormatTextExtractor, MarkdownTextExtractor>();
+        services.AddSingleton<IFormatTextExtractor, CsvTextExtractor>();
         services.AddSingleton<IDocumentTextExtractor, DocumentTextExtractor>();
 
         return services;
