@@ -1,3 +1,4 @@
+using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
 using Microsoft.Extensions.Configuration;
@@ -17,11 +18,17 @@ public static class DependencyInjection
                 $"'{AuthOptions.SectionName}' durations must be positive.")
             .ValidateOnStart();
 
+        services.AddOptions<SeedAdminOptions>()
+            .Bind(configuration.GetSection(SeedAdminOptions.SectionName));
+
         AddServices(services);
 
         return services;
     }
 
-    private static void AddServices(IServiceCollection services) =>
+    private static void AddServices(IServiceCollection services)
+    {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ISeedAdminService, SeedAdminService>();
+    }
 }
