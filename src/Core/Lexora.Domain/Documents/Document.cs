@@ -1,3 +1,4 @@
+using Lexora.Domain.Documents.Events;
 using Lexora.Shared.Domain;
 using Lexora.Shared.Guards;
 using Lexora.Shared.Results;
@@ -115,7 +116,10 @@ public sealed class Document : AggregateRoot
             return Result.Failure<Document>(fileNameResult.Notifications);
         }
 
-        return new Document(id, knowledgeBaseId, fileNameResult.Value, format, contentType, sizeBytes, contentHash, storageKey, uploadedBy, now);
+        var document = new Document(id, knowledgeBaseId, fileNameResult.Value, format, contentType, sizeBytes, contentHash, storageKey, uploadedBy, now);
+        document.Raise(new DocumentUploaded(knowledgeBaseId, id, document.ProcessingVersion, now));
+
+        return document;
     }
 
     public Result CompleteExtraction(int processingVersion, int pageCount, string extractedTextKey, DateTimeOffset now)
@@ -130,6 +134,7 @@ public sealed class Document : AggregateRoot
         PageCount = Guard.Positive(pageCount);
         ExtractedTextKey = Guard.NotNullOrWhiteSpace(extractedTextKey);
         MoveTo(DocumentStatus.Extracted, now);
+        Raise(new DocumentTextExtracted(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
@@ -146,6 +151,7 @@ public sealed class Document : AggregateRoot
         ChunkCount = Guard.Positive(chunkCount);
         EmbeddedChunkCount = 0;
         MoveTo(DocumentStatus.Chunked, now);
+        Raise(new DocumentChunked(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
@@ -184,6 +190,7 @@ public sealed class Document : AggregateRoot
         EmbeddingModel = Guard.NotNullOrWhiteSpace(embeddingModel);
         IndexedAt = now;
         MoveTo(DocumentStatus.Indexed, now);
+        Raise(new DocumentIndexed(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
@@ -201,6 +208,7 @@ public sealed class Document : AggregateRoot
 
         FailureReason = Guard.NotNullOrWhiteSpace(reason);
         MoveTo(DocumentStatus.Failed, now);
+        Raise(new DocumentFailed(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
@@ -221,6 +229,7 @@ public sealed class Document : AggregateRoot
         FailureReason = null;
         IndexedAt = null;
         MoveTo(DocumentStatus.Uploaded, now);
+        Raise(new DocumentReprocessRequested(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
@@ -234,6 +243,7 @@ public sealed class Document : AggregateRoot
 
         DeletedAt = now;
         MoveTo(DocumentStatus.Deleted, now);
+        Raise(new DocumentDeleted(KnowledgeBaseId, Id, ProcessingVersion, now));
 
         return Result.Success();
     }
