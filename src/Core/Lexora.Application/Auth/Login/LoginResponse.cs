@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Lexora.Application.Auth.Login;
 
 public sealed record LoginResponse(
@@ -5,4 +7,12 @@ public sealed record LoginResponse(
     DateTimeOffset ExpiresAt,
     AuthenticatedUserResponse User,
     string RefreshToken,
-    DateTimeOffset RefreshTokenExpiresAt);
+    DateTimeOffset RefreshTokenExpiresAt)
+{
+    private bool PrintMembers(StringBuilder builder)
+    {
+        builder.Append("User = ").Append(User).Append(", ExpiresAt = ").Append(ExpiresAt);
+
+        return true;
+    }
+}
