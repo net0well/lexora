@@ -31,7 +31,13 @@ public static class DependencyInjection
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown messaging host role."),
         };
 
-        options.Discovery.IncludeAssembly(typeof(ApplicationAssembly).Assembly);
+        var applicationAssembly = typeof(ApplicationAssembly).Assembly;
+        options.Discovery.IncludeAssembly(applicationAssembly);
+
+        // The host is the Wolverine application assembly (it holds the pre-generated code), so its own
+        // *Handler types, such as ASP.NET Core result handlers, must not be taken for message handlers.
+        options.Discovery.CustomizeHandlerDiscovery(query =>
+            query.Excludes.WithCondition("Outside the application layer", type => type.Assembly != applicationAssembly));
 
         options.UseFluentValidation();
         options.Services.AddSingleton(typeof(IFailureAction<>), typeof(NotificationFailureAction<>));

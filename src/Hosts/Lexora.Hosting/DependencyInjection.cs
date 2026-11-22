@@ -14,7 +14,7 @@ public static class DependencyInjection
         IConfiguration configuration,
         IHostEnvironment environment)
     {
-        CodeGenerationDefaults.Apply(services);
+        CodeGenerationDefaults.Apply(services, environment);
         AddHealthChecks(services, configuration);
 
         return services;
