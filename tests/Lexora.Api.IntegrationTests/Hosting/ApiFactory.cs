@@ -110,6 +110,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", _database.GetConnectionString());
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.RabbitMq}", "amqp://guest:guest@localhost:5672");
         builder.UseSetting("Jwt:SigningKey", _signingKey);
+        builder.UseSetting("Storage:S3:ServiceUrl", "http://localhost:1");
+        builder.UseSetting("Storage:S3:AccessKey", "tests");
+        builder.UseSetting("Storage:S3:SecretKey", "tests");
         builder.UseSetting("RateLimiting:Auth:LoginPermitsPerMinute", "10000");
         builder.UseSetting("RateLimiting:Auth:RefreshPermitsPerMinute", "10000");
 
