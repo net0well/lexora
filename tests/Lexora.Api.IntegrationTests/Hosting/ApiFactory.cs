@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using JasperFx;
 using JasperFx.CodeGeneration;
@@ -37,6 +38,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     private readonly PostgreSqlContainer _database = PostgreSqlContainerFactory.Create();
     private readonly string _signingKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+    private readonly ConcurrentDictionary<string, string> _passwordHashes = new(StringComparer.Ordinal);
 
     public async ValueTask InitializeAsync()
     {
@@ -65,7 +67,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         var now = scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow();
 
-        var user = User.Create(email, email.Split('@')[0], hasher.Hash(password), role, now).Value;
+        var passwordHash = _passwordHashes.GetOrAdd(password, hasher.Hash);
+        var user = User.Create(email, email.Split('@')[0], passwordHash, role, now).Value;
 
         if (!active)
         {
@@ -78,6 +81,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         return user;
     }
+
+    public string IssueAccessToken(User user) => Services.GetRequiredService<IAccessTokenIssuer>().Issue(user).Value;
 
     public LexoraDbContext CreateDbContext()
     {
