@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup>
+    <UserSecretsId>lexora-worker</UserSecretsId>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <PackageReference Include="WolverineFx.RuntimeCompilation" />
   </ItemGroup>
