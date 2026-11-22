@@ -96,21 +96,31 @@ The `migrator` service applies the EF Core migrations and runs the admin seed be
 
 ```bash
 docker compose up -d postgres rabbitmq redis seaweedfs seaweedfs-init seq
-./scripts/bootstrap-local.sh
+dotnet ef database update --project src/Infrastructure/Lexora.Infrastructure.Persistence --startup-project src/Hosts/Lexora.Api --context LexoraDbContext
+dotnet run --project src/Hosts/Lexora.Api -- resources setup
+dotnet run --project src/Hosts/Lexora.Api -- seed-admin
 dotnet run --project src/Hosts/Lexora.Api
 dotnet run --project src/Hosts/Lexora.Worker
 ```
 
-`bootstrap-local` applies the EF Core migrations, creates the messaging tables and runs `seed-admin` (admin credentials come from user secrets: `Seed:Admin:Email`, `Seed:Admin:Name`, `Seed:Admin:Password`). PowerShell equivalents live next to each script (`.ps1`).
+The first three commands apply the EF Core migrations, create the messaging tables and create the first admin (credentials come from user secrets: `Seed:Admin:Email`, `Seed:Admin:Name`, `Seed:Admin:Password`).
 
 ### Migrations
 
+Migrations are managed with the `dotnet ef` CLI, from the repository root. Every command takes the same parameters:
+
 ```bash
-./scripts/ef/add-migration.sh <MigrationName>
-./scripts/ef/update-database.sh
-./scripts/ef/script-migrations.sh
-./scripts/ef/bundle-migrations.sh
+EF="--project src/Infrastructure/Lexora.Infrastructure.Persistence --startup-project src/Hosts/Lexora.Api --context LexoraDbContext"
+
+dotnet ef migrations add <MigrationName> --output-dir Migrations $EF
+dotnet ef migrations list $EF
+dotnet ef migrations remove $EF
+dotnet ef database update $EF
+dotnet ef migrations script --idempotent --output artifacts/migrations.sql $EF
+dotnet ef migrations bundle --self-contained -r linux-x64 --output artifacts/efbundle --force $EF
 ```
+
+`dotnet ef` builds the context through a design-time factory, so it does not start the application. It connects to `LEXORA_DESIGN_CONNECTION` when set, otherwise to the local Docker database.
 
 ## Project layout
 
@@ -123,7 +133,6 @@ src/
 tests/
 web/lexora-web/
 deploy/
-scripts/
 ```
 
 ## Connecting an MCP client
