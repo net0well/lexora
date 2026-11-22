@@ -1,4 +1,3 @@
-using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
@@ -32,7 +31,6 @@ public sealed class S3ClientFactory : IDisposable
     {
         ServiceURL = serviceUrl.ToString(),
         AuthenticationRegion = settings.Region,
-        RegionEndpoint = RegionEndpoint.GetBySystemName(settings.Region),
         ForcePathStyle = settings.ForcePathStyle,
         UseHttp = serviceUrl.Scheme == Uri.UriSchemeHttp,
         RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
