@@ -1,5 +1,12 @@
 name: lexora
 
+x-dotnet-env: &dotnet-env
+  ASPNETCORE_ENVIRONMENT: Production
+  ConnectionStrings__Lexora: Host=postgres;Port=5432;Database=lexora;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};GSS Encryption Mode=Disable
+  ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+  Persistence__WolverineSchema: wolverine_api
+  Jwt__SigningKey: ${JWT_SIGNING_KEY}
+
 services:
   postgres:
     image: pgvector/pgvector:pg18
@@ -60,6 +67,37 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  migrator:
+    build:
+      context: .
+      dockerfile: src/Hosts/Lexora.Api/Dockerfile
+      target: migrator
+    environment:
+      <<: *dotnet-env
+      Seed__Admin__Email: ${SEED_ADMIN_EMAIL}
+      Seed__Admin__Name: ${SEED_ADMIN_NAME}
+      Seed__Admin__Password: ${SEED_ADMIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Hosts/Lexora.Api/Dockerfile
+      target: final
+    environment:
+      <<: *dotnet-env
+      Swagger__Enabled: "true"
+    ports:
+      - "5080:8080"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
 
 volumes:
   postgres-data:

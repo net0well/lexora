@@ -1,0 +1,12 @@
+**/bin
+**/obj
+**/node_modules
+**/Internal/Generated
+.git
+.vs
+.claude
+docs
+CLAUDE.md
+.env
+artifacts
+TestResults
