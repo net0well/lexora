@@ -156,7 +156,7 @@ npx @modelcontextprotocol/inspector
 - [x] Foundation and solution skeleton
 - [x] Domain model
 - [x] Persistence and migrations
-- [ ] Wolverine, authentication, admin seed and REST API
+- [x] Wolverine, authentication, admin seed and REST API
 - [ ] Storage and document upload
 - [ ] Ingestion pipeline
 - [ ] AI connectors
