@@ -52,11 +52,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         StartServer();
     }
 
-    public HttpClient CreateApiClient() => CreateClient(new WebApplicationFactoryClientOptions
+    public HttpClient CreateApiClient(bool handleCookies = true) => CreateClient(new WebApplicationFactoryClientOptions
     {
         BaseAddress = new Uri("https://localhost"),
         AllowAutoRedirect = false,
-        HandleCookies = true,
+        HandleCookies = handleCookies,
     });
 
     public async Task<User> SeedUserAsync(string email, UserRole role, string password, bool active = true)
