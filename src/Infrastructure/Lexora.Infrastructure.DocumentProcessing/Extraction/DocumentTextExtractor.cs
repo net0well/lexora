@@ -1,6 +1,7 @@
 using Lexora.Application.Abstractions.Processing;
 using Lexora.Domain.Documents;
 using Lexora.Infrastructure.DocumentProcessing.Detection;
+using Lexora.Infrastructure.DocumentProcessing.Normalization;
 using Lexora.Shared.Results;
 
 namespace Lexora.Infrastructure.DocumentProcessing.Extraction;
@@ -28,8 +29,19 @@ public sealed class DocumentTextExtractor(IEnumerable<IFormatTextExtractor> extr
             return extracted;
         }
 
-        return extracted.Value.Sections.Any(section => !string.IsNullOrWhiteSpace(section.Text))
-            ? extracted
+        List<ExtractedSection> sections =
+        [
+            .. extracted.Value.Sections
+                .Select(section => section with
+                {
+                    Title = section.Title is null ? null : TextNormalizer.Normalize(section.Title),
+                    Text = TextNormalizer.Normalize(section.Text),
+                })
+                .Where(section => section.Text.Length > 0),
+        ];
+
+        return sections.Count > 0
+            ? new ExtractedDocument(sections, extracted.Value.PageCount)
             : Result.Failure<ExtractedDocument>(ExtractionFailures.NoText);
     }
 }

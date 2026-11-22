@@ -37,7 +37,22 @@ public sealed class DocumentTextExtractorTests
 
         var result = await extractor.ExtractAsync(Stream.Null, DocumentFormat.Txt, TestContext.Current.CancellationToken);
 
-        result.Value.ShouldBe(_text);
+        result.Value.Sections.ShouldBe(_text.Sections);
+        result.Value.PageCount.ShouldBe(_text.PageCount);
+    }
+
+    [Fact]
+    public async Task ExtractAsync_ExtractedSections_AreNormalizedAndBlankOnesDropped()
+    {
+        var raw = new ExtractedDocument(
+            [new ExtractedSection("  Safety  rules ", 1, null, "exem-\nplo  "), new ExtractedSection(null, 2, null, "​ ")],
+            PageCount: 2);
+        var extractor = new DocumentTextExtractor([new StubFormatExtractor(DocumentFormat.Pdf, raw)]);
+
+        var result = await extractor.ExtractAsync(Stream.Null, DocumentFormat.Pdf, TestContext.Current.CancellationToken);
+
+        result.Value.Sections.ShouldBe([new ExtractedSection("Safety rules", 1, null, "exemplo")]);
+        result.Value.PageCount.ShouldBe(2);
     }
 
     [Fact]
