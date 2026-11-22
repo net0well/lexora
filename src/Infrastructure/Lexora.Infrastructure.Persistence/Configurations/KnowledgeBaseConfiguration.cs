@@ -12,6 +12,7 @@ internal sealed class KnowledgeBaseConfiguration : IEntityTypeConfiguration<Know
     public void Configure(EntityTypeBuilder<KnowledgeBase> builder)
     {
         builder.ToTable(SchemaHelper.KnowledgeBases);
+        builder.HasXminConcurrencyToken();
 
         builder.HasKey(knowledgeBase => knowledgeBase.Id);
         builder.Property(knowledgeBase => knowledgeBase.Id).ValueGeneratedNever();

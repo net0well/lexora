@@ -11,6 +11,7 @@ internal sealed class ConversationConfiguration : IEntityTypeConfiguration<Conve
     public void Configure(EntityTypeBuilder<Conversation> builder)
     {
         builder.ToTable(SchemaHelper.Conversations);
+        builder.HasXminConcurrencyToken();
 
         builder.HasKey(conversation => conversation.Id);
         builder.Property(conversation => conversation.Id).ValueGeneratedNever();

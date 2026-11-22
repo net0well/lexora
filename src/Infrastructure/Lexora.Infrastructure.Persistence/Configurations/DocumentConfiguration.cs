@@ -11,6 +11,7 @@ internal sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
     public void Configure(EntityTypeBuilder<Document> builder)
     {
         builder.ToTable(SchemaHelper.Documents);
+        builder.HasXminConcurrencyToken();
 
         builder.HasKey(document => document.Id);
         builder.Property(document => document.Id).ValueGeneratedNever();

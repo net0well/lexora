@@ -9,6 +9,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable(SchemaHelper.Users);
+        builder.HasXminConcurrencyToken();
 
         builder.HasKey(user => user.Id);
         builder.Property(user => user.Id).ValueGeneratedNever();
