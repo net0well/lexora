@@ -22,6 +22,13 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("POST", "/api/v1/knowledge-bases", UserRole.Admin),
         ("PUT", "/api/v1/knowledge-bases/{id}", UserRole.Admin),
         ("POST", "/api/v1/knowledge-bases/{id}/archive", UserRole.Admin),
+        ("POST", "/api/v1/knowledge-bases/{id}/documents", UserRole.Member),
+        ("GET", "/api/v1/knowledge-bases/{id}/documents", UserRole.Viewer),
+        ("GET", "/api/v1/documents/{id}", UserRole.Viewer),
+        ("GET", "/api/v1/documents/{id}/chunks", UserRole.Viewer),
+        ("GET", "/api/v1/documents/{id}/download", UserRole.Viewer),
+        ("POST", "/api/v1/documents/{id}/reprocess", UserRole.Member),
+        ("DELETE", "/api/v1/documents/{id}", UserRole.Member),
         ("GET", "/api/v1/auth/me", UserRole.Viewer),
         ("POST", "/api/v1/auth/logout", UserRole.Viewer),
         ("POST", "/api/v1/auth/change-password", UserRole.Viewer),
@@ -59,7 +66,11 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
 
         using var request = new HttpRequestMessage(new HttpMethod(method), path.Replace("{id}", Guid.CreateVersion7().ToString(), StringComparison.Ordinal));
 
-        if (method is "POST" or "PUT")
+        if (path.EndsWith("/documents", StringComparison.Ordinal) && method == "POST")
+        {
+            request.Content = new MultipartFormDataContent { { new ByteArrayContent([1]), "file", "sample.pdf" } };
+        }
+        else if (method is "POST" or "PUT")
         {
             request.Content = JsonContent.Create(new { }, options: ApiJson.Options);
         }
