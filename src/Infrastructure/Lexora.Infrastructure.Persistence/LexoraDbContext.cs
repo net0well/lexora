@@ -1,5 +1,6 @@
 using Lexora.Domain.Abstractions;
 using Lexora.Domain.ApiKeys;
+using Lexora.Domain.KnowledgeBases;
 using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ public sealed class LexoraDbContext(DbContextOptions<LexoraDbContext> options) :
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+
+    public DbSet<KnowledgeBase> KnowledgeBases => Set<KnowledgeBase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
