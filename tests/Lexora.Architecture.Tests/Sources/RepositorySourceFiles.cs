@@ -6,6 +6,9 @@ internal static class RepositorySourceFiles
 
     private static readonly string[] _buildOutputFolders = ["bin", "obj"];
 
+    private static readonly string _generatedMigrationsFolder =
+        Path.Combine("src", "Infrastructure", "Lexora.Infrastructure.Persistence", "Migrations") + Path.DirectorySeparatorChar;
+
     private static readonly EnumerationOptions _enumeration = new()
     {
         RecurseSubdirectories = true,
@@ -16,12 +19,16 @@ internal static class RepositorySourceFiles
     [
         .. _scannedFolders
             .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(RepositoryRoot.FullPath, folder), "*.cs", _enumeration))
-            .Where(path => !IsBuildOutput(path))
-            .Select(SourceFile.Parse)
+            .Select(path => Path.GetRelativePath(RepositoryRoot.FullPath, path))
+            .Where(relativePath => !IsBuildOutput(relativePath) && !IsGeneratedMigration(relativePath))
+            .Select(relativePath => SourceFile.Parse(Path.Combine(RepositoryRoot.FullPath, relativePath)))
     ];
 
-    private static bool IsBuildOutput(string path) =>
-        Path.GetRelativePath(RepositoryRoot.FullPath, path)
+    private static bool IsBuildOutput(string relativePath) =>
+        relativePath
             .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
             .Any(segment => _buildOutputFolders.Contains(segment, StringComparer.OrdinalIgnoreCase));
+
+    private static bool IsGeneratedMigration(string relativePath) =>
+        relativePath.StartsWith(_generatedMigrationsFolder, StringComparison.OrdinalIgnoreCase);
 }

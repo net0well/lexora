@@ -4,7 +4,12 @@ namespace Lexora.Architecture.Tests;
 
 public sealed class SealedClassTests
 {
-    private const string DbContextTypeName = "Microsoft.EntityFrameworkCore.DbContext";
+    private static readonly HashSet<string> _frameworkBaseTypes =
+    [
+        "Microsoft.EntityFrameworkCore.DbContext",
+        "Microsoft.EntityFrameworkCore.Migrations.Migration",
+        "Microsoft.EntityFrameworkCore.Infrastructure.ModelSnapshot",
+    ];
 
     [Fact]
     public void ConcreteClass_InSourceAssemblies_IsSealed()
@@ -14,7 +19,7 @@ public sealed class SealedClassTests
 
         var unsealed = types
             .Where(type => IsLexoraConcreteClass(type) && !type.IsSealed)
-            .Where(type => !inheritedTypes.Contains(type) && !InheritsDbContext(type))
+            .Where(type => !inheritedTypes.Contains(type) && !InheritsFrameworkBaseType(type))
             .Select(type => type.FullName);
 
         unsealed.ShouldBeEmpty();
@@ -30,11 +35,11 @@ public sealed class SealedClassTests
             ? genericBase.GetGenericTypeDefinition()
             : type.BaseType;
 
-    private static bool InheritsDbContext(Type type)
+    private static bool InheritsFrameworkBaseType(Type type)
     {
         for (var baseType = type.BaseType; baseType is not null; baseType = baseType.BaseType)
         {
-            if (baseType.FullName == DbContextTypeName)
+            if (baseType.FullName is { } name && _frameworkBaseTypes.Contains(name))
             {
                 return true;
             }
