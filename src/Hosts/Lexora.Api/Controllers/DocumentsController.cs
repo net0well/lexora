@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Lexora.Api.Contracts;
 using Lexora.Api.Results;
+using Lexora.Api.Uploads;
 using Lexora.Application.Common.Paging;
 using Lexora.Application.Documents.DeleteDocument;
 using Lexora.Application.Documents.GetDocument;
@@ -35,6 +36,7 @@ public sealed class DocumentsController(IMessageBus bus) : ControllerBase
     [HttpPost("knowledge-bases/{knowledgeBaseId:guid}/documents")]
     [Authorize(Policy = AuthorizationPolicies.RequireMember)]
     [Consumes("multipart/form-data")]
+    [UploadSizeLimit]
     [ProducesResponseType<CommandResult<UploadDocumentResponse>>(StatusCodes.Status202Accepted)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]

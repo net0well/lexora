@@ -32,6 +32,18 @@ public sealed class InvalidModelStateResponseFactoryTests
             .Message.ShouldBe("The request body is missing or malformed.");
     }
 
+    [Fact]
+    public void Create_FormTooLarge_RespondsPayloadTooLarge()
+    {
+        var context = NewContext();
+        context.ModelState.AddModelError(string.Empty, "Failed to read the request form. Multipart body length limit 1024 exceeded.");
+
+        var action = InvalidModelStateResponseFactory.Create(context).ShouldBeOfType<ObjectResult>();
+
+        action.StatusCode.ShouldBe(StatusCodes.Status413PayloadTooLarge);
+        action.Value.ShouldBeOfType<CommandResult>().Notifications.Single().Key.ShouldBe("request.tooLarge");
+    }
+
     private static ActionContext NewContext() => new(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
 
     private static CommandResult Envelope(IActionResult action) =>

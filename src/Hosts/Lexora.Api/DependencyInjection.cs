@@ -7,11 +7,14 @@ using Lexora.Api.OpenApi;
 using Lexora.Api.RateLimiting;
 using Lexora.Api.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Lexora.Api;
 
 public static class DependencyInjection
 {
+    private const long DefaultMaxRequestBodyBytes = 1_048_576;
+
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
     {
         services
@@ -32,7 +35,10 @@ public static class DependencyInjection
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, EnvelopeAuthorizationResultHandler>();
 
         services.AddExceptionHandler<InputValidationExceptionHandler>();
+        services.AddExceptionHandler<RequestTooLargeExceptionHandler>();
         services.AddExceptionHandler<UnhandledExceptionHandler>();
+
+        services.Configure<KestrelServerOptions>(kestrel => kestrel.Limits.MaxRequestBodySize = DefaultMaxRequestBodyBytes);
 
         AddRefreshTokenCookie(services);
         AddRateLimiting(services, configuration);
