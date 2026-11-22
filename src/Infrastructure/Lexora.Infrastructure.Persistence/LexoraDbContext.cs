@@ -1,6 +1,7 @@
 using Lexora.Domain.Abstractions;
 using Lexora.Domain.ApiKeys;
 using Lexora.Domain.Chunks;
+using Lexora.Domain.Conversations;
 using Lexora.Domain.Documents;
 using Lexora.Domain.KnowledgeBases;
 using Lexora.Domain.RefreshTokens;
@@ -22,6 +23,8 @@ public sealed class LexoraDbContext(DbContextOptions<LexoraDbContext> options) :
     public DbSet<Document> Documents => Set<Document>();
 
     public DbSet<DocumentChunk> DocumentChunks => Set<DocumentChunk>();
+
+    public DbSet<Conversation> Conversations => Set<Conversation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
