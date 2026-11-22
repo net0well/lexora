@@ -1,4 +1,5 @@
 using Lexora.Api.Contracts;
+using Lexora.Api.ExceptionHandling;
 using Lexora.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,11 @@ public static class InvalidModelStateResponseFactory
 
     public static IActionResult Create(ActionContext context)
     {
+        if (context.ModelState.Values.SelectMany(entry => entry.Errors).Any(RequestSizeErrors.IsTooLarge))
+        {
+            return new ObjectResult(CommandResult.Fail([RequestSizeErrors.TooLarge])) { StatusCode = StatusCodes.Status413PayloadTooLarge };
+        }
+
         var notifications = context.ModelState
             .Where(entry => entry.Value is not null)
             .SelectMany(entry => entry.Value!.Errors.Select(error => Notification.Validation(

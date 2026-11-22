@@ -40,6 +40,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private readonly string _signingKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     private readonly ConcurrentDictionary<string, string> _passwordHashes = new(StringComparer.Ordinal);
 
+    public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "lexora-api-tests", Guid.CreateVersion7().ToString("N"));
+
     public async ValueTask InitializeAsync()
     {
         JasperFxEnvironment.AutoStartHost = true;
@@ -102,6 +104,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await base.DisposeAsync();
         await _database.DisposeAsync();
+
+        if (Directory.Exists(StorageRoot))
+        {
+            Directory.Delete(StorageRoot, recursive: true);
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -110,6 +117,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", _database.GetConnectionString());
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.RabbitMq}", "amqp://guest:guest@localhost:5672");
         builder.UseSetting("Jwt:SigningKey", _signingKey);
+        builder.UseSetting("Storage:Provider", "Local");
+        builder.UseSetting("Storage:Local:RootPath", StorageRoot);
+        builder.UseSetting("Storage:Local:DownloadBaseUrl", "https://localhost/api/v1/files/");
         builder.UseSetting("RateLimiting:Auth:LoginPermitsPerMinute", "10000");
         builder.UseSetting("RateLimiting:Auth:RefreshPermitsPerMinute", "10000");
 

@@ -17,6 +17,10 @@ public sealed class NotificationStatusCodeMapperTests
         NotificationStatusCodeMapper.ToStatusCode([new Notification("key", "message", type)]).ShouldBe(expected);
 
     [Fact]
+    public void ToStatusCode_FileAboveTheLimit_IsPayloadTooLarge() =>
+        NotificationStatusCodeMapper.ToStatusCode([Notification.Validation("document.size.exceeded", "too big")]).ShouldBe(StatusCodes.Status413PayloadTooLarge);
+
+    [Fact]
     public void ToStatusCode_NoNotifications_IsOk() => NotificationStatusCodeMapper.ToStatusCode([]).ShouldBe(StatusCodes.Status200OK);
 
     [Fact]

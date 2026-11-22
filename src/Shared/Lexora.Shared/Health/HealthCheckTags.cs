@@ -1,4 +1,4 @@
-namespace Lexora.Hosting.Health;
+namespace Lexora.Shared.Health;
 
 public static class HealthCheckTags
 {

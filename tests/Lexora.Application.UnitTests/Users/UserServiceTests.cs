@@ -22,9 +22,10 @@ public sealed class UserServiceTests
     private readonly FakePasswordHasher _hasher = new();
     private readonly InMemoryUserRepository _users = new();
     private readonly InMemoryRefreshTokenRepository _refreshTokens = new();
+    private readonly FakeCurrentUser _currentUser = new FakeCurrentUser().SignIn(new UserBuilder().WithEmail("caller@lexora.local").WithRole(UserRole.Admin).Build());
     private readonly UserService _service;
 
-    public UserServiceTests() => _service = new UserService(_users, _refreshTokens, _hasher, _time);
+    public UserServiceTests() => _service = new UserService(_users, _refreshTokens, _hasher, _currentUser, _time);
 
     [Fact]
     public async Task CreateAsync_NewEmail_CreatesAnActiveUserWithTheHashedPassword()
@@ -124,6 +125,20 @@ public sealed class UserServiceTests
         result.Notifications.ShouldBe([UserNotifications.LastAdmin]);
         admin.IsActive.ShouldBeTrue();
         session.RevokedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_OwnAccount_IsRejectedEvenWithOtherAdmins()
+    {
+        await AddUserAsync("other.admin@lexora.local", UserRole.Admin);
+        var self = new UserBuilder().WithEmail("self@lexora.local").WithRole(UserRole.Admin).Build();
+        await _users.AddAsync(self, TestContext.Current.CancellationToken);
+        _currentUser.SignIn(self);
+
+        var result = await _service.DeactivateAsync(new DeactivateUserCommand(self.Id), TestContext.Current.CancellationToken);
+
+        result.Notifications.ShouldBe([UserNotifications.SelfDeactivation]);
+        self.IsActive.ShouldBeTrue();
     }
 
     [Fact]

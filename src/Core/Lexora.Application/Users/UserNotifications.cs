@@ -13,4 +13,7 @@ public static class UserNotifications
 
     public static Notification LastAdmin { get; } =
         Notification.BusinessRule("user.lastAdmin", "The last active administrator cannot be demoted or deactivated.");
+
+    public static Notification SelfDeactivation { get; } =
+        Notification.BusinessRule("user.selfDeactivation", "You cannot deactivate your own account.");
 }

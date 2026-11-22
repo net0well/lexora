@@ -1,6 +1,7 @@
 using Lexora.Hosting.Health;
 using Lexora.Hosting.Wolverine;
 using Lexora.Shared.Configuration;
+using Lexora.Shared.Health;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

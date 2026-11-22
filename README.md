@@ -91,6 +91,7 @@ Fill `.env` first: `JWT_SIGNING_KEY` (generate one with `openssl rand -base64 64
 | MCP server | http://localhost:5090/mcp |
 | RabbitMQ | http://localhost:15672 |
 | Seq | http://localhost:5341 |
+| SeaweedFS (S3) | http://localhost:8333 |
 
 ### Local (without the app containers)
 
@@ -100,6 +101,10 @@ dotnet user-secrets set "Seed:Admin:Email" "admin@lexora.local" --project src/Ho
 dotnet user-secrets set "Seed:Admin:Name" "Administrator" --project src/Hosts/Lexora.Api
 dotnet user-secrets set "Seed:Admin:Password" "<a strong password>" --project src/Hosts/Lexora.Api
 dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 64)" --project src/Hosts/Lexora.Worker
+for host in Api Worker; do
+  dotnet user-secrets set "Storage:S3:AccessKey" "lexora" --project src/Hosts/Lexora.$host
+  dotnet user-secrets set "Storage:S3:SecretKey" "lexora-local-secret" --project src/Hosts/Lexora.$host
+done
 ```
 
 ```bash
@@ -111,7 +116,7 @@ dotnet run --project src/Hosts/Lexora.Api
 dotnet run --project src/Hosts/Lexora.Worker
 ```
 
-Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes) and the first admin's credentials. The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
+Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes), the first admin's credentials and the S3 keys (the values above match the local SeaweedFS credentials in `deploy/seaweedfs/s3.json`). To keep files on disk instead of S3, set `Storage:Provider` to `Local` with `Storage:Local:RootPath` and `Storage:Local:DownloadBaseUrl` (for example `http://localhost:5080/api/v1/files/`). The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
 
 ### Migrations
 
@@ -157,7 +162,7 @@ npx @modelcontextprotocol/inspector
 - [x] Domain model
 - [x] Persistence and migrations
 - [x] Wolverine, authentication, admin seed and REST API
-- [ ] Storage and document upload
+- [x] Storage and document upload
 - [ ] Ingestion pipeline
 - [ ] AI connectors
 - [ ] Hybrid search and chat with citations

@@ -2,6 +2,7 @@ using FluentValidation;
 using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
+using Lexora.Application.Documents.Services;
 using Lexora.Application.KnowledgeBases.Services;
 using Lexora.Application.Users.Services;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +27,14 @@ public static class DependencyInjection
         services.AddOptions<SeedAdminOptions>()
             .Bind(configuration.GetSection(SeedAdminOptions.SectionName));
 
+        services.AddOptions<DocumentOptions>()
+            .Bind(configuration.GetSection(DocumentOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                documents => documents.MaxFileSizeBytes <= documents.MaxTotalStorageBytes,
+                $"'{DocumentOptions.SectionName}:MaxFileSizeBytes' cannot exceed 'MaxTotalStorageBytes'.")
+            .ValidateOnStart();
+
         AddServices(services);
 
         return services;
@@ -35,6 +44,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISeedAdminService, SeedAdminService>();
+        services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }

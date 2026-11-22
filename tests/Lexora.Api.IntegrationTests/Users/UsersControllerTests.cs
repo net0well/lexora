@@ -72,6 +72,19 @@ public sealed class UsersControllerTests(ApiFactory api) : ApiTest(api)
     }
 
     [Fact]
+    public async Task Deactivate_OwnAccount_RespondsUnprocessable()
+    {
+        await Api.SeedUserAsync("second.admin@lexora.test", UserRole.Admin, TestUsers.Password);
+        var admin = await Api.SeedUserAsync(TestUsers.AdminEmail, UserRole.Admin, TestUsers.Password);
+        using var client = ClientFor(admin);
+
+        using var response = await client.PostAsync($"{BasePath}/{admin.Id}/deactivate", content: null, CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        (await response.ReadEnvelopeAsync(CancellationToken)).Notifications.Single().Key.ShouldBe("user.selfDeactivation");
+    }
+
+    [Fact]
     public async Task DeactivateThenActivate_Member_BlocksAndRestoresTheSignIn()
     {
         using var client = await AdminClientAsync();

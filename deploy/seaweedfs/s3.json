@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "lexora",
+      "credentials": [
+        { "accessKey": "lexora", "secretKey": "lexora-local-secret" }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
