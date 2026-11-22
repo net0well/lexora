@@ -7,10 +7,14 @@ using Lexora.Domain.KnowledgeBases;
 using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
 using Lexora.Infrastructure.Persistence.Repositories;
+using Lexora.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
+using Wolverine.EntityFrameworkCore;
+using Wolverine.Persistence;
+using Wolverine.Postgresql;
 
 namespace Lexora.Infrastructure.Persistence;
 
@@ -25,11 +29,24 @@ public static class DependencyInjection
             throw new InvalidOperationException($"Connection string '{PersistenceOptions.ConnectionStringName}' not found.");
         }
 
-        options.Services.AddDbContext<LexoraDbContext>(
-            builder => DbContextConfiguration.Configure(builder, connectionString),
-            optionsLifetime: ServiceLifetime.Singleton);
+        var persistence = configuration.GetSection(PersistenceOptions.SectionName).Get<PersistenceOptions>();
+
+        if (string.IsNullOrWhiteSpace(persistence?.WolverineSchema))
+        {
+            throw new InvalidOperationException($"Setting '{PersistenceOptions.SectionName}:{nameof(PersistenceOptions.WolverineSchema)}' not found.");
+        }
+
+        options.Services.AddDbContextWithWolverineIntegration<LexoraDbContext>(
+            builder => DbContextConfiguration.Configure(builder, connectionString));
 
         options.Services.AddScoped<IUnitOfWork>(services => services.GetRequiredService<LexoraDbContext>());
+
+        options.PersistMessagesWithPostgresql(connectionString, persistence.WolverineSchema);
+
+        options.UseEntityFrameworkCoreTransactions(TransactionMiddlewareMode.Lightweight)
+            .WithDbContextAbstraction<IUnitOfWork, LexoraDbContext>();
+
+        options.PublishDomainEventsFromEntityFrameworkCore<AggregateRoot>(aggregate => aggregate.DomainEvents);
 
         AddRepositories(options.Services);
 
