@@ -1,5 +1,6 @@
 using Lexora.Application.Abstractions.Processing;
 using Lexora.Infrastructure.DocumentProcessing.Extraction;
+using Lexora.Infrastructure.DocumentProcessing.Tokenization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddSingleton<IFormatTextExtractor, DocxTextExtractor>();
         services.AddSingleton<IFormatTextExtractor, XlsxTextExtractor>();
         services.AddSingleton<IDocumentTextExtractor, DocumentTextExtractor>();
+        services.AddSingleton<ITokenCounter, TiktokenTokenCounter>();
 
         return services;
     }
