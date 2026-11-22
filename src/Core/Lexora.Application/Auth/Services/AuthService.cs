@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.Auth.ChangePassword;
 using Lexora.Application.Auth.Login;
@@ -25,6 +26,8 @@ public sealed class AuthService(
     TimeProvider timeProvider,
     ILogger<AuthService> logger) : IAuthService
 {
+    private static string? _decoyPasswordHash;
+
     public async Task<Result<LoginResponse>> LoginAsync(LoginCommand command, CancellationToken cancellationToken)
     {
         var email = Email.Create(command.Email);
@@ -32,6 +35,7 @@ public sealed class AuthService(
 
         if (user is null)
         {
+            VerifyAgainstDecoy(command.Password);
             logger.SignInRejectedUnknownAccount();
             return Result.Failure<LoginResponse>(AuthNotifications.InvalidCredentials);
         }
@@ -46,6 +50,7 @@ public sealed class AuthService(
 
         if (!user.IsActive)
         {
+            VerifyAgainstDecoy(command.Password);
             logger.SignInRejected(user.Id, "inactive");
             return Result.Failure<LoginResponse>(AuthNotifications.InvalidCredentials);
         }
@@ -174,6 +179,14 @@ public sealed class AuthService(
         }
 
         return Result.Success();
+    }
+
+    // Rejections that skip the real password check still pay for one, so response time does not reveal
+    // whether the e-mail belongs to an active account.
+    private void VerifyAgainstDecoy(string? password)
+    {
+        var decoy = _decoyPasswordHash ??= passwordHasher.Hash(Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
+        passwordHasher.Verify(decoy, password ?? string.Empty);
     }
 
     private async Task RevokeFamilyAsync(RefreshToken reused, DateTimeOffset now, CancellationToken cancellationToken)

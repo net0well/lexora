@@ -116,6 +116,25 @@ public sealed class AuthServiceLoginTests
     }
 
     [Fact]
+    public async Task LoginAsync_UnknownEmail_StillVerifiesAPasswordSoTimingMatches()
+    {
+        await Login("nobody@lexora.local");
+
+        _hasher.VerifiedPasswords.ShouldBe([Password]);
+    }
+
+    [Fact]
+    public async Task LoginAsync_InactiveUser_StillVerifiesAPasswordSoTimingMatches()
+    {
+        var user = new UserBuilder().WithPasswordHash(_hasher.Hash(Password)).Inactive().Build();
+        _users.GetByEmailAsync(user.Email, Arg.Any<CancellationToken>()).Returns(user);
+
+        await Login(user.Email.Value);
+
+        _hasher.VerifiedPasswords.ShouldBe([Password]);
+    }
+
+    [Fact]
     public async Task LoginAsync_PasswordStoredInAnOlderFormat_IsRehashed()
     {
         var user = new UserBuilder().WithPasswordHash(FakePasswordHasher.LegacyHashOf(Password)).Build();
