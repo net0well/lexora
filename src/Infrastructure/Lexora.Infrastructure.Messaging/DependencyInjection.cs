@@ -1,4 +1,5 @@
 using Lexora.Application;
+using Lexora.Infrastructure.Messaging.Policies;
 using Lexora.Infrastructure.Messaging.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,8 @@ public static class DependencyInjection
         options.Durability.MessageIdentity = MessageIdentity.IdAndDestination;
 
         options.UseRabbitMq(new Uri(rabbitMq)).AutoProvision();
+
+        ErrorHandlingPolicies.Apply(options);
 
         return options;
     }
