@@ -1,5 +1,6 @@
 using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.Auth.Mappers;
+using Lexora.Application.Users;
 using Lexora.Domain.Users;
 using Lexora.Shared.Results;
 
@@ -16,7 +17,7 @@ public static class GetCurrentUserHandler
         var user = await users.GetByIdAsync(currentUser.UserId, cancellationToken);
 
         return user is null
-            ? Result.Failure<AuthenticatedUserResponse>(Notification.NotFound("user.notFound", "User not found."))
+            ? Result.Failure<AuthenticatedUserResponse>(UserNotifications.NotFound)
             : user.ToAuthenticatedUser();
     }
 }

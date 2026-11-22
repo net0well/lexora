@@ -2,6 +2,7 @@ using FluentValidation;
 using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
+using Lexora.Application.Users.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,5 +34,6 @@ public static class DependencyInjection
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISeedAdminService, SeedAdminService>();
+        services.AddScoped<IUserService, UserService>();
     }
 }

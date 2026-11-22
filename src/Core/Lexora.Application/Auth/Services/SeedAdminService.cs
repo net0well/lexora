@@ -1,6 +1,7 @@
 using FluentValidation;
 using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.Auth.SeedAdmin;
+using Lexora.Application.Users;
 using Lexora.Domain.Users;
 using Lexora.Shared.Results;
 
@@ -31,7 +32,7 @@ public sealed class SeedAdminService(
 
         if (email.IsSuccess && await users.ExistsByEmailAsync(email.Value, cancellationToken))
         {
-            return Result.Failure<SeedAdminResponse>(Notification.Conflict("user.email.duplicate", "A user with this e-mail already exists."));
+            return Result.Failure<SeedAdminResponse>(UserNotifications.EmailDuplicate);
         }
 
         var created = User.Create(command.Email, command.Name, passwordHasher.Hash(command.Password!), UserRole.Admin, timeProvider.GetUtcNow());
