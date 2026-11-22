@@ -1,4 +1,5 @@
 using Lexora.Application.Abstractions.Storage;
+using Lexora.Infrastructure.Storage.Local;
 using Lexora.Infrastructure.Storage.S3;
 using Lexora.Shared.Health;
 using Microsoft.Extensions.Configuration;
@@ -18,11 +19,17 @@ public static class DependencyInjection
             .Validate(storage => storage.DownloadUrlLifetime > TimeSpan.Zero, $"'{StorageOptions.SectionName}:DownloadUrlLifetime' must be positive.")
             .ValidateOnStart();
 
-        var provider = section.Get<StorageOptions>()?.Provider ?? StorageProvider.S3;
+        services.AddDataProtection();
+        services.AddSingleton<LocalDownloadTickets>();
 
-        if (provider == StorageProvider.S3)
+        switch (section.Get<StorageOptions>()?.Provider ?? StorageProvider.S3)
         {
-            AddS3(services, configuration);
+            case StorageProvider.Local:
+                AddLocal(services, configuration);
+                break;
+            default:
+                AddS3(services, configuration);
+                break;
         }
 
         return services;
@@ -39,5 +46,18 @@ public static class DependencyInjection
         services.AddSingleton<IFileStorage, S3FileStorage>();
 
         services.AddHealthChecks().AddCheck<S3StorageHealthCheck>("storage", tags: [HealthCheckTags.Ready]);
+    }
+
+    private static void AddLocal(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<LocalStorageOptions>()
+            .Bind(configuration.GetSection(LocalStorageOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                local => local.DownloadBaseUrl is { IsAbsoluteUri: true } url && url.AbsolutePath.EndsWith('/'),
+                $"'{LocalStorageOptions.SectionName}:DownloadBaseUrl' must be an absolute URL ending with '/'.")
+            .ValidateOnStart();
+
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
     }
 }
