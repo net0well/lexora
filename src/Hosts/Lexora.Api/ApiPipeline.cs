@@ -17,6 +17,7 @@ public static class ApiPipeline
         }
 
         app.UseAuthentication();
+        app.UseRateLimiter();
         app.UseAuthorization();
 
         app.MapControllers();

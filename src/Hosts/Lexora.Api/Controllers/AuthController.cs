@@ -4,6 +4,7 @@ using Lexora.Api.Contracts;
 using Lexora.Api.Contracts.Requests;
 using Lexora.Api.Contracts.Responses;
 using Lexora.Api.Mappers;
+using Lexora.Api.RateLimiting;
 using Lexora.Api.Results;
 using Lexora.Application.Auth;
 using Lexora.Application.Auth.GetCurrentUser;
@@ -13,6 +14,7 @@ using Lexora.Application.Auth.RefreshSession;
 using Lexora.Shared.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Wolverine;
 
 namespace Lexora.Api.Controllers;
@@ -25,9 +27,11 @@ public sealed class AuthController(IMessageBus bus, RefreshTokenCookie refreshTo
 {
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     [ProducesResponseType<CommandResult<SessionResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await bus.InvokeAsync<Result<LoginResponse>>(request.ToCommand(), cancellationToken);
@@ -42,8 +46,10 @@ public sealed class AuthController(IMessageBus bus, RefreshTokenCookie refreshTo
 
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Refresh)]
     [ProducesResponseType<CommandResult<SessionResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
         var command = new RefreshSessionCommand(refreshTokenCookie.Read(Request));

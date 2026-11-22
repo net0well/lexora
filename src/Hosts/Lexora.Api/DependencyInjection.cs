@@ -4,6 +4,7 @@ using Asp.Versioning;
 using Lexora.Api.Auth;
 using Lexora.Api.ExceptionHandling;
 using Lexora.Api.OpenApi;
+using Lexora.Api.RateLimiting;
 using Lexora.Api.Results;
 using Microsoft.AspNetCore.Authorization;
 
@@ -34,8 +35,25 @@ public static class DependencyInjection
         services.AddExceptionHandler<UnhandledExceptionHandler>();
 
         AddRefreshTokenCookie(services);
+        AddRateLimiting(services, configuration);
 
         return services;
+    }
+
+    private static void AddRateLimiting(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<AuthRateLimitOptions>()
+            .Bind(configuration.GetSection(AuthRateLimitOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = RateLimitRejectionWriter.WriteAsync;
+            options.AddPolicy(RateLimitPolicies.Login, context => ClientIpRateLimiter.Partition(context, limits => limits.LoginPermitsPerMinute));
+            options.AddPolicy(RateLimitPolicies.Refresh, context => ClientIpRateLimiter.Partition(context, limits => limits.RefreshPermitsPerMinute));
+        });
     }
 
     private static void AddVersioning(IServiceCollection services) =>
