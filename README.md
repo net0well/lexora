@@ -162,7 +162,7 @@ npx @modelcontextprotocol/inspector
 - [x] Domain model
 - [x] Persistence and migrations
 - [x] Wolverine, authentication, admin seed and REST API
-- [ ] Storage and document upload
+- [x] Storage and document upload
 - [ ] Ingestion pipeline
 - [ ] AI connectors
 - [ ] Hybrid search and chat with citations
