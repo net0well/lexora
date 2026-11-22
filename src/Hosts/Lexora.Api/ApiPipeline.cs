@@ -1,4 +1,5 @@
 using Lexora.Api.OpenApi;
+using Lexora.Api.Results;
 using Lexora.Hosting.Health;
 
 namespace Lexora.Api;
@@ -8,6 +9,7 @@ public static class ApiPipeline
     public static WebApplication UseApi(this WebApplication app)
     {
         app.UseExceptionHandler(_ => { });
+        app.UseStatusCodePages(StatusCodeEnvelopeWriter.WriteAsync);
 
         if (app.Configuration.GetValue<bool>(SwaggerSettings.EnabledKey))
         {
