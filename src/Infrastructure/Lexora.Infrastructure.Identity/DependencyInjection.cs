@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddSingleton<JwtSigningKeyProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasherAdapter>();
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
+        services.AddSingleton<ISecretTokenGenerator, SecretTokenGenerator>();
 
         return services;
     }
