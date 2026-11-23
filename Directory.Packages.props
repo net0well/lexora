@@ -38,6 +38,7 @@
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="11.0.1" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.17.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="4.17.0" />
     <PackageVersion Include="WolverineFx" Version="6.64.2" />
     <PackageVersion Include="WolverineFx.EntityFrameworkCore" Version="6.64.2" />
     <PackageVersion Include="WolverineFx.FluentValidation" Version="6.64.2" />

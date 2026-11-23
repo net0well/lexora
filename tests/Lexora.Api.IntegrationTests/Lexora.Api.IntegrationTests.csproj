@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hosts\Lexora.Api\Lexora.Api.csproj" />
+    <ProjectReference Include="..\..\src\Hosts\Lexora.Worker\Lexora.Worker.csproj" Aliases="Worker" />
     <ProjectReference Include="..\Lexora.TestKit\Lexora.TestKit.csproj" />
   </ItemGroup>
 
