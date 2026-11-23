@@ -1,7 +1,9 @@
 using System.Net;
 using Lexora.Application.Abstractions.Ai;
 using Lexora.Application.Ingestion.Services;
+using Lexora.Worker.Scheduling;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lexora.Infrastructure.IntegrationTests.Worker;
 
@@ -25,5 +27,6 @@ public sealed class WorkerHostTests(WorkerFactory worker) : IClassFixture<Worker
         scope.ServiceProvider.GetRequiredService<IIngestionService>().ShouldNotBeNull();
         scope.ServiceProvider.GetRequiredService<IMaintenanceService>().ShouldNotBeNull();
         scope.ServiceProvider.GetRequiredService<IEmbeddingModel>().Space.Key.ShouldBe("fake:fake-embedding:1024");
+        worker.Services.GetServices<IHostedService>().OfType<MaintenanceScheduler>().ShouldHaveSingleItem();
     }
 }
