@@ -83,7 +83,15 @@ docker compose --profile ai-local up -d --build
 
 Fill `.env` first: `JWT_SIGNING_KEY` (generate one with `openssl rand -base64 64`), `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (at least 12 characters with upper and lower case letters and a number). The `migrator` service applies the EF Core migrations, sets up the messaging tables and creates the first admin before the API starts; running it again changes nothing.
 
-The `ai-local` profile starts Ollama and downloads the embedding model (`OLLAMA_EMBEDDING_MODEL`, `bge-m3` by default, about 1.2 GB) before the worker starts. To run without a local model, set `AI_EMBEDDING_PROFILE=fake` in `.env` and leave the profile out (`docker compose up -d --build`); the `fake` profile produces deterministic vectors that are fine for trying the pipeline but useless for real search.
+The `ai-local` profile starts Ollama and downloads the embedding model (`OLLAMA_EMBEDDING_MODEL`, `bge-m3` by default, about 1.2 GB) and the chat model (`OLLAMA_CHAT_MODEL`, `qwen2.5:7b` by default, about 4.7 GB) before the worker starts. To run without a local model, set `AI_CHAT_PROFILE=fake` and `AI_EMBEDDING_PROFILE=fake` in `.env` and leave the profile out (`docker compose up -d --build`); the `fake` profiles give deterministic answers and vectors that are fine for trying the flow but useless for real search.
+
+### AI profiles
+
+Chat and embedding providers are named profiles under `Ai:Chat:Profiles` and `Ai:Embedding:Profiles` in `appsettings.json`: `local` (Ollama), `claude` (Anthropic), `openai`, `groq` (any OpenAI-compatible endpoint) and `fake`. The active ones are `Ai:Chat:DefaultProfile` and `Ai:Embedding:Profile` (`AI_CHAT_PROFILE` and `AI_EMBEDDING_PROFILE` in `.env`); switching providers is a configuration change. API keys never go into `appsettings.json`: use user secrets locally (`dotnet user-secrets set "Ai:Chat:Profiles:groq:ApiKey" "<key>" --project src/Hosts/Lexora.Api`) or `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` and `GROQ_API_KEY` in `.env`.
+
+The active profiles must be complete or the hosts do not start. Other chat profiles without their key stay listed as unavailable in `GET /api/v1/ai/profiles`. OpenAI-compatible profiles need a key unless they set `RequiresApiKey` to `false` (LM Studio, vLLM). Changing the embedding profile changes the vector space, so indexed documents must be reprocessed.
+
+The provider contract tests in `tests/Lexora.Infrastructure.IntegrationTests` call the real services when they can: Ollama when it answers at `localhost:11434` with the models pulled, and the paid or hosted ones when their key is in that project's user secrets (`dotnet user-secrets set "Ai:Chat:Profiles:groq:ApiKey" "<key>" --project tests/Lexora.Infrastructure.IntegrationTests`). Without them those tests are skipped.
 
 | Service | URL |
 |---|---|
@@ -121,7 +129,7 @@ dotnet run --project src/Hosts/Lexora.Worker
 
 Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes), the first admin's credentials and the S3 keys (the values above match the local SeaweedFS credentials in `deploy/seaweedfs/s3.json`). To keep files on disk instead of S3, set `Storage:Provider` to `Local` with `Storage:Local:RootPath` and `Storage:Local:DownloadBaseUrl` (for example `http://localhost:5080/api/v1/files/`). The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
 
-In Development both hosts use the `fake` embedding profile. To index with a real model, start Ollama with `docker compose --profile ai-local up -d ollama ollama-init` and run the worker with `Ai__Embedding__Profile=local dotnet run --project src/Hosts/Lexora.Worker`. Uploaded documents go through extraction, chunking and embedding in the worker until they reach `indexed`; `GET /api/v1/documents/{id}` shows the progress.
+In Development both hosts use the `fake` chat and embedding profiles. To use real models, start Ollama with `docker compose --profile ai-local up -d ollama ollama-init` and run the hosts with `Ai__Chat__DefaultProfile=local` and `Ai__Embedding__Profile=local` (for example `Ai__Embedding__Profile=local dotnet run --project src/Hosts/Lexora.Worker`). Uploaded documents go through extraction, chunking and embedding in the worker until they reach `indexed`; `GET /api/v1/documents/{id}` shows the progress.
 
 ### Migrations
 
