@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest'
+import { defineComponent, nextTick, onMounted } from 'vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { createMemoryHistory, createRouter } from 'vue-router'
 
 import App from '../App.vue'
-import { mountWithApp } from './support'
+import { buttonByText, mountWithApp } from './support'
+
+const AsksForConfirmation = defineComponent({
+  setup() {
+    const confirm = useConfirm()
+    onMounted(() => confirm.require({ message: 'Arquivar a base?' }))
+
+    return () => null
+  },
+})
 
 describe('App', () => {
   it('shows the login page to a visitor without session', async () => {
@@ -18,16 +30,20 @@ describe('App', () => {
     expect(wrapper.text()).toContain('Page not found')
   })
 
-  it('sets the document and component language from the locale', async () => {
-    const { wrapper, i18n } = await mountWithApp(App, { locale: 'pt-BR' })
+  it('switches the page and the components to the chosen language', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: AsksForConfirmation }],
+    })
+    const { i18n } = await mountWithApp(App, { router, locale: 'pt-BR' })
 
     expect(document.documentElement.lang).toBe('pt-BR')
-    expect(wrapper.vm.$primevue.config.locale?.accept).toBe('Sim')
+    expect(buttonByText(document.body, 'Sim')).toBeDefined()
 
     i18n.global.locale.value = 'en'
-    await wrapper.vm.$nextTick()
+    await nextTick()
 
     expect(document.documentElement.lang).toBe('en')
-    expect(wrapper.vm.$primevue.config.locale?.accept).toBe('Yes')
+    expect(buttonByText(document.body, 'Yes')).toBeDefined()
   })
 })

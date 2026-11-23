@@ -121,7 +121,7 @@ function submit(): void {
     </div>
 
     <fieldset class="kb-form__chunking">
-      <legend>{{ t('knowledgeBases.form.chunking') }}</legend>
+      <legend class="kb-form__legend">{{ t('knowledgeBases.form.chunking') }}</legend>
       <p class="kb-form__hint">{{ t('knowledgeBases.form.chunkingHint') }}</p>
       <div class="kb-form__row">
         <div class="field">
@@ -187,7 +187,7 @@ function submit(): void {
   border-radius: 8px;
 }
 
-.kb-form__chunking legend {
+.kb-form__legend {
   padding: 0 0.25rem;
   font-weight: 500;
 }

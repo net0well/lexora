@@ -15,10 +15,16 @@ export function isSupportedLocale(value: unknown): value is AppLocale {
   return supportedLocales.includes(value as AppLocale)
 }
 
+// Storage can be blocked (privacy settings, sandboxed frames): the language is only a preference, so the
+// app starts in the default one instead of failing.
 export function storedLocale(): AppLocale {
-  const stored = globalThis.localStorage?.getItem(storageKey)
+  try {
+    const stored = globalThis.localStorage?.getItem(storageKey)
 
-  return isSupportedLocale(stored) ? stored : defaultLocale
+    return isSupportedLocale(stored) ? stored : defaultLocale
+  } catch {
+    return defaultLocale
+  }
 }
 
 export function createAppI18n(locale: AppLocale = storedLocale()) {
@@ -34,16 +40,10 @@ export function createAppI18n(locale: AppLocale = storedLocale()) {
 
 export const i18n = createAppI18n()
 
-export function currentLocale(): AppLocale {
-  return i18n.global.locale.value as AppLocale
-}
-
 export function rememberLocale(locale: AppLocale): void {
-  globalThis.localStorage?.setItem(storageKey, locale)
-}
-
-export function setLocale(locale: AppLocale): void {
-  i18n.global.locale.value = locale
-  rememberLocale(locale)
-  document.documentElement.lang = locale
+  try {
+    globalThis.localStorage?.setItem(storageKey, locale)
+  } catch {
+    return
+  }
 }

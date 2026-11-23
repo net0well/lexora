@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import en from '../en.json'
 import ptBR from '../pt-BR.json'
-import { currentLocale, i18n, setLocale, storedLocale } from '../index'
+import { createAppI18n, rememberLocale, storedLocale } from '../index'
 
 function keysOf(messages: Record<string, unknown>, prefix = ''): string[] {
   return Object.entries(messages).flatMap(([key, value]) =>
@@ -14,8 +14,7 @@ function keysOf(messages: Record<string, unknown>, prefix = ''): string[] {
 
 describe('i18n', () => {
   afterEach(() => {
-    localStorage.clear()
-    setLocale('pt-BR')
+    vi.restoreAllMocks()
   })
 
   it('starts in Portuguese when no language was chosen', () => {
@@ -28,13 +27,23 @@ describe('i18n', () => {
     expect(storedLocale()).toBe('pt-BR')
   })
 
-  it('switches and remembers the chosen language', () => {
-    setLocale('en')
+  it('remembers the chosen language', () => {
+    rememberLocale('en')
 
-    expect(currentLocale()).toBe('en')
     expect(storedLocale()).toBe('en')
-    expect(i18n.global.t('common.save')).toBe('Save')
-    expect(document.documentElement.lang).toBe('en')
+    expect(createAppI18n(storedLocale()).global.t('common.save')).toBe('Save')
+  })
+
+  it('still starts when the browser blocks the storage', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError')
+    })
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError')
+    })
+
+    expect(storedLocale()).toBe('pt-BR')
+    expect(() => rememberLocale('en')).not.toThrow()
   })
 
   it('has every interface text in both languages', () => {
