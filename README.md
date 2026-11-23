@@ -168,7 +168,7 @@ npx @modelcontextprotocol/inspector
 - [x] Persistence and migrations
 - [x] Wolverine, authentication, admin seed and REST API
 - [x] Storage and document upload
-- [ ] Ingestion pipeline
+- [x] Ingestion pipeline
 - [ ] AI connectors
 - [ ] Hybrid search and chat with citations
 - [ ] Vue front-end
