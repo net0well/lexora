@@ -179,7 +179,8 @@
   },
   "nav": {
     "knowledgeBases": "Knowledge bases",
-    "profile": "My profile"
+    "profile": "My profile",
+    "users": "Users"
   },
   "notFound": {
     "title": "Page not found",
@@ -252,6 +253,67 @@
   "shell": {
     "navigation": "Main navigation",
     "userMenu": "User menu"
+  },
+  "users": {
+    "subtitle": "Who uses Lexora and what each person can do.",
+    "new": "New user",
+    "created": "User “{name}” created.",
+    "empty": "No users match these filters.",
+    "neverSignedIn": "Never signed in",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last sign in"
+    },
+    "filters": {
+      "search": "Search by name or e-mail",
+      "role": "Filter by role",
+      "status": "Filter by status",
+      "allRoles": "All roles",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "name": "Name",
+      "email": "E-mail",
+      "role": "Role",
+      "password": "Initial password",
+      "emailInvalid": "Enter a valid e-mail.",
+      "nameLength": "The name must have {min} to {max} characters.",
+      "passwordWeak": "The password does not meet the rules below."
+    },
+    "role": {
+      "label": "Role of {name}",
+      "title": "Change role",
+      "confirm": "Change the role of {name} to {role}?",
+      "changed": "Role of {name} changed."
+    },
+    "deactivate": {
+      "label": "Deactivate {name}",
+      "title": "Deactivate user",
+      "confirm": "Deactivate {name}? Open sessions end and the access is blocked.",
+      "action": "Deactivate",
+      "done": "{name} was deactivated."
+    },
+    "activate": {
+      "label": "Activate {name}",
+      "title": "Activate user",
+      "confirm": "Activate {name} again?",
+      "action": "Activate",
+      "done": "{name} was activated."
+    },
+    "reset": {
+      "action": "Reset the password of {name}",
+      "title": "Reset the password of {name}",
+      "hint": "The open sessions of the user end. Give the new password to them through a safe channel.",
+      "password": "New password",
+      "submit": "Reset password",
+      "done": "Password of {name} reset."
+    }
   },
   "notifications": {
     "unexpected": "An unexpected error occurred. Try again.",

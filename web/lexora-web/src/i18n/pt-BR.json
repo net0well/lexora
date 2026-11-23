@@ -179,7 +179,8 @@
   },
   "nav": {
     "knowledgeBases": "Bases de conhecimento",
-    "profile": "Meu perfil"
+    "profile": "Meu perfil",
+    "users": "Usuários"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -252,6 +253,67 @@
   "shell": {
     "navigation": "Navegação principal",
     "userMenu": "Menu do usuário"
+  },
+  "users": {
+    "subtitle": "Quem acessa o Lexora e o que cada um pode fazer.",
+    "new": "Novo usuário",
+    "created": "Usuário “{name}” criado.",
+    "empty": "Nenhum usuário com esses filtros.",
+    "neverSignedIn": "Nunca entrou",
+    "columns": {
+      "user": "Usuário",
+      "role": "Papel",
+      "status": "Status",
+      "lastLogin": "Último acesso"
+    },
+    "filters": {
+      "search": "Buscar por nome ou e-mail",
+      "role": "Filtrar por papel",
+      "status": "Filtrar por status",
+      "allRoles": "Todos os papéis",
+      "allStatuses": "Todos os status"
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "form": {
+      "name": "Nome",
+      "email": "E-mail",
+      "role": "Papel",
+      "password": "Senha inicial",
+      "emailInvalid": "Informe um e-mail válido.",
+      "nameLength": "O nome precisa ter de {min} a {max} caracteres.",
+      "passwordWeak": "A senha não atende às regras abaixo."
+    },
+    "role": {
+      "label": "Papel de {name}",
+      "title": "Mudar papel",
+      "confirm": "Mudar o papel de {name} para {role}?",
+      "changed": "Papel de {name} alterado."
+    },
+    "deactivate": {
+      "label": "Desativar {name}",
+      "title": "Desativar usuário",
+      "confirm": "Desativar {name}? As sessões abertas terminam e o acesso fica bloqueado.",
+      "action": "Desativar",
+      "done": "{name} foi desativado."
+    },
+    "activate": {
+      "label": "Ativar {name}",
+      "title": "Ativar usuário",
+      "confirm": "Ativar {name} de novo?",
+      "action": "Ativar",
+      "done": "{name} foi ativado."
+    },
+    "reset": {
+      "action": "Redefinir a senha de {name}",
+      "title": "Redefinir a senha de {name}",
+      "hint": "As sessões abertas do usuário terminam. Passe a nova senha a ele por um canal seguro.",
+      "password": "Nova senha",
+      "submit": "Redefinir senha",
+      "done": "Senha de {name} redefinida."
+    }
   },
   "notifications": {
     "unexpected": "Ocorreu um erro inesperado. Tente de novo.",

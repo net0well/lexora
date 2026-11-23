@@ -40,6 +40,12 @@ const links = computed<NavigationLink[]>(() =>
       icon: 'pi pi-book',
       visible: true,
     },
+    {
+      name: 'admin-users',
+      label: 'nav.users',
+      icon: 'pi pi-users',
+      visible: auth.hasRole('admin'),
+    },
   ].filter((link) => link.visible && router.hasRoute(link.name)),
 )
 
