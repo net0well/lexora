@@ -52,6 +52,21 @@ public sealed class CitationParserTests
         citation.Excerpt.ShouldEndWith("procedimento…");
     }
 
+    [Theory]
+    [InlineData("Número enorme [99999999999999999999].")]
+    [InlineData("Número negativo [-1].")]
+    [InlineData("Número com sinal [+2].")]
+    public void Parse_MarkerThatIsNotAPlainExcerptNumber_IsIgnored(string answer) =>
+        _parser.Parse(answer, _excerpts).ShouldBeEmpty();
+
+    [Fact]
+    public void Parse_NestedBrackets_StillFindTheNumber() =>
+        _parser.Parse("Veja [[2]].", _excerpts).ShouldHaveSingleItem().Index.ShouldBe(2);
+
+    [Fact]
+    public void Parse_Citation_KeepsTheScoreOfTheExcerpt() =>
+        _parser.Parse("Veja [1].", _excerpts).ShouldHaveSingleItem().Score.ShouldBe(0.03);
+
     private static RagExcerpt Excerpt(int number, string content, int? page = null, string? sheet = null) =>
         new(number, new SearchHit(Guid.CreateVersion7(), Guid.CreateVersion7(), $"doc-{number}.pdf", content, page, sheet, null, 0.03, SearchMatch.Both));
 }
