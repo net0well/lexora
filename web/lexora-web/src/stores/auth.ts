@@ -111,6 +111,10 @@ export const useAuthStore = defineStore('auth', () => {
     clear()
   }
 
+  function forget(): void {
+    clear()
+  }
+
   function onExpired(handler: () => void): void {
     expiredHandler = handler
   }
@@ -134,6 +138,7 @@ export const useAuthStore = defineStore('auth', () => {
     restore,
     renew,
     expire,
+    forget,
     onExpired,
     hasRole,
     atLeast,

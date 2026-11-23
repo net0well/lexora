@@ -11,7 +11,8 @@
       "submit": "Sign in",
       "emailRequired": "Enter the e-mail.",
       "passwordRequired": "Enter the password.",
-      "sessionExpired": "Your session expired. Sign in again."
+      "expired": "Your session expired. Sign in again.",
+      "passwordChanged": "Password changed. Sign in with the new password."
     },
     "logout": "Sign out"
   },
@@ -177,12 +178,41 @@
     "en": "English"
   },
   "nav": {
-    "knowledgeBases": "Knowledge bases"
+    "knowledgeBases": "Knowledge bases",
+    "profile": "My profile"
   },
   "notFound": {
     "title": "Page not found",
     "description": "The address does not exist or you do not have access to it.",
     "home": "Back to start"
+  },
+  "passwordRules": {
+    "label": "Password rules",
+    "length": "At least {min} characters",
+    "upper": "An upper case letter",
+    "lower": "A lower case letter",
+    "digit": "A number",
+    "email": "Does not contain the e-mail",
+    "met": "met",
+    "missing": "missing"
+  },
+  "profile": {
+    "title": "My profile",
+    "details": "Your details",
+    "name": "Name",
+    "email": "E-mail",
+    "role": "Role",
+    "password": {
+      "title": "Change password",
+      "hint": "After the change every session of yours ends and you sign in again with the new password.",
+      "current": "Current password",
+      "next": "New password",
+      "confirmation": "Repeat the new password",
+      "submit": "Change password",
+      "currentRequired": "Enter the current password.",
+      "weak": "The new password does not meet the rules below.",
+      "confirmationMismatch": "The passwords do not match."
+    }
   },
   "roles": {
     "admin": "Administrator",

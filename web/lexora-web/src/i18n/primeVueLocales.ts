@@ -16,6 +16,10 @@ const portuguese = {
   selectionMessage: '{0} itens selecionados',
   pending: 'Pendente',
   completed: 'Concluído',
+  passwordPrompt: 'Digite uma senha',
+  weak: 'Fraca',
+  medium: 'Média',
+  strong: 'Forte',
   fileSizeTypes: ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
 }
 
@@ -35,6 +39,10 @@ const english = {
   selectionMessage: '{0} items selected',
   pending: 'Pending',
   completed: 'Completed',
+  passwordPrompt: 'Enter a password',
+  weak: 'Weak',
+  medium: 'Medium',
+  strong: 'Strong',
   fileSizeTypes: ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
 }
 

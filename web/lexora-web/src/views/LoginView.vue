@@ -26,7 +26,11 @@ const error = shallowRef<string | null>(null)
 
 const emailMissing = computed(() => submitted.value && !form.email.trim())
 const passwordMissing = computed(() => submitted.value && !form.password)
-const expired = computed(() => route.query.reason === 'expired')
+const notice = computed(() => {
+  const reason = route.query.reason
+
+  return reason === 'expired' || reason === 'passwordChanged' ? t(`auth.login.${reason}`) : null
+})
 
 async function submit(): Promise<void> {
   submitted.value = true
@@ -65,9 +69,7 @@ async function submit(): Promise<void> {
         </div>
       </header>
 
-      <Message v-if="expired && !error" severity="info">{{
-        t('auth.login.sessionExpired')
-      }}</Message>
+      <Message v-if="notice && !error" severity="info">{{ notice }}</Message>
       <Message v-if="error" severity="error" role="alert">{{ error }}</Message>
 
       <form class="login__form" novalidate @submit.prevent="submit">

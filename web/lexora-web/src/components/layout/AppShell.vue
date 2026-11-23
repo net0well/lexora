@@ -45,6 +45,11 @@ const links = computed<NavigationLink[]>(() =>
 
 const menuItems = computed<MenuItem[]>(() => [
   {
+    label: t('nav.profile'),
+    icon: 'pi pi-user',
+    command: () => void router.push({ name: 'profile' }),
+  },
+  {
     label: t('auth.logout'),
     icon: 'pi pi-sign-out',
     command: () => void signOut(),

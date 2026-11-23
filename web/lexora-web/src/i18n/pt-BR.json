@@ -11,7 +11,8 @@
       "submit": "Entrar",
       "emailRequired": "Informe o e-mail.",
       "passwordRequired": "Informe a senha.",
-      "sessionExpired": "Sua sessão expirou. Entre de novo."
+      "expired": "Sua sessão expirou. Entre de novo.",
+      "passwordChanged": "Senha alterada. Entre com a nova senha."
     },
     "logout": "Sair"
   },
@@ -177,12 +178,41 @@
     "en": "English"
   },
   "nav": {
-    "knowledgeBases": "Bases de conhecimento"
+    "knowledgeBases": "Bases de conhecimento",
+    "profile": "Meu perfil"
   },
   "notFound": {
     "title": "Página não encontrada",
     "description": "O endereço não existe ou você não tem acesso a ele.",
     "home": "Voltar ao início"
+  },
+  "passwordRules": {
+    "label": "Regras da senha",
+    "length": "Pelo menos {min} caracteres",
+    "upper": "Uma letra maiúscula",
+    "lower": "Uma letra minúscula",
+    "digit": "Um número",
+    "email": "Não contém o e-mail",
+    "met": "atendida",
+    "missing": "pendente"
+  },
+  "profile": {
+    "title": "Meu perfil",
+    "details": "Seus dados",
+    "name": "Nome",
+    "email": "E-mail",
+    "role": "Papel",
+    "password": {
+      "title": "Trocar senha",
+      "hint": "Depois da troca, todas as suas sessões terminam e você entra de novo com a nova senha.",
+      "current": "Senha atual",
+      "next": "Nova senha",
+      "confirmation": "Repita a nova senha",
+      "submit": "Trocar senha",
+      "currentRequired": "Informe a senha atual.",
+      "weak": "A nova senha não atende às regras abaixo.",
+      "confirmationMismatch": "As senhas não são iguais."
+    }
   },
   "roles": {
     "admin": "Administrador",
@@ -243,7 +273,7 @@
       "password": {
         "currentInvalid": "A senha atual está incorreta.",
         "required": "Informe a senha.",
-        "weak": "A senha precisa ter pelo menos 12 caracteres, com letras maiúsculas, minúsculas e um número."
+        "weak": "A senha precisa ter pelo menos 12 caracteres, com letras maiúsculas, minúsculas e um número, e não pode conter o e-mail."
       },
       "refreshToken": {
         "invalid": "A sessão expirou. Entre de novo."
