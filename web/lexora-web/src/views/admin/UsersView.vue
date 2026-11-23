@@ -49,6 +49,9 @@ const search = shallowRef(appliedSearch.value)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const creating = shallowRef(false)
+// PrimeVue's Select keeps the picked value until its key changes, so a cancelled or refused role change
+// bumps this to show the real role again.
+const roleResets = shallowRef(0)
 const saving = shallowRef(false)
 const createError = shallowRef<string | null>(null)
 const resetting = shallowRef<User | null>(null)
@@ -77,6 +80,11 @@ function changeFilter(changes: Record<string, string | null>): void {
 
 function changePage(event: DataTablePageEvent): void {
   query.update({ page: event.page === 0 ? null : event.page + 1 })
+}
+
+function openCreate(): void {
+  createError.value = null
+  creating.value = true
 }
 
 async function create(user: NewUser): Promise<void> {
@@ -108,12 +116,19 @@ function confirmRole(user: User, next: UserRole): void {
     icon: 'pi pi-id-card',
     rejectProps: { label: t('common.cancel'), severity: 'secondary', text: true },
     acceptProps: { label: t('common.confirm') },
+    reject: () => {
+      roleResets.value++
+    },
+    onHide: () => {
+      roleResets.value++
+    },
     accept: async () => {
       const result = await store.changeRole(user.id, next)
 
       if (result.success) {
         success(t('users.role.changed', { name: user.name }))
       } else {
+        roleResets.value++
         notify(result.notifications)
       }
     },
@@ -223,7 +238,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         <h1>{{ t('nav.users') }}</h1>
         <p class="page__subtitle">{{ t('users.subtitle') }}</p>
       </div>
-      <Button :label="t('users.new')" icon="pi pi-user-plus" @click="creating = true" />
+      <Button :label="t('users.new')" icon="pi pi-user-plus" @click="openCreate" />
     </header>
 
     <div class="users__filters">
@@ -281,6 +296,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       <Column :header="t('users.columns.role')" class="users__narrow">
         <template #body="{ data: row }">
           <Select
+            :key="`${row.id}-${row.role}-${roleResets}`"
             :model-value="row.role"
             :options="roleOptions"
             option-label="label"

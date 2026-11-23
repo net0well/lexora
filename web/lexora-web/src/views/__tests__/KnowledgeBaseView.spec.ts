@@ -125,7 +125,6 @@ describe('KnowledgeBaseView', () => {
     bases.archive.mockResolvedValueOnce(ok(null))
     const { wrapper } = await mountWithApp(App, {
       path: '/knowledge-bases/kb-1?tab=settings',
-      attachTo: document.body,
     })
 
     await wrapper

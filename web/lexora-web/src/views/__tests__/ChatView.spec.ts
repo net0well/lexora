@@ -12,6 +12,7 @@ import type {
   AnswerStreamHandlers,
   Conversation,
   ConversationMessage,
+  StartedConversation,
 } from '@/api/types/conversation'
 import type { KnowledgeBase } from '@/api/types/knowledgeBase'
 import { buttonByText, mountWithApp } from '@/__tests__/support'
@@ -127,7 +128,7 @@ function streamingAnswer(): (
 
 async function ask(wrapper: Awaited<ReturnType<typeof mountWithApp>>['wrapper'], text: string) {
   await wrapper.find('textarea').setValue(text)
-  await wrapper.find('form.composer').trigger('submit')
+  buttonByText(wrapper.element, 'Enviar')!.click()
   await flushPromises()
 }
 
@@ -209,6 +210,27 @@ describe('ChatView', () => {
     expect(conversations.list).toHaveBeenCalledTimes(2)
     expect(wrapper.find('h1').text()).toBe('O que fazer em vazamentos?')
     expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('starts a single conversation when the question is sent twice in a row', async () => {
+    let answerStart!: (result: ApiResult<StartedConversation>) => void
+    conversations.start.mockReturnValueOnce(new Promise((resolve) => (answerStart = resolve)))
+    const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1/chat' })
+    const input = wrapper.find('textarea')
+    await input.setValue('O que fazer em vazamentos?')
+
+    await input.trigger('keydown', { key: 'Enter' })
+    await input.trigger('keydown', { key: 'Enter' })
+    answerStart(
+      ok(
+        { id: 'conv-1', knowledgeBaseId: 'kb-1', title: '', createdAt: '2026-11-20T10:00:00Z' },
+        201,
+      ),
+    )
+    await flushPromises()
+
+    expect(conversations.start).toHaveBeenCalledTimes(1)
+    expect(conversations.stream).toHaveBeenCalledTimes(1)
   })
 
   it('gives the question back when the server refuses it', async () => {
@@ -350,7 +372,6 @@ describe('ChatView', () => {
     )
     const { wrapper } = await mountWithApp(App, {
       path: '/knowledge-bases/kb-1/chat/conv-1',
-      attachTo: document.body,
     })
 
     await wrapper.find('button[aria-label="Abrir a fonte 1"]').trigger('click')

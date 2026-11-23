@@ -87,10 +87,12 @@ function changeMode(value: SearchMode): void {
   }
 }
 
-watch(executed, (value) => {
-  if (value) {
-    draft.value = value.query
-    mode.value = value.mode
+// Primitive values: the request object is rebuilt on every route change (another tab, a page of
+// documents), and that must not overwrite text the user typed and did not submit yet.
+watch([() => executed.value?.query, () => executed.value?.mode], ([query, executedMode]) => {
+  if (query && executedMode) {
+    draft.value = query
+    mode.value = executedMode
   }
 })
 </script>

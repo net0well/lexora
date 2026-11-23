@@ -35,7 +35,7 @@ describe('AppShell', () => {
   })
 
   it('signs out from the user menu', async () => {
-    const { wrapper, router } = await mountWithApp(App, { path: '/', attachTo: document.body })
+    const { wrapper, router } = await mountWithApp(App, { path: '/' })
 
     await wrapper.find('button[aria-label="Menu do usuário"]').trigger('click')
     clickText(document.body, 'Sair')

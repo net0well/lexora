@@ -119,7 +119,7 @@ describe('KnowledgeBasesView', () => {
         createdAt: manuals.updatedAt,
       }),
     )
-    const { wrapper, router } = await mountWithApp(App, { path: '/', attachTo: document.body })
+    const { wrapper, router } = await mountWithApp(App, { path: '/' })
 
     await wrapper
       .findAll('button')

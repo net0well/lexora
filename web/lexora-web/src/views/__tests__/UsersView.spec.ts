@@ -56,7 +56,7 @@ function page(items: User[]) {
 }
 
 async function openUsers(path = '/admin/users') {
-  return mountWithApp(App, { path, attachTo: document.body })
+  return mountWithApp(App, { path })
 }
 
 function confirmDialog(label: string): void {
@@ -160,6 +160,31 @@ describe('UsersView', () => {
     expect(document.querySelector('[role="alert"]')?.textContent).toBe(
       'Já existe um usuário com esse e-mail.',
     )
+
+    buttonByText(document.querySelector('[role="dialog"]')!, 'Cancelar')!.click()
+    await flushPromises()
+    buttonByText(wrapper.element, 'Novo usuário')!.click()
+    await flushPromises()
+
+    expect(document.querySelector('[role="alert"]')).toBeNull()
+  })
+
+  it('keeps the role of a user when the change is cancelled', async () => {
+    const { wrapper } = await openUsers()
+    const role = () => wrapper.find('[aria-label="Papel de Bruno"]')
+
+    await role().trigger('click')
+    await flushPromises()
+    const options = document.getElementById(role().attributes('aria-controls')!)!
+    options
+      .querySelector('[role="option"][aria-label="Membro"]')!
+      .dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    await flushPromises()
+    confirmDialog('Cancelar')
+    await flushPromises()
+
+    expect(users.changeRole).not.toHaveBeenCalled()
+    expect(role().text()).toBe('Leitor')
   })
 
   it('deactivates a user after confirmation', async () => {

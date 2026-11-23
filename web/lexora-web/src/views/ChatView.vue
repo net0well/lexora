@@ -31,6 +31,10 @@ const answers = useAnswerStream({
 const { draft, streaming } = answers
 
 const question = shallowRef('')
+const sending = shallowRef(false)
+// The conversation this view just created: it is already in the store, so the route change it causes
+// must not reload it and lose the question being answered.
+let adoptedConversation: string | null = null
 const profile = shallowRef<string | null>(null)
 const openCitations = shallowRef<readonly Citation[]>([])
 const openCitation = shallowRef<number | null>(null)
@@ -81,12 +85,27 @@ async function targetConversation(): Promise<string | null> {
     return null
   }
 
+  adoptedConversation = started.data.id
   await router.replace({ name: 'chat', params: { id, conversationId: started.data.id } })
 
   return started.data.id
 }
 
 async function send(text: string): Promise<void> {
+  if (sending.value) {
+    return
+  }
+
+  sending.value = true
+
+  try {
+    await answer(text)
+  } finally {
+    sending.value = false
+  }
+}
+
+async function answer(text: string): Promise<void> {
   const target = await targetConversation()
 
   if (!target) {
@@ -142,7 +161,8 @@ watch(
       return
     }
 
-    if (conversation.value?.id === current) {
+    if (current === adoptedConversation) {
+      adoptedConversation = null
       return
     }
 
@@ -187,6 +207,7 @@ watch(
         v-model="question"
         v-model:profile="profile"
         :streaming="streaming"
+        :disabled="sending && !streaming"
         @send="send"
         @stop="answers.stop()"
       />

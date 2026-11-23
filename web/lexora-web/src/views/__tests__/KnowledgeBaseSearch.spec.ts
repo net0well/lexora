@@ -7,7 +7,7 @@ import { documentsApi } from '@/api/documents'
 import { knowledgeBasesApi } from '@/api/knowledgeBases'
 import type { KnowledgeBase } from '@/api/types/knowledgeBase'
 import type { SearchHit } from '@/api/types/search'
-import { buttonByText, mountWithApp } from '@/__tests__/support'
+import { buttonByText, clickText, mountWithApp } from '@/__tests__/support'
 import { ok, sessionAs } from '@/__tests__/tokens'
 
 vi.mock('@/api/auth', () => ({
@@ -119,6 +119,19 @@ describe('knowledge base search tab', () => {
     expect(wrapper.text()).toContain('Página 1')
     expect(wrapper.text()).toContain('Semântica e palavras-chave')
     expect(wrapper.text()).toContain('isole a área num raio de 50 metros')
+  })
+
+  it('keeps the text not yet searched while the user looks at another tab', async () => {
+    const { wrapper } = await openSearch()
+    await searchFor(wrapper, 'epis')
+    await wrapper.find('form[role="search"] input').setValue('luvas')
+
+    clickText(wrapper.element, 'Documentos')
+    await flushPromises()
+    clickText(wrapper.element, 'Busca')
+    await flushPromises()
+
+    expect(wrapper.find<HTMLInputElement>('form[role="search"] input').element.value).toBe('luvas')
   })
 
   it('runs the search of a shared link when the page opens', async () => {

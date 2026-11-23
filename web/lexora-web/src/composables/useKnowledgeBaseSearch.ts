@@ -1,4 +1,4 @@
-import { shallowRef, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { readonly, shallowRef, toValue, watch, type MaybeRefOrGetter } from 'vue'
 
 import { isAbort } from '@/api/http'
 import type { ApiNotification, ApiResult } from '@/api/types/commandResult'
@@ -44,6 +44,7 @@ export function useKnowledgeBaseSearch({
       if (!current) {
         hits.value = []
         searched.value = false
+        pending.value = false
         return
       }
 
@@ -85,5 +86,5 @@ export function useKnowledgeBaseSearch({
     runs.value++
   }
 
-  return { hits, searched, pending, refresh }
+  return { hits: readonly(hits), searched: readonly(searched), pending: readonly(pending), refresh }
 }

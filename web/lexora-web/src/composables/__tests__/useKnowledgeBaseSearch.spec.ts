@@ -47,6 +47,26 @@ describe('useKnowledgeBaseSearch', () => {
     expect(state.pending.value).toBe(false)
   })
 
+  it('stops waiting when the search is cleared while it runs', async () => {
+    const search = vi.fn(
+      (_id: string, _request: SearchRequest, signal: AbortSignal) =>
+        new Promise<ApiResult<SearchResult>>((_resolve, reject) => {
+          signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))
+        }),
+    )
+    const request = shallowRef<SearchRequest | null>({ query: 'epis', mode: 'hybrid' })
+    const { result: state } = withSetup(() =>
+      useKnowledgeBaseSearch({ knowledgeBaseId: 'kb-1', request, search }),
+    )
+    expect(state.pending.value).toBe(true)
+
+    request.value = null
+    await flushPromises()
+
+    expect(state.pending.value).toBe(false)
+    expect(state.searched.value).toBe(false)
+  })
+
   it('does not search again for an equal request object', async () => {
     const search = vi.fn(async () => ok({ hits: [] }))
     const request = shallowRef<SearchRequest | null>({ query: 'epis', mode: 'hybrid' })
