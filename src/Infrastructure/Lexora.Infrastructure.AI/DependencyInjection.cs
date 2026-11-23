@@ -22,6 +22,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
+        services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
 
