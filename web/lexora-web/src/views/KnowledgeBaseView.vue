@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import Tab from 'primevue/tab'
@@ -127,6 +128,14 @@ watch(
             :value="t('knowledgeBases.archived')"
             severity="secondary"
           />
+          <RouterLink v-slot="{ navigate }" :to="{ name: 'chat', params: { id: base.id } }" custom>
+            <Button
+              class="kb-header__chat"
+              :label="t('chat.start')"
+              icon="pi pi-comments"
+              @click="navigate"
+            />
+          </RouterLink>
         </div>
         <p v-if="base.description" class="kb-header__description">{{ base.description }}</p>
         <p class="kb-header__meta">
@@ -187,6 +196,10 @@ watch(
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.kb-header__chat {
+  margin-left: auto;
 }
 
 .kb-header__name {

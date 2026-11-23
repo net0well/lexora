@@ -40,6 +40,12 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/KnowledgeBaseView.vue'),
         props: true,
       },
+      {
+        path: 'knowledge-bases/:id/chat/:conversationId?',
+        name: 'chat',
+        component: () => import('@/views/ChatView.vue'),
+        props: true,
+      },
     ],
   },
   {

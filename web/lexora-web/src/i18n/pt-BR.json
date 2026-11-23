@@ -15,6 +15,34 @@
     },
     "logout": "Sair"
   },
+  "chat": {
+    "start": "Conversar",
+    "newConversation": "Nova conversa",
+    "empty": "Pergunte algo sobre os documentos de “{name}”. Cada resposta cita o trecho de onde veio.",
+    "placeholder": "Escreva sua pergunta",
+    "sendHint": "Enter envia · Shift+Enter quebra a linha",
+    "send": "Enviar",
+    "stop": "Parar",
+    "thinking": "Buscando nos documentos e escrevendo a resposta…",
+    "withoutSources": "Esta resposta não tem fonte nos documentos da base.",
+    "automatic": "Resposta automática: nenhum trecho dos documentos respondia à pergunta.",
+    "answerDetails": "{model} · {seconds} s",
+    "profile": {
+      "label": "Modelo de IA",
+      "default": "Padrão ({name})",
+      "unavailable": "{name} (indisponível)"
+    },
+    "list": {
+      "label": "Conversas",
+      "new": "Nova conversa",
+      "empty": "Nenhuma conversa ainda.",
+      "untitled": "Sem título",
+      "delete": "Excluir a conversa “{title}”",
+      "deleteTitle": "Excluir conversa",
+      "deleteConfirm": "Excluir “{title}”? As mensagens não podem ser recuperadas.",
+      "deleted": "Conversa excluída."
+    }
+  },
   "common": {
     "actions": "Ações",
     "back": "Voltar",
@@ -338,6 +366,9 @@
       "status": {
         "invalid": "Status inválido."
       }
+    },
+    "stream": {
+      "interrupted": "A resposta parou antes de terminar. Tente de novo."
     }
   }
 }

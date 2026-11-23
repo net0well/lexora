@@ -15,6 +15,34 @@
     },
     "logout": "Sign out"
   },
+  "chat": {
+    "start": "Chat",
+    "newConversation": "New conversation",
+    "empty": "Ask something about the documents of “{name}”. Every answer cites the excerpt it came from.",
+    "placeholder": "Write your question",
+    "sendHint": "Enter sends · Shift+Enter breaks the line",
+    "send": "Send",
+    "stop": "Stop",
+    "thinking": "Searching the documents and writing the answer…",
+    "withoutSources": "This answer has no source in the documents of the base.",
+    "automatic": "Automatic answer: no excerpt of the documents answered the question.",
+    "answerDetails": "{model} · {seconds} s",
+    "profile": {
+      "label": "AI model",
+      "default": "Default ({name})",
+      "unavailable": "{name} (unavailable)"
+    },
+    "list": {
+      "label": "Conversations",
+      "new": "New conversation",
+      "empty": "No conversations yet.",
+      "untitled": "Untitled",
+      "delete": "Delete the conversation “{title}”",
+      "deleteTitle": "Delete conversation",
+      "deleteConfirm": "Delete “{title}”? The messages cannot be recovered.",
+      "deleted": "Conversation deleted."
+    }
+  },
   "common": {
     "actions": "Actions",
     "back": "Back",
@@ -190,6 +218,9 @@
     "unexpected": "An unexpected error occurred. Try again.",
     "network": {
       "unavailable": "Could not reach the server. Check the connection and try again."
+    },
+    "stream": {
+      "interrupted": "The answer stopped before it was complete. Try again."
     }
   }
 }
