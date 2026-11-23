@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
         services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
+        services.AddSingleton<IChatModel, ChatModelAdapter>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
 
         return services;

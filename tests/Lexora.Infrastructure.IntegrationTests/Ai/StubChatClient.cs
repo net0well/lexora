@@ -13,11 +13,14 @@ public sealed class StubChatClient : IChatClient
 
     public Queue<Exception> Failures { get; } = new();
 
+    public Action? OnCall { get; set; }
+
     public bool Disposed { get; private set; }
 
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         Calls.Add(([.. messages], options));
+        OnCall?.Invoke();
 
         return Failures.TryDequeue(out var failure) ? Task.FromException<ChatResponse>(failure) : Task.FromResult(Response);
     }
@@ -28,6 +31,7 @@ public sealed class StubChatClient : IChatClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Calls.Add(([.. messages], options));
+        OnCall?.Invoke();
 
         if (Failures.TryDequeue(out var failure))
         {
