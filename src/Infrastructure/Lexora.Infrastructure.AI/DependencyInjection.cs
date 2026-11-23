@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddSingleton<IChatClientProvider, OpenAiChatClientProvider>();
         services.AddSingleton<IChatClientProvider, OpenAiCompatibleChatClientProvider>();
         services.AddSingleton<IChatClientProvider, AnthropicChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, FakeChatClientProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiCompatibleEmbeddingGeneratorProvider>();
