@@ -19,6 +19,11 @@
     "search": "Search",
     "yes": "Yes"
   },
+  "feedback": {
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Done"
+  },
   "locale": {
     "label": "Language",
     "pt-BR": "Português",
