@@ -5,8 +5,7 @@ using Lexora.Application.Common.Options;
 using Lexora.Application.Conversations.AskQuestion;
 using Lexora.Application.Conversations.Mappers;
 using Lexora.Application.Conversations.Prompts;
-using Lexora.Application.Retrieval;
-using Lexora.Application.Retrieval.Services;
+using Lexora.Application.Conversations.RecordStreamedAnswer;
 using Lexora.Domain.Conversations;
 using Lexora.Shared.Results;
 using Microsoft.Extensions.Options;
@@ -16,9 +15,7 @@ namespace Lexora.Application.Conversations.Services;
 public sealed class AnswerService(
     IConversationRepository conversations,
     ICurrentUser currentUser,
-    IRetrievalService retrieval,
-    IRagPromptBuilder prompts,
-    IFollowUpQuestionRewriter rewriter,
+    IAnswerContextBuilder contexts,
     IChatModel chat,
     ICitationParser citations,
     IAiProfileCatalog profiles,
@@ -45,8 +42,7 @@ public sealed class AnswerService(
             return Result.Failure<AskQuestionResponse>(AiNotifications.ProfileNotSelectable);
         }
 
-        var settings = options.Value;
-        var history = conversation.RecentHistory(settings.HistoryMessages);
+        var history = conversation.RecentHistory(options.Value.HistoryMessages);
         var asked = conversation.AddUserMessage(command.Question, timeProvider.GetUtcNow());
 
         if (asked.IsFailure)
@@ -54,20 +50,15 @@ public sealed class AnswerService(
             return Result.Failure<AskQuestionResponse>(asked.Notifications);
         }
 
-        var question = asked.Value.Content;
-        var searchQuery = settings.RewriteFollowUpQuestions
-            ? await rewriter.RewriteAsync(question, history, command.Profile, cancellationToken)
-            : question;
-        var hits = await retrieval.RetrieveAsync(conversation.KnowledgeBaseId, searchQuery, SearchMode.Hybrid, settings.TopK, cancellationToken);
+        var context = await contexts.BuildAsync(conversation.KnowledgeBaseId, asked.Value.Content, history, command.Profile, cancellationToken);
 
-        if (hits.Count == 0)
+        if (context.Prompt is not { } prompt)
         {
-            return Record(conversation, NoContextAnswer.For(question), [], TokenUsage.None, NoContextProvider, NoContextModel, latencyMs: 0);
+            return Record(conversation, NoContextAnswer.For(context.Question), [], TokenUsage.None, NoContextProvider, NoContextModel, latencyMs: 0);
         }
 
-        var prompt = prompts.Build(question, hits, history);
         var completion = await chat.CompleteAsync(new ChatRequest(command.Profile, prompt.SystemPrompt, prompt.Turns), cancellationToken);
-        var answer = string.IsNullOrWhiteSpace(completion.Text) ? NoContextAnswer.For(question) : completion.Text.Trim();
+        var answer = string.IsNullOrWhiteSpace(completion.Text) ? NoContextAnswer.For(context.Question) : completion.Text.Trim();
 
         return Record(
             conversation,
@@ -77,6 +68,38 @@ public sealed class AnswerService(
             completion.Provider,
             completion.Model,
             (long)completion.Latency.TotalMilliseconds);
+    }
+
+    public async Task<Result<RecordStreamedAnswerResponse>> RecordAsync(RecordStreamedAnswerCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var conversation = await conversations.GetByIdAsync(command.ConversationId, cancellationToken);
+
+        if (conversation is null || !conversation.IsOwnedBy(command.UserId))
+        {
+            return Result.Failure<RecordStreamedAnswerResponse>(ConversationNotifications.NotFound);
+        }
+
+        var asked = conversation.AddUserMessage(command.Question, command.AskedAt);
+
+        if (asked.IsFailure)
+        {
+            return Result.Failure<RecordStreamedAnswerResponse>(asked.Notifications);
+        }
+
+        var answered = conversation.AddAssistantMessage(
+            command.Answer,
+            command.Citations,
+            command.Usage,
+            command.Provider,
+            command.Model,
+            command.LatencyMs,
+            timeProvider.GetUtcNow());
+
+        return answered.IsFailure
+            ? Result.Failure<RecordStreamedAnswerResponse>(answered.Notifications)
+            : new RecordStreamedAnswerResponse(answered.Value.Id);
     }
 
     private Result<AskQuestionResponse> Record(

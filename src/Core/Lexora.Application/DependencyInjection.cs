@@ -69,7 +69,9 @@ public static class DependencyInjection
         services.AddSingleton<ICitationParser, CitationParser>();
         services.AddScoped<IFollowUpQuestionRewriter, FollowUpQuestionRewriter>();
         services.AddScoped<IConversationService, ConversationService>();
+        services.AddScoped<IAnswerContextBuilder, AnswerContextBuilder>();
         services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IAnswerStreamingService, AnswerStreamingService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }

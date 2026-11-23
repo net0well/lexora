@@ -4,6 +4,7 @@ using Lexora.Application.Common.Options;
 using Lexora.Application.Conversations;
 using Lexora.Application.Conversations.AskQuestion;
 using Lexora.Application.Conversations.Prompts;
+using Lexora.Application.Conversations.RecordStreamedAnswer;
 using Lexora.Application.Conversations.Services;
 using Lexora.Application.Retrieval;
 using Lexora.Application.Retrieval.Fusion;
@@ -45,9 +46,7 @@ public sealed class AnswerServiceTests
         _service = new AnswerService(
             _conversations,
             _currentUser,
-            _retrieval,
-            new RagPromptBuilder(new WordTokenCounter(), options),
-            new FollowUpQuestionRewriter(_chat),
+            new AnswerContextBuilder(_retrieval, new RagPromptBuilder(new WordTokenCounter(), options), new FollowUpQuestionRewriter(_chat), options),
             _chat,
             new CitationParser(),
             _profiles,
@@ -145,6 +144,37 @@ public sealed class AnswerServiceTests
         _conversation.Messages.ShouldBeEmpty();
         await _retrieval.DidNotReceiveWithAnyArgs().RetrieveAsync(default, default!, default, default, CancellationToken);
     }
+
+    [Fact]
+    public async Task RecordAsync_StreamedAnswer_AddsTheQuestionAndTheAnswerInOrder()
+    {
+        var citation = Citation.Create(1, _radius.ChunkId, _radius.DocumentId, "manual.pdf", 12, null, "Isole a área.", 0.03);
+        _time.Advance(TimeSpan.FromSeconds(3));
+
+        var response = (await _service.RecordAsync(Recording(_currentUser.UserId, citation), CancellationToken)).Value;
+
+        _conversation.Messages.Select(message => (message.Role, message.Content)).ShouldBe(
+        [
+            (MessageRole.User, "Qual o raio de isolamento?"),
+            (MessageRole.Assistant, "Isole a área num raio de 50 metros [1]."),
+        ]);
+        _conversation.Messages[0].CreatedAt.ShouldBe(TestClock.Now);
+        _conversation.Messages[1].ShouldSatisfyAllConditions(
+            answer => answer.Id.ShouldBe(response.MessageId),
+            answer => answer.Citations.ShouldBe([citation]),
+            answer => answer.CreatedAt.ShouldBe(TestClock.Now.AddSeconds(3)));
+    }
+
+    [Fact]
+    public async Task RecordAsync_ConversationOfAnotherUser_RecordsNothing()
+    {
+        (await _service.RecordAsync(Recording(Guid.CreateVersion7()), CancellationToken)).Notifications.ShouldBe([ConversationNotifications.NotFound]);
+
+        _conversation.Messages.ShouldBeEmpty();
+    }
+
+    private RecordStreamedAnswerCommand Recording(Guid userId, params Citation[] citations) =>
+        new(_conversation.Id, userId, "Qual o raio de isolamento?", TestClock.Now, "Isole a área num raio de 50 metros [1].", citations, TokenUsage.Create(120, 12), "fake", "fake-chat", 250);
 
     private Task<Lexora.Shared.Results.Result<AskQuestionResponse>> AskAsync(string question, string? profile = null) =>
         _service.AnswerAsync(new AskQuestionCommand(_conversation.Id, question, profile), CancellationToken);
