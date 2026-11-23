@@ -196,7 +196,7 @@ npx @modelcontextprotocol/inspector
 - [x] Storage and document upload
 - [x] Ingestion pipeline
 - [x] AI connectors
-- [ ] Hybrid search and chat with citations
+- [x] Hybrid search and chat with citations
 - [ ] Vue front-end
 - [ ] MCP server
 - [ ] Observability and v1.0.0
