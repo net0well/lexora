@@ -113,7 +113,7 @@ describe('KnowledgeBaseView', () => {
 
     const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1?tab=settings' })
     await wrapper.find('#edit-knowledge-base-name').setValue('Manuais')
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('#edit-knowledge-base-name').element.closest('form')!.requestSubmit()
     await flushPromises()
 
     expect(bases.update).toHaveBeenCalledWith('kb-1', expect.objectContaining({ name: 'Manuais' }))

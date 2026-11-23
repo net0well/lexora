@@ -152,6 +152,36 @@
     "member": "Membro",
     "viewer": "Leitor"
   },
+  "search": {
+    "placeholder": "Pergunte ou digite termos para buscar nos documentos",
+    "submit": "Buscar",
+    "modeLabel": "Tipo de busca",
+    "modes": {
+      "hybrid": "Híbrida",
+      "vector": "Semântica",
+      "keyword": "Palavras-chave"
+    },
+    "modeHints": {
+      "hybrid": "Combina o sentido da pergunta com as palavras exatas.",
+      "vector": "Encontra trechos com o mesmo sentido, mesmo com outras palavras.",
+      "keyword": "Encontra trechos que têm todas as palavras digitadas."
+    },
+    "match": {
+      "vector": "Semântica",
+      "keyword": "Palavras-chave",
+      "both": "Semântica e palavras-chave"
+    },
+    "score": "Pontuação {score}",
+    "page": "Página {page}",
+    "sheet": "Aba {sheet}",
+    "results": "Nenhum trecho encontrado | 1 trecho encontrado | {count} trechos encontrados",
+    "empty": "Nada encontrado. Tente outras palavras ou a busca semântica.",
+    "idle": "Busque nos documentos desta base para ver os trechos mais relevantes.",
+    "showMore": "Mostrar mais",
+    "showLess": "Mostrar menos",
+    "queryRequired": "Digite o que buscar.",
+    "queryTooLong": "Use até {max} caracteres."
+  },
   "shell": {
     "navigation": "Navegação principal",
     "userMenu": "Menu do usuário"

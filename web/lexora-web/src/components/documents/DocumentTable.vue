@@ -18,6 +18,7 @@ import {
   type DocumentListItem,
   type DocumentStatus,
 } from '@/api/types/document'
+import { useDocumentDownload } from '@/composables/useDocumentDownload'
 import { useDocumentStatusPolling } from '@/composables/useDocumentStatusPolling'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
@@ -58,6 +59,7 @@ const format = useFormat()
 const store = useDocumentsStore()
 const { items, totalItems, loading } = storeToRefs(store)
 const { notify, success } = useNotifications()
+const { download } = useDocumentDownload()
 const query = useQueryState()
 
 const status = computed<DocumentStatus | null>(() => {
@@ -129,20 +131,6 @@ function changeStatus(value: DocumentStatus | null): void {
 
 function changePage(event: DataTablePageEvent): void {
   query.update({ page: event.page === 0 ? null : event.page + 1 })
-}
-
-async function download(document: DocumentListItem): Promise<void> {
-  const result = await store.download(document.id)
-
-  if (!result.success || !result.data) {
-    notify(result.notifications)
-    return
-  }
-
-  const link = window.document.createElement('a')
-  link.href = result.data.url
-  link.rel = 'noopener'
-  link.click()
 }
 
 async function reprocess(document: DocumentListItem): Promise<void> {
@@ -291,7 +279,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
             rounded
             severity="secondary"
             :aria-label="t('documents.actions.download')"
-            @click="download(row)"
+            @click="download(row.id)"
           />
           <Button
             v-if="canManage && (row.status === 'failed' || row.status === 'indexed')"

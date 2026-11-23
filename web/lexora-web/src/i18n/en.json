@@ -152,6 +152,36 @@
     "member": "Member",
     "viewer": "Viewer"
   },
+  "search": {
+    "placeholder": "Ask or type terms to search the documents",
+    "submit": "Search",
+    "modeLabel": "Search type",
+    "modes": {
+      "hybrid": "Hybrid",
+      "vector": "Semantic",
+      "keyword": "Keywords"
+    },
+    "modeHints": {
+      "hybrid": "Combines the meaning of the question with the exact words.",
+      "vector": "Finds excerpts with the same meaning, even in other words.",
+      "keyword": "Finds excerpts that have every typed word."
+    },
+    "match": {
+      "vector": "Semantic",
+      "keyword": "Keywords",
+      "both": "Semantic and keywords"
+    },
+    "score": "Score {score}",
+    "page": "Page {page}",
+    "sheet": "Sheet {sheet}",
+    "results": "No excerpts found | 1 excerpt found | {count} excerpts found",
+    "empty": "Nothing found. Try other words or the semantic search.",
+    "idle": "Search the documents of this base to see the most relevant excerpts.",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "queryRequired": "Type what to search for.",
+    "queryTooLong": "Use up to {max} characters."
+  },
   "shell": {
     "navigation": "Main navigation",
     "userMenu": "User menu"

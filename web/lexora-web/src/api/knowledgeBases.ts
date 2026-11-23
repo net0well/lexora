@@ -8,6 +8,7 @@ import type {
   ReindexResult,
   SavedKnowledgeBase,
 } from './types/knowledgeBase'
+import type { SearchRequest, SearchResult } from './types/search'
 
 export interface KnowledgeBaseQuery {
   status?: KnowledgeBaseStatus | null
@@ -29,4 +30,6 @@ export const knowledgeBasesApi = {
     http.put<SavedKnowledgeBase>(`/knowledge-bases/${id}`, fields),
   archive: (id: string) => http.post<null>(`/knowledge-bases/${id}/archive`),
   reindex: (id: string) => http.post<ReindexResult>(`/knowledge-bases/${id}/reindex`),
+  search: (id: string, request: SearchRequest, signal?: AbortSignal) =>
+    http.post<SearchResult>(`/knowledge-bases/${id}/search`, request, { signal }),
 }

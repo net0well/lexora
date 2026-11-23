@@ -15,6 +15,7 @@ import { isAbort } from '@/api/http'
 import DocumentTable from '@/components/documents/DocumentTable.vue'
 import DocumentUploader from '@/components/documents/DocumentUploader.vue'
 import KnowledgeBaseSettings from '@/components/knowledgeBases/KnowledgeBaseSettings.vue'
+import KnowledgeBaseSearch from '@/components/search/KnowledgeBaseSearch.vue'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQueryState } from '@/composables/useQueryState'
@@ -58,6 +59,7 @@ const canUpload = computed(() => auth.atLeast('member') && base.value?.status ==
 const tabs = computed<TabEntry[]>(() => {
   const entries: TabEntry[] = [
     { value: 'documents', label: t('knowledgeBases.tabs.documents'), icon: 'pi pi-file' },
+    { value: 'search', label: t('knowledgeBases.tabs.search'), icon: 'pi pi-search' },
   ]
 
   if (auth.atLeast('admin')) {
@@ -160,6 +162,9 @@ watch(
                 @deleted="store.countDocuments(base.id, -1)"
               />
             </div>
+          </TabPanel>
+          <TabPanel value="search">
+            <KnowledgeBaseSearch :knowledge-base-id="base.id" />
           </TabPanel>
           <TabPanel v-if="auth.atLeast('admin')" value="settings">
             <KnowledgeBaseSettings :base="base" />

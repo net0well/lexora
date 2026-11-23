@@ -3,7 +3,7 @@ import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
-import type { Component } from 'vue'
+import { defineComponent, type Component } from 'vue'
 import { createMemoryHistory, type Router } from 'vue-router'
 
 import { createAppI18n, type AppLocale } from '@/i18n'
@@ -51,4 +51,18 @@ export function clickText(root: ParentNode, text: string): void {
   }
 
   target.click()
+}
+
+export function withSetup<T>(composable: () => T): { result: T; unmount: () => void } {
+  let result!: T
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        result = composable()
+        return () => null
+      },
+    }),
+  )
+
+  return { result, unmount: () => wrapper.unmount() }
 }

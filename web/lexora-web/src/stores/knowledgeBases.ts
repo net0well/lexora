@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
 import { knowledgeBasesApi, type KnowledgeBaseQuery } from '@/api/knowledgeBases'
+import type { SearchRequest } from '@/api/types/search'
 import type {
   KnowledgeBase,
   KnowledgeBaseFields,
@@ -79,6 +80,10 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
     return knowledgeBasesApi.reindex(id)
   }
 
+  function search(id: string, request: SearchRequest, signal?: AbortSignal) {
+    return knowledgeBasesApi.search(id, request, signal)
+  }
+
   function countDocuments(id: string, delta: number): void {
     if (current.value?.id === id) {
       current.value.documentCount = Math.max(current.value.documentCount + delta, 0)
@@ -99,6 +104,7 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
     update,
     archive,
     reindex,
+    search,
     countDocuments,
   }
 })
