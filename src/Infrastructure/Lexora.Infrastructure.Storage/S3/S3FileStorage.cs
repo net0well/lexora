@@ -87,7 +87,12 @@ public sealed class S3FileStorage(
 
             foreach (var item in page.S3Objects ?? [])
             {
-                yield return new StoredObject(item.Key, new DateTimeOffset((item.LastModified ?? DateTime.UtcNow).ToUniversalTime(), TimeSpan.Zero));
+                // An object without a timestamp counts as new, so the orphan sweep never removes it by mistake.
+                var modified = item.LastModified is { } value
+                    ? new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero)
+                    : timeProvider.GetUtcNow();
+
+                yield return new StoredObject(item.Key, modified);
             }
 
             request.ContinuationToken = page.IsTruncated == true ? page.NextContinuationToken : null;

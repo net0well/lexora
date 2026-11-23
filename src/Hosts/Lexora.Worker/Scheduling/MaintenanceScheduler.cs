@@ -34,6 +34,7 @@ public sealed partial class MaintenanceScheduler(
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
+            // Stopping the host cancels the wait for the next tick; that is the normal way out of the loop.
         }
     }
 
