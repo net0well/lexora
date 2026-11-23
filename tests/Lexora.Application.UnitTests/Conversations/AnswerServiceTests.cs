@@ -20,7 +20,7 @@ using NSubstitute;
 
 namespace Lexora.Application.UnitTests.Conversations;
 
-public sealed class AnswerServiceTests
+public sealed class AnswerServiceTests : IAsyncLifetime
 {
     private static readonly SearchHit _radius = Hit("Em caso de vazamento, isole a área num raio de 50 metros.", page: 12);
     private static readonly SearchHit _gloves = Hit("Use luvas nitrílicas ao manusear solventes.", page: 3);
@@ -38,7 +38,6 @@ public sealed class AnswerServiceTests
     {
         _currentUser.SignIn(new UserBuilder().WithRole(UserRole.Viewer).Build());
         _conversation = Conversation.Start(Guid.CreateVersion7(), _currentUser.UserId, null, TestClock.Now).Value;
-        _conversations.AddAsync(_conversation, CancellationToken.None).GetAwaiter().GetResult();
         _retrieval.RetrieveAsync(default, default!, default, default, default).ReturnsForAnyArgs([_radius, _gloves]);
         _profiles.IsSelectable("claude").Returns(true);
 
@@ -55,6 +54,10 @@ public sealed class AnswerServiceTests
     }
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    public async ValueTask InitializeAsync() => await _conversations.AddAsync(_conversation, CancellationToken);
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     [Fact]
     public async Task AnswerAsync_RelevantExcerpts_AnswersWithCitationsAndRecordsBothMessages()
