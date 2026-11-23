@@ -20,6 +20,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddSingleton<IValidateOptions<AiOptions>, AiOptionsValidator>();
 
+        services.AddSingleton<IChatClientProvider, OllamaChatClientProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
         services.AddSingleton<ChatClientRegistry>();
