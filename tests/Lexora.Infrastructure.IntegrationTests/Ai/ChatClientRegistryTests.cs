@@ -1,5 +1,7 @@
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Registry;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Lexora.Infrastructure.IntegrationTests.Ai;
 
@@ -17,7 +19,7 @@ public sealed class ChatClientRegistryTests
 
         resolved.ProfileName.ShouldBe("local");
         resolved.Profile.Model.ShouldBe("qwen2.5:7b");
-        resolved.Client.ShouldBeSameAs(_ollama.Created.ShouldHaveSingleItem().Client);
+        resolved.Client.GetService<StubChatClient>().ShouldBeSameAs(_ollama.Created.ShouldHaveSingleItem().Client);
     }
 
     [Fact]
@@ -77,6 +79,6 @@ public sealed class ChatClientRegistryTests
             },
         };
 
-        return new ChatClientRegistry([_ollama, _fake], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }));
+        return new ChatClientRegistry([_ollama, _fake], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }), NullLoggerFactory.Instance);
     }
 }

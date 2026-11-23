@@ -7,6 +7,7 @@ using Lexora.Infrastructure.AI.Providers.OpenAiCompatible;
 using Lexora.Infrastructure.AI.Registry;
 using Lexora.Infrastructure.AI.Resilience;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 using Polly.CircuitBreaker;
 using ChatTurn = Lexora.Application.Abstractions.Ai.ChatTurn;
 
@@ -39,7 +40,7 @@ public sealed class ChatResiliencePipelineTests : IAsyncLifetime
                 },
             },
         };
-        _registry = new ChatClientRegistry([new OpenAiCompatibleChatClientProvider()], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }));
+        _registry = new ChatClientRegistry([new OpenAiCompatibleChatClientProvider()], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }), NullLoggerFactory.Instance);
         _adapter = new ChatModelAdapter(_registry, new AiResiliencePipelineProvider(TimeProvider.System), TimeProvider.System);
     }
 
@@ -146,7 +147,7 @@ public sealed class ChatResiliencePipelineTests : IAsyncLifetime
         var client = provider.ClientFor("fake");
         client.Updates = [new ChatResponseUpdate(ChatRole.Assistant, "Interns get "), new ChatResponseUpdate(ChatRole.Assistant, "15 days [2].")];
         var chat = new AiChatSettings { DefaultProfile = "fake", Profiles = { ["fake"] = new AiProfileSettings { Provider = AiProviderKind.Fake, Model = "fake-chat" } } };
-        var registry = new ChatClientRegistry([provider], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }));
+        var registry = new ChatClientRegistry([provider], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }), NullLoggerFactory.Instance);
 
         return (new ChatModelAdapter(registry, new AiResiliencePipelineProvider(TimeProvider.System), TimeProvider.System), client);
     }

@@ -4,6 +4,7 @@ using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Registry;
 using Lexora.Infrastructure.AI.Resilience;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using ChatTurn = Lexora.Application.Abstractions.Ai.ChatTurn;
 
@@ -34,7 +35,7 @@ public sealed class ChatModelAdapterTests
             },
         };
 
-        _adapter = new ChatModelAdapter(new ChatClientRegistry([_ollama], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat })), new AiResiliencePipelineProvider(_time), _time);
+        _adapter = new ChatModelAdapter(new ChatClientRegistry([_ollama], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }), NullLoggerFactory.Instance), new AiResiliencePipelineProvider(_time), _time);
     }
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;

@@ -1,12 +1,14 @@
 using System.Collections.Concurrent;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
+using Lexora.Infrastructure.AI.Telemetry;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Lexora.Infrastructure.AI.Registry;
 
-public sealed class ChatClientRegistry(IEnumerable<IChatClientProvider> providers, IOptions<AiOptions> options) : IDisposable
+public sealed class ChatClientRegistry(IEnumerable<IChatClientProvider> providers, IOptions<AiOptions> options, ILoggerFactory loggerFactory) : IDisposable
 {
     private readonly Dictionary<AiProviderKind, IChatClientProvider> _providers = providers.ToDictionary(provider => provider.Kind);
     private readonly ConcurrentDictionary<string, Lazy<IChatClient>> _clients = new(StringComparer.OrdinalIgnoreCase);
@@ -32,7 +34,8 @@ public sealed class ChatClientRegistry(IEnumerable<IChatClientProvider> provider
             throw new InvalidOperationException($"Chat profile '{name}' is not available; check its provider, model, endpoint and API key.");
         }
 
-        var client = _clients.GetOrAdd(name, key => new Lazy<IChatClient>(() => _providers[profile.Provider].Create(key, profile))).Value;
+        var client = _clients.GetOrAdd(name, key => new Lazy<IChatClient>(
+            () => AiInstrumentation.Instrument(_providers[profile.Provider].Create(key, profile), options.Value, loggerFactory))).Value;
 
         return new ChatProfileClient(name, profile, client);
     }

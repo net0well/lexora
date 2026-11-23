@@ -53,7 +53,7 @@ public sealed class StubChatClient : IChatClient
         }
     }
 
-    public object? GetService(Type serviceType, object? serviceKey = null) => null;
+    public object? GetService(Type serviceType, object? serviceKey = null) => serviceType?.IsInstanceOfType(this) == true ? this : null;
 
     public void Dispose() => Disposed = true;
 }

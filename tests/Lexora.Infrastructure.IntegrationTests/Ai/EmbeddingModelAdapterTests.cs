@@ -4,6 +4,7 @@ using Lexora.Infrastructure.AI.Adapters;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Registry;
 using Lexora.Infrastructure.AI.Resilience;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Lexora.Infrastructure.IntegrationTests.Ai;
@@ -122,6 +123,6 @@ public sealed class EmbeddingModelAdapterTests
             },
         };
 
-        return new EmbeddingModelAdapter(new EmbeddingGeneratorRegistry([new StubEmbeddingGeneratorProvider(generator, acceptsDimensions)], Options.Create(options)), new AiResiliencePipelineProvider(TimeProvider.System));
+        return new EmbeddingModelAdapter(new EmbeddingGeneratorRegistry([new StubEmbeddingGeneratorProvider(generator, acceptsDimensions)], Options.Create(options), NullLoggerFactory.Instance), new AiResiliencePipelineProvider(TimeProvider.System));
     }
 }
