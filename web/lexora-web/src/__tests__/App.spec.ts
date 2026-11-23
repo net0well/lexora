@@ -4,10 +4,11 @@ import App from '../App.vue'
 import { mountWithApp } from './support'
 
 describe('App', () => {
-  it('renders the route of the current path', async () => {
-    const { wrapper } = await mountWithApp(App, { path: '/' })
+  it('shows the login page to a visitor without session', async () => {
+    const { wrapper, router } = await mountWithApp(App, { path: '/' })
 
-    expect(wrapper.text()).toContain('Lexora')
+    expect(router.currentRoute.value.name).toBe('login')
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 
   it('shows the not found page in the chosen language', async () => {

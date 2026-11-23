@@ -3,6 +3,18 @@
     "name": "Lexora",
     "tagline": "Answers from your company documents, with the source cited."
   },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "E-mail",
+      "password": "Password",
+      "submit": "Sign in",
+      "emailRequired": "Enter the e-mail.",
+      "passwordRequired": "Enter the password.",
+      "sessionExpired": "Your session expired. Sign in again."
+    },
+    "logout": "Sign out"
+  },
   "common": {
     "actions": "Actions",
     "back": "Back",

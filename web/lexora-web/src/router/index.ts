@@ -6,11 +6,29 @@ import {
   type RouterHistory,
 } from 'vue-router'
 
+import type { UserRole } from '@/api/types/auth'
+import { installGuards } from './guards'
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    guestOnly?: boolean
+    roles?: UserRole[]
+  }
+}
+
 export const routes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { guestOnly: true },
+  },
   {
     path: '/',
     name: 'knowledge-bases',
     component: () => import('@/views/KnowledgeBasesView.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -20,5 +38,8 @@ export const routes: RouteRecordRaw[] = [
 ]
 
 export function createAppRouter(history: RouterHistory = createWebHistory()): Router {
-  return createRouter({ history, routes })
+  const router = createRouter({ history, routes })
+  installGuards(router)
+
+  return router
 }

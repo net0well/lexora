@@ -38,8 +38,12 @@ export function currentLocale(): AppLocale {
   return i18n.global.locale.value as AppLocale
 }
 
+export function rememberLocale(locale: AppLocale): void {
+  globalThis.localStorage?.setItem(storageKey, locale)
+}
+
 export function setLocale(locale: AppLocale): void {
   i18n.global.locale.value = locale
-  globalThis.localStorage?.setItem(storageKey, locale)
+  rememberLocale(locale)
   document.documentElement.lang = locale
 }

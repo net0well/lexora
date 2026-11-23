@@ -3,6 +3,18 @@
     "name": "Lexora",
     "tagline": "Respostas dos documentos da sua empresa, com a fonte citada."
   },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "email": "E-mail",
+      "password": "Senha",
+      "submit": "Entrar",
+      "emailRequired": "Informe o e-mail.",
+      "passwordRequired": "Informe a senha.",
+      "sessionExpired": "Sua sessão expirou. Entre de novo."
+    },
+    "logout": "Sair"
+  },
   "common": {
     "actions": "Ações",
     "back": "Voltar",
