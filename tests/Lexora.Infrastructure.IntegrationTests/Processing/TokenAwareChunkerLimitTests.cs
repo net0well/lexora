@@ -33,6 +33,54 @@ public sealed class TokenAwareChunkerLimitTests
         chunks.ShouldAllBe(chunk => chunk.TokenCount == _tokens.Count(chunk.Content));
     }
 
+    [Theory]
+    [MemberData(nameof(Limits))]
+    public void Chunk_MixedProse_CoversTheWholeTextInOrder(int maxTokens, int overlapTokens)
+    {
+        var text = Prose(paragraphs: 120);
+
+        var chunks = Chunk(text, maxTokens, overlapTokens);
+
+        chunks[0].StartOffset.ShouldBe(0);
+        chunks[^1].EndOffset.ShouldBe(text.Length);
+
+        for (var index = 1; index < chunks.Count; index++)
+        {
+            var (previous, current) = (chunks[index - 1], chunks[index]);
+            current.EndOffset.ShouldBeGreaterThan(previous.EndOffset);
+            current.StartOffset.ShouldBeGreaterThan(previous.StartOffset);
+
+            if (current.StartOffset >= previous.EndOffset)
+            {
+                string.IsNullOrWhiteSpace(text[previous.EndOffset..current.StartOffset]).ShouldBeTrue();
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(200, 40)]
+    [InlineData(800, 120)]
+    public void Chunk_Overlap_RepeatsWholeSentencesUpToTheConfiguredTokens(int maxTokens, int overlapTokens)
+    {
+        var text = Prose(paragraphs: 80);
+
+        var chunks = Chunk(text, maxTokens, overlapTokens);
+
+        chunks.Count(chunk => chunk.StartOffset > 0 && chunk.StartOffset < chunks[chunk.Index - 1].EndOffset).ShouldBeGreaterThan(chunks.Count / 2);
+
+        for (var index = 1; index < chunks.Count; index++)
+        {
+            var start = chunks[index].StartOffset;
+            char.IsWhiteSpace(text[start - 1]).ShouldBeTrue();
+            (char.IsUpper(text[start]) || text[start] == '-').ShouldBeTrue();
+
+            if (start < chunks[index - 1].EndOffset)
+            {
+                _tokens.Count(text[start..chunks[index - 1].EndOffset]).ShouldBeLessThanOrEqualTo(overlapTokens);
+            }
+        }
+    }
+
     [Fact]
     public void Chunk_WordLongerThanTheLimit_IsCutIntoPiecesWithinTheLimit()
     {
@@ -67,4 +115,10 @@ public sealed class TokenAwareChunkerLimitTests
     private static ChunkingSettings Settings(int maxTokens, int overlapTokens) => ChunkingSettings.Create(maxTokens, overlapTokens).Value;
 
     private static string Words(string first, int count) => string.Join(' ', [first, .. Enumerable.Repeat("word", count - 1)]);
+
+    private static string Prose(int paragraphs) =>
+        string.Join("\n\n", Enumerable.Range(1, paragraphs).Select(paragraph => paragraph % 4 == 0
+            ? $"Lista {paragraph}:\n- Isolar a área.\n- Avisar a brigada.\n- Registrar a ocorrência nº {paragraph}."
+            : $"Parágrafo {paragraph}. Os resíduos químicos devem ser separados por classe antes do descarte. " +
+              $"O responsável técnico confere a etiqueta, o volume e a data. Em caso de dúvida, consulte o manual na seção {paragraph % 7}!"));
 }
