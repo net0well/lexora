@@ -4,6 +4,7 @@ using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
 using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Providers.Ollama;
+using Lexora.Infrastructure.AI.Providers.OpenAi;
 using Lexora.Infrastructure.AI.Registry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,9 @@ public static class DependencyInjection
         services.AddSingleton<IValidateOptions<AiOptions>, AiOptionsValidator>();
 
         services.AddSingleton<IChatClientProvider, OllamaChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, OpenAiChatClientProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
+        services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
         services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
