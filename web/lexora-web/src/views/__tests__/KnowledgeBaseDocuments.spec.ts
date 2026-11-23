@@ -170,4 +170,70 @@ describe('knowledge base documents tab', () => {
       expect.any(AbortSignal),
     )
   })
+
+  it('follows a document while it is processed and shows the embedding progress', async () => {
+    vi.useFakeTimers()
+    auth.refresh.mockResolvedValue(sessionAs('viewer'))
+    documents.list.mockResolvedValue(page([{ ...manual, status: 'extracted', chunkCount: 0 }]))
+    documents.get.mockResolvedValue(
+      ok({
+        ...manual,
+        status: 'chunked',
+        chunkCount: 4,
+        embeddedChunkCount: 1,
+        knowledgeBaseId: 'kb-1',
+        contentType: 'application/pdf',
+        processingVersion: 1,
+        pageCount: 3,
+        failureReason: null,
+        uploadedBy: 'user-1',
+        indexedAt: null,
+      }),
+    )
+    const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
+    expect(wrapper.text()).toContain('Processando')
+
+    await vi.advanceTimersByTimeAsync(3_000)
+
+    expect(documents.get).toHaveBeenCalledWith('doc-1', expect.any(AbortSignal))
+    expect(wrapper.text()).toContain('Gerando embeddings 1/4')
+  })
+
+  it('explains why a document failed', async () => {
+    auth.refresh.mockResolvedValue(sessionAs('viewer'))
+    documents.list.mockResolvedValue(page([{ ...manual, status: 'failed' }]))
+    documents.get.mockResolvedValue(
+      ok({
+        ...manual,
+        status: 'failed',
+        knowledgeBaseId: 'kb-1',
+        contentType: 'application/pdf',
+        processingVersion: 1,
+        pageCount: null,
+        failureReason: 'No extractable text found.',
+        uploadedBy: 'user-1',
+        indexedAt: null,
+      }),
+    )
+
+    const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
+
+    expect(wrapper.text()).toContain('Falhou')
+    expect(wrapper.text()).toContain('Motivo: No extractable text found.')
+  })
+
+  it('sends a failed document to processing again', async () => {
+    auth.refresh.mockResolvedValue(sessionAs('member'))
+    documents.list.mockResolvedValue(page([{ ...manual, status: 'failed', failureReason: null }]))
+    documents.reprocess.mockResolvedValueOnce(
+      ok({ id: 'doc-1', status: 'uploaded', processingVersion: 2 }, 202),
+    )
+    const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
+
+    await wrapper.find('button[aria-label="Processar de novo"]').trigger('click')
+    await flushPromises()
+
+    expect(documents.reprocess).toHaveBeenCalledWith('doc-1')
+    expect(wrapper.text()).toContain('Na fila')
+  })
 })

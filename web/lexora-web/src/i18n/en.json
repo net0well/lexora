@@ -62,15 +62,21 @@
       "chunked": "Creating embeddings",
       "indexed": "Indexed",
       "failed": "Failed",
-      "deleted": "Deleted"
+      "deleted": "Deleted",
+      "chunkedProgress": "Creating embeddings {done}/{total}"
     },
     "actions": {
       "download": "Download",
       "delete": "Delete",
       "deleteTitle": "Delete document",
       "deleteConfirm": "Delete “{name}”? It leaves the search and the chat.",
-      "deleted": "Document deleted."
-    }
+      "deleted": "Document deleted.",
+      "reprocess": "Process again",
+      "reprocessTitle": "Process the document again",
+      "reprocessConfirm": "“{name}” will be processed again and stays out of the search until it finishes. Continue?",
+      "reprocessed": "Document sent to processing again."
+    },
+    "failure": "Reason: {reason}"
   },
   "feedback": {
     "error": "Error",

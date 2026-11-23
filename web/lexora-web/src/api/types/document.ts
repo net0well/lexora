@@ -12,6 +12,7 @@ export interface DocumentListItem {
   embeddedChunkCount: number
   uploadedAt: string
   updatedAt: string
+  failureReason?: string | null
 }
 
 export interface DocumentDetails extends DocumentListItem {

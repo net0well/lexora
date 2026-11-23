@@ -12,7 +12,13 @@ import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { isAbort } from '@/api/http'
-import type { DocumentFormat, DocumentListItem, DocumentStatus } from '@/api/types/document'
+import {
+  terminalStatuses,
+  type DocumentFormat,
+  type DocumentListItem,
+  type DocumentStatus,
+} from '@/api/types/document'
+import { useDocumentStatusPolling } from '@/composables/useDocumentStatusPolling'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQueryState } from '@/composables/useQueryState'
@@ -74,6 +80,29 @@ const statusOptions = computed(() => [
 
 const filtered = computed(() => status.value !== null || appliedSearch.value !== '')
 
+const followedIds = computed(() =>
+  items.value.filter((item) => !terminalStatuses.includes(item.status)).map((item) => item.id),
+)
+
+useDocumentStatusPolling({
+  ids: followedIds,
+  fetch: (id, signal) => store.details(id, signal),
+  onUpdate: (document) => store.update(document),
+})
+
+async function explainFailures(signal: AbortSignal): Promise<void> {
+  const unexplained = items.value.filter(
+    (item) => item.status === 'failed' && item.failureReason === undefined,
+  )
+  const results = await Promise.all(unexplained.map((item) => store.details(item.id, signal)))
+
+  for (const result of results) {
+    if (result.success && result.data) {
+      store.update(result.data)
+    }
+  }
+}
+
 async function load(signal: AbortSignal): Promise<void> {
   try {
     const result = await store.load(
@@ -82,7 +111,9 @@ async function load(signal: AbortSignal): Promise<void> {
       signal,
     )
 
-    if (!result.success) {
+    if (result.success) {
+      await explainFailures(signal)
+    } else {
       notify(result.notifications)
     }
   } catch (error) {
@@ -112,6 +143,32 @@ async function download(document: DocumentListItem): Promise<void> {
   link.href = result.data.url
   link.rel = 'noopener'
   link.click()
+}
+
+async function reprocess(document: DocumentListItem): Promise<void> {
+  const result = await store.reprocess(document.id)
+
+  if (result.success) {
+    success(t('documents.actions.reprocessed'))
+  } else {
+    notify(result.notifications)
+  }
+}
+
+function confirmReprocess(document: DocumentListItem): void {
+  if (document.status === 'failed') {
+    void reprocess(document)
+    return
+  }
+
+  confirm.require({
+    header: t('documents.actions.reprocessTitle'),
+    message: t('documents.actions.reprocessConfirm', { name: document.fileName }),
+    icon: 'pi pi-refresh',
+    rejectProps: { label: t('common.cancel'), severity: 'secondary', text: true },
+    acceptProps: { label: t('documents.actions.reprocess') },
+    accept: () => reprocess(document),
+  })
 }
 
 function confirmDelete(document: DocumentListItem): void {
@@ -198,42 +255,52 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       </template>
 
       <Column :header="t('documents.table.name')">
-        <template #body="{ data }">
+        <template #body="{ data: row }">
           <span class="documents__name">
             <i
-              :class="['documents__icon', formatIcons[(data as DocumentListItem).format]]"
+              :class="['documents__icon', formatIcons[row.format as DocumentFormat]]"
               aria-hidden="true"
             />
-            <span class="documents__file-name" :title="(data as DocumentListItem).fileName">{{
-              (data as DocumentListItem).fileName
-            }}</span>
+            <span class="documents__file-name" :title="row.fileName">{{ row.fileName }}</span>
           </span>
+          <small v-if="row.status === 'failed' && row.failureReason" class="documents__failure">
+            {{ t('documents.failure', { reason: row.failureReason }) }}
+          </small>
         </template>
       </Column>
       <Column :header="t('documents.table.size')" class="documents__narrow">
-        <template #body="{ data }">{{
-          format.bytes((data as DocumentListItem).sizeBytes)
-        }}</template>
+        <template #body="{ data: row }">{{ format.bytes(row.sizeBytes) }}</template>
       </Column>
       <Column :header="t('documents.table.status')" class="documents__narrow">
-        <template #body="{ data }">
-          <DocumentStatusTag :status="(data as DocumentListItem).status" />
+        <template #body="{ data: row }">
+          <DocumentStatusTag
+            :status="row.status"
+            :chunk-count="row.chunkCount"
+            :embedded-chunk-count="row.embeddedChunkCount"
+          />
         </template>
       </Column>
       <Column :header="t('documents.table.updatedAt')" class="documents__narrow">
-        <template #body="{ data }">{{
-          format.dateTime((data as DocumentListItem).updatedAt)
-        }}</template>
+        <template #body="{ data: row }">{{ format.dateTime(row.updatedAt) }}</template>
       </Column>
       <Column :header="t('common.actions')" class="documents__actions">
-        <template #body="{ data }">
+        <template #body="{ data: row }">
           <Button
             icon="pi pi-download"
             text
             rounded
             severity="secondary"
             :aria-label="t('documents.actions.download')"
-            @click="download(data as DocumentListItem)"
+            @click="download(row)"
+          />
+          <Button
+            v-if="canManage && (row.status === 'failed' || row.status === 'indexed')"
+            icon="pi pi-refresh"
+            text
+            rounded
+            severity="secondary"
+            :aria-label="t('documents.actions.reprocess')"
+            @click="confirmReprocess(row)"
           />
           <Button
             v-if="canManage"
@@ -242,7 +309,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
             rounded
             severity="danger"
             :aria-label="t('documents.actions.delete')"
-            @click="confirmDelete(data as DocumentListItem)"
+            @click="confirmDelete(row)"
           />
         </template>
       </Column>
@@ -278,6 +345,12 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 
 .documents__icon {
   color: var(--p-primary-600);
+}
+
+.documents__failure {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--p-red-600);
 }
 
 .documents__empty {

@@ -62,15 +62,21 @@
       "chunked": "Gerando embeddings",
       "indexed": "Indexado",
       "failed": "Falhou",
-      "deleted": "Excluído"
+      "deleted": "Excluído",
+      "chunkedProgress": "Gerando embeddings {done}/{total}"
     },
     "actions": {
       "download": "Baixar",
       "delete": "Excluir",
       "deleteTitle": "Excluir documento",
       "deleteConfirm": "Excluir “{name}”? Ele sai da busca e do chat.",
-      "deleted": "Documento excluído."
-    }
+      "deleted": "Documento excluído.",
+      "reprocess": "Processar de novo",
+      "reprocessTitle": "Processar o documento de novo",
+      "reprocessConfirm": "“{name}” vai ser processado de novo e fica fora da busca até terminar. Continuar?",
+      "reprocessed": "Documento enviado para processar de novo."
+    },
+    "failure": "Motivo: {reason}"
   },
   "feedback": {
     "error": "Erro",

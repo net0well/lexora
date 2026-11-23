@@ -73,6 +73,26 @@ export const useDocumentsStore = defineStore('documents', () => {
     return documentsApi.download(id)
   }
 
+  function details(id: string, signal?: AbortSignal) {
+    return documentsApi.get(id, signal)
+  }
+
+  async function reprocess(id: string) {
+    const result = await documentsApi.reprocess(id)
+
+    if (result.success && result.data) {
+      update({
+        id,
+        status: result.data.status,
+        chunkCount: 0,
+        embeddedChunkCount: 0,
+        failureReason: null,
+      })
+    }
+
+    return result
+  }
+
   return {
     knowledgeBaseId,
     items,
@@ -84,5 +104,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     added,
     remove,
     download,
+    details,
+    reprocess,
   }
 })
