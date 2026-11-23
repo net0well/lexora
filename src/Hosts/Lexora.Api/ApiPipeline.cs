@@ -8,6 +8,7 @@ public static class ApiPipeline
 {
     public static WebApplication UseApi(this WebApplication app)
     {
+        app.UseForwardedHeaders();
         app.UseExceptionHandler(_ => { });
         app.UseStatusCodePages(StatusCodeEnvelopeWriter.WriteAsync);
 

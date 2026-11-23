@@ -1,4 +1,5 @@
 using Lexora.Hosting.Health;
+using Lexora.Hosting.Networking;
 using Lexora.Hosting.Wolverine;
 using Lexora.Shared.Configuration;
 using Lexora.Shared.Health;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         IHostEnvironment environment)
     {
         CodeGenerationDefaults.Apply(services, environment);
+        ForwardedHeadersConfiguration.Apply(services, configuration);
         AddHealthChecks(services, configuration);
 
         return services;
