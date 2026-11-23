@@ -13,9 +13,16 @@ x-dotnet-env: &dotnet-env
   Storage__S3__SecretKey: ${S3_SECRET_KEY}
   Storage__S3__ForcePathStyle: "true"
   Jwt__SigningKey: ${JWT_SIGNING_KEY}
+  Ai__Chat__DefaultProfile: ${AI_CHAT_PROFILE:-local}
+  Ai__Chat__Profiles__local__Endpoint: http://ollama:11434
+  Ai__Chat__Profiles__local__Model: ${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
+  Ai__Chat__Profiles__claude__ApiKey: ${ANTHROPIC_API_KEY:-}
+  Ai__Chat__Profiles__openai__ApiKey: ${OPENAI_API_KEY:-}
+  Ai__Chat__Profiles__groq__ApiKey: ${GROQ_API_KEY:-}
   Ai__Embedding__Profile: ${AI_EMBEDDING_PROFILE:-local}
   Ai__Embedding__Profiles__local__Endpoint: http://ollama:11434
   Ai__Embedding__Profiles__local__Model: ${OLLAMA_EMBEDDING_MODEL:-bge-m3}
+  Ai__Embedding__Profiles__openai__ApiKey: ${OPENAI_API_KEY:-}
 
 services:
   postgres:
@@ -130,7 +137,7 @@ services:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["/bin/sh", "-c"]
     command:
-      - ollama pull ${OLLAMA_EMBEDDING_MODEL:-bge-m3}
+      - ollama pull ${OLLAMA_EMBEDDING_MODEL:-bge-m3} && ollama pull ${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
     restart: "no"
 
   migrator:
