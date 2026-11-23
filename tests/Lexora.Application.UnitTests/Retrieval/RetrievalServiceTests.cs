@@ -16,6 +16,7 @@ public sealed class RetrievalServiceTests
 
     private readonly IChunkSearchIndex _index = Substitute.For<IChunkSearchIndex>();
     private readonly FakeEmbeddingModel _embeddings = new(dimensions: 4);
+    private readonly InMemoryCacheStore _cache = new();
     private readonly RagOptions _options = new() { CandidatePoolSize = 30, MinVectorSimilarity = 0.3, MaxChunksPerDocument = 2 };
 
     public RetrievalServiceTests()
@@ -82,12 +83,23 @@ public sealed class RetrievalServiceTests
         hits.Select(hit => hit.Content).ShouldBe(["manual 1", "manual 2", "policy 1"]);
     }
 
+    [Fact]
+    public async Task RetrieveAsync_SameQueryTwice_EmbedsItOnceForTheActiveSpace()
+    {
+        await RetrieveAsync(SearchMode.Vector);
+        await RetrieveAsync(SearchMode.Vector);
+
+        _embeddings.Calls.ShouldHaveSingleItem();
+        _cache.Keys.ShouldHaveSingleItem().ShouldBe(QueryEmbeddingCacheKey.For(_embeddings.Space, "vazamento químico"));
+        _cache.Keys.Single().ShouldStartWith("query-embedding:fake:fake-embedding:4:");
+    }
+
     private Task<IReadOnlyList<SearchHit>> RetrieveAsync(SearchMode mode, int topK = 8)
     {
         var reranker = Substitute.For<IReranker>();
         reranker.RerankAsync(default!, default!, default, default)
             .ReturnsForAnyArgs(call => Task.FromResult(call.ArgAt<IReadOnlyList<SearchHit>>(1)));
-        var service = new RetrievalService(_index, _embeddings, new ReciprocalRankFusion(Options.Create(_options)), reranker, Options.Create(_options));
+        var service = new RetrievalService(_index, _embeddings, _cache, new ReciprocalRankFusion(Options.Create(_options)), reranker, Options.Create(_options));
 
         return service.RetrieveAsync(_knowledgeBaseId, "vazamento químico", mode, topK, CancellationToken);
     }

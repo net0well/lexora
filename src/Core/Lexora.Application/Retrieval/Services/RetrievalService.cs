@@ -1,4 +1,5 @@
 using Lexora.Application.Abstractions.Ai;
+using Lexora.Application.Abstractions.Caching;
 using Lexora.Application.Abstractions.Search;
 using Lexora.Application.Common.Options;
 using Lexora.Application.Retrieval.Fusion;
@@ -9,10 +10,13 @@ namespace Lexora.Application.Retrieval.Services;
 public sealed class RetrievalService(
     IChunkSearchIndex index,
     IEmbeddingModel embeddings,
+    ICacheStore cache,
     IRankFusion fusion,
     IReranker reranker,
     IOptions<RagOptions> options) : IRetrievalService
 {
+    public static readonly TimeSpan QueryEmbeddingLifetime = TimeSpan.FromHours(1);
+
     public async Task<IReadOnlyList<SearchHit>> RetrieveAsync(Guid knowledgeBaseId, string query, SearchMode mode, int topK, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
@@ -57,7 +61,12 @@ public sealed class RetrievalService(
         RagOptions settings,
         CancellationToken cancellationToken)
     {
-        var embedding = (await embeddings.EmbedAsync([query], EmbeddingPurpose.Query, cancellationToken))[0];
+        var embedding = await cache.GetOrCreateAsync(
+            QueryEmbeddingCacheKey.For(embeddings.Space, query),
+            async token => (await embeddings.EmbedAsync([query], EmbeddingPurpose.Query, token))[0],
+            QueryEmbeddingLifetime,
+            tags: null,
+            cancellationToken);
         var candidates = await index.VectorSearchAsync(knowledgeBaseId, embedding, embeddings.Space.Key, settings.CandidatePoolSize, cancellationToken);
 
         return [.. candidates.Where(candidate => candidate.Score >= settings.MinVectorSimilarity)];
