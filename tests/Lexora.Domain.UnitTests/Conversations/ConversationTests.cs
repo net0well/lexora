@@ -130,6 +130,21 @@ public sealed class ConversationTests
         ShouldReject(Full(), conversation => conversation.AddUserMessage("One more?", Now), "conversation.limit.messages", NotificationType.BusinessRule);
 
     [Fact]
+    public void AddMessages_SameOrEarlierTime_StayInTheOrderTheyWereAdded()
+    {
+        var conversation = Conversation.Start(Guid.CreateVersion7(), Guid.CreateVersion7(), null, Now).Value;
+
+        var question = conversation.AddUserMessage("What are the payment terms?", Now).Value;
+        var answer = conversation.AddAssistantMessage("Due in 30 days [1].", [], TokenUsage.Create(10, 5), Provider, Model, 900, Now).Value;
+        var followUp = conversation.AddUserMessage("And the penalty?", Now.AddSeconds(-5)).Value;
+
+        question.CreatedAt.ShouldBe(Now);
+        answer.CreatedAt.ShouldBe(Now.AddMicroseconds(1));
+        followUp.CreatedAt.ShouldBe(Now.AddMicroseconds(2));
+        conversation.UpdatedAt.ShouldBe(followUp.CreatedAt);
+    }
+
+    [Fact]
     public void AddAssistantMessage_ValidAnswer_AppendsWithCitationsAndUsage()
     {
         var conversation = Start();

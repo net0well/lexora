@@ -109,7 +109,9 @@ public sealed class Conversation : AggregateRoot
             Title = TitleFrom(trimmed);
         }
 
-        return Append(ConversationMessage.FromUser(trimmed, now), now);
+        var at = NextMessageTime(now);
+
+        return Append(ConversationMessage.FromUser(trimmed, at), at);
     }
 
     public Result<ConversationMessage> AddAssistantMessage(
@@ -121,16 +123,21 @@ public sealed class Conversation : AggregateRoot
         long latencyMs,
         DateTimeOffset now)
     {
-        var message = ConversationMessage.FromAssistant(answer, citations, usage, provider, model, latencyMs, now);
+        var at = NextMessageTime(now);
+        var message = ConversationMessage.FromAssistant(answer, citations, usage, provider, model, latencyMs, at);
 
         return _messages.Count >= MaxMessages
             ? Result.Failure<ConversationMessage>(_messageLimit)
-            : Append(message, now);
+            : Append(message, at);
     }
 
     public bool IsOwnedBy(Guid userId) => UserId == userId;
 
     public IReadOnlyList<ConversationMessage> RecentHistory(int maxMessages) => [.. _messages.TakeLast(Guard.NotNegative(maxMessages))];
+
+    // Messages are read back ordered by time; one microsecond is the storage precision, so a tie never reorders them.
+    private DateTimeOffset NextMessageTime(DateTimeOffset now) =>
+        _messages.Count > 0 && now <= _messages[^1].CreatedAt ? _messages[^1].CreatedAt.AddMicroseconds(1) : now;
 
     private ConversationMessage Append(ConversationMessage message, DateTimeOffset now)
     {
