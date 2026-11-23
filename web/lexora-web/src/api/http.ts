@@ -102,10 +102,20 @@ export async function withSessionRetry<T>(
   const current = session.accessToken()
   const renewedElsewhere = current !== null && current !== token
 
-  if (!renewedElsewhere && !(await session.renew())) {
-    session.expire()
+  if (!renewedElsewhere) {
+    const outcome = await session.renew()
 
-    return first
+    // Losing the connection while renewing does not mean the session ended: keep it and let the
+    // caller report a network problem.
+    if (outcome === 'transient') {
+      return failure(0, networkUnavailable)
+    }
+
+    if (outcome === 'rejected') {
+      session.expire()
+
+      return first
+    }
   }
 
   return attempt(session.accessToken())

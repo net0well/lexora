@@ -3,6 +3,7 @@ import { computed, ref, shallowRef } from 'vue'
 
 import { documentsApi, type DocumentQuery } from '@/api/documents'
 import type { DocumentListItem, UploadedDocument } from '@/api/types/document'
+import { resetWhenUserChanges } from './sessionScope'
 
 export const useDocumentsStore = defineStore('documents', () => {
   const knowledgeBaseId = shallowRef<string | null>(null)
@@ -10,6 +11,12 @@ export const useDocumentsStore = defineStore('documents', () => {
   const totalItems = shallowRef(0)
   const pendingLoads = shallowRef(0)
   const loading = computed(() => pendingLoads.value > 0)
+
+  resetWhenUserChanges(() => {
+    knowledgeBaseId.value = null
+    items.value = []
+    totalItems.value = 0
+  })
 
   async function load(id: string, query: DocumentQuery, signal?: AbortSignal) {
     if (knowledgeBaseId.value !== id) {

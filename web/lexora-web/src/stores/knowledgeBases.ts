@@ -8,6 +8,7 @@ import type {
   KnowledgeBaseFields,
   KnowledgeBaseListItem,
 } from '@/api/types/knowledgeBase'
+import { resetWhenUserChanges } from './sessionScope'
 
 export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
   const items = shallowRef<KnowledgeBaseListItem[]>([])
@@ -17,6 +18,12 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
   const current = ref<KnowledgeBase | null>(null)
   const pendingOpens = shallowRef(0)
   const loadingCurrent = computed(() => pendingOpens.value > 0)
+
+  resetWhenUserChanges(() => {
+    items.value = []
+    totalItems.value = 0
+    current.value = null
+  })
 
   async function load(query: KnowledgeBaseQuery, signal?: AbortSignal) {
     pendingLists.value++

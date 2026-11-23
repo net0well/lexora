@@ -12,7 +12,8 @@
       "emailRequired": "Enter the e-mail.",
       "passwordRequired": "Enter the password.",
       "expired": "Your session expired. Sign in again.",
-      "passwordChanged": "Password changed. Sign in with the new password."
+      "passwordChanged": "Password changed. Sign in with the new password.",
+      "signedOut": "You signed out in another tab."
     },
     "logout": "Sign out"
   },

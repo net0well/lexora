@@ -34,11 +34,11 @@ export function installGuards(router: Router): void {
     return true
   })
 
-  auth.onExpired(() => {
+  auth.onSessionEnded((reason) => {
     const current = router.currentRoute.value
 
     if (current.meta.requiresAuth) {
-      void router.push({ name: 'login', query: { redirect: current.fullPath, reason: 'expired' } })
+      void router.push({ name: 'login', query: { redirect: current.fullPath, reason } })
     }
   })
 }

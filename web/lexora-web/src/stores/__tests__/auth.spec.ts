@@ -134,7 +134,7 @@ describe('auth store', () => {
     api.refresh.mockResolvedValueOnce(failed(401))
     const expired = vi.fn()
     const auth = useAuthStore()
-    auth.onExpired(expired)
+    auth.onSessionEnded(expired)
     await auth.login({ email: 'ana@lexora.local', password: 'secret' })
 
     await vi.advanceTimersByTimeAsync(60_000)
@@ -154,6 +154,50 @@ describe('auth store', () => {
     expect(api.logout).toHaveBeenCalledTimes(1)
     expect(auth.isAuthenticated).toBe(false)
     expect(boundSession()?.accessToken()).toBeNull()
+  })
+
+  it('does not bring the session back when the user signs out during a renewal', async () => {
+    let answerRefresh!: (result: ApiResult<Session>) => void
+    api.login.mockResolvedValueOnce(succeeded(session()))
+    api.refresh.mockReturnValueOnce(new Promise((resolve) => (answerRefresh = resolve)))
+    api.logout.mockResolvedValueOnce({ success: true, data: null, notifications: [], status: 200 })
+    const auth = useAuthStore()
+    await auth.login({ email: 'ana@lexora.local', password: 'secret' })
+
+    const renewal = auth.renew()
+    await auth.logout()
+    answerRefresh(succeeded(session()))
+
+    expect(await renewal).toBe('rejected')
+    expect(auth.isAuthenticated).toBe(false)
+    expect(boundSession()?.accessToken()).toBeNull()
+  })
+
+  it('tries to restore again after a connection failure', async () => {
+    api.refresh
+      .mockResolvedValueOnce(failed(0, 'network.unavailable'))
+      .mockResolvedValueOnce(succeeded(session()))
+    const auth = useAuthStore()
+
+    expect(await auth.restore()).toBe(false)
+    expect(await auth.restore()).toBe(true)
+    expect(auth.isAuthenticated).toBe(true)
+  })
+
+  it('signs out the other tabs of the browser', async () => {
+    api.login.mockResolvedValue(succeeded(session()))
+    api.logout.mockResolvedValueOnce({ success: true, data: null, notifications: [], status: 200 })
+    const thisTab = useAuthStore(createPinia())
+    const otherTab = useAuthStore(createPinia())
+    const ended = vi.fn()
+    otherTab.onSessionEnded(ended)
+    await thisTab.login({ email: 'ana@lexora.local', password: 'secret' })
+    await otherTab.login({ email: 'ana@lexora.local', password: 'secret' })
+
+    await thisTab.logout()
+
+    await vi.waitFor(() => expect(otherTab.isAuthenticated).toBe(false))
+    expect(ended).toHaveBeenCalledWith('signedOut')
   })
 
   it('compares roles by rank', async () => {

@@ -38,6 +38,11 @@ async function openStream(
   signal: AbortSignal,
   token: string | null,
 ): Promise<ApiResult<null>> {
+  // A stop that came while the session was being renewed must not post the question again.
+  if (signal.aborted) {
+    throw aborted()
+  }
+
   let refusal: ApiResult<null> | null = null
   let streamError: ApiNotification[] | null = null
   let finished = false
@@ -64,6 +69,10 @@ async function openStream(
         throw new StreamRefused()
       },
       onmessage(message) {
+        if (!message.data) {
+          return
+        }
+
         const data: unknown = JSON.parse(message.data)
 
         switch (message.event) {

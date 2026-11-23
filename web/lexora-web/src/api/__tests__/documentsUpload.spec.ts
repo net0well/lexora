@@ -90,7 +90,7 @@ describe('documentsApi.upload', () => {
       accessToken: () => token,
       renew: vi.fn(async () => {
         token = 'new-token'
-        return true
+        return 'renewed' as const
       }),
       expire: vi.fn(),
     }
@@ -165,5 +165,20 @@ describe('documentsApi.upload', () => {
     controller.abort()
 
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('does not send the file again when it was cancelled during the renewal', async () => {
+    const controller = new AbortController()
+    vi.mocked(session.renew).mockImplementationOnce(async () => {
+      controller.abort()
+      token = 'new-token'
+      return 'renewed'
+    })
+    FakeXhr.replies.push({ status: 401, body: { success: false, data: null, notifications: [] } })
+
+    const pending = documentsApi.upload('kb-1', file, { signal: controller.signal })
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    expect(FakeXhr.sent).toHaveLength(1)
   })
 })

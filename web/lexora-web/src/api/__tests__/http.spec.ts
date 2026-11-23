@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import { apiUrl, http, parseResult } from '../http'
-import { bindSession, type SessionBridge } from '../session'
+import { bindSession, type RenewalOutcome, type SessionBridge } from '../session'
 import { singleFlight } from '../singleFlight'
 
 function json(status: number, body: unknown): Response {
@@ -32,7 +32,10 @@ function authorizationOf(call: unknown[]): string | undefined {
 describe('http', () => {
   let fetchMock: Mock<typeof fetch>
   let token: string | null
-  let session: SessionBridge & { renew: Mock<() => Promise<boolean>>; expire: Mock<() => void> }
+  let session: SessionBridge & {
+    renew: Mock<() => Promise<RenewalOutcome>>
+    expire: Mock<() => void>
+  }
 
   beforeEach(() => {
     fetchMock = vi.fn<typeof fetch>()
@@ -42,7 +45,7 @@ describe('http', () => {
       accessToken: () => token,
       renew: vi.fn(async () => {
         token = 'new-token'
-        return true
+        return 'renewed' as const
       }),
       expire: vi.fn(),
     }
@@ -136,7 +139,7 @@ describe('http', () => {
       singleFlight(async () => {
         await renewal
         token = 'new-token'
-        return true
+        return 'renewed' as const
       }),
     )
     fetchMock.mockImplementation(async (_url, init) =>
@@ -172,13 +175,25 @@ describe('http', () => {
   })
 
   it('expires the session when the renewal fails', async () => {
-    session.renew.mockResolvedValueOnce(false)
+    session.renew.mockResolvedValueOnce('rejected')
     fetchMock.mockResolvedValueOnce(unauthorized())
 
     const result = await http.get('/knowledge-bases')
 
     expect(result.status).toBe(401)
     expect(session.expire).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the session when the renewal could not reach the server', async () => {
+    session.renew.mockResolvedValueOnce('transient')
+    fetchMock.mockResolvedValueOnce(unauthorized())
+
+    const result = await http.get('/knowledge-bases')
+
+    expect(result).toMatchObject({ success: false, status: 0 })
+    expect(result.notifications[0]?.key).toBe('network.unavailable')
+    expect(session.expire).not.toHaveBeenCalled()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 

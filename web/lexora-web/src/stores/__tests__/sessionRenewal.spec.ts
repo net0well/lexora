@@ -67,7 +67,7 @@ describe('session renewal through the HTTP client', () => {
   it('ends the session when the refresh cookie is no longer valid', async () => {
     const auth = await signIn()
     const onExpired = vi.fn()
-    auth.onExpired(onExpired)
+    auth.onSessionEnded(onExpired)
     fetchMock.mockImplementation(async (url) =>
       url === '/api/v1/auth/refresh'
         ? json(401, { success: false, data: null, notifications: [] })

@@ -29,7 +29,9 @@ const passwordMissing = computed(() => submitted.value && !form.password)
 const notice = computed(() => {
   const reason = route.query.reason
 
-  return reason === 'expired' || reason === 'passwordChanged' ? t(`auth.login.${reason}`) : null
+  return reason === 'expired' || reason === 'signedOut' || reason === 'passwordChanged'
+    ? t(`auth.login.${reason}`)
+    : null
 })
 
 async function submit(): Promise<void> {

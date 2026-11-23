@@ -3,7 +3,7 @@ import { computed, shallowRef } from 'vue'
 
 import { authApi } from '@/api/auth'
 import { withCrossTabLock } from '@/api/crossTabLock'
-import { bindSession } from '@/api/session'
+import { bindSession, type RenewalOutcome } from '@/api/session'
 import { singleFlight } from '@/api/singleFlight'
 import type { AuthenticatedUser, LoginRequest, Session, UserRole } from '@/api/types/auth'
 import { tokenLifetimeMs } from '@/utils/tokenLifetime'
@@ -11,10 +11,12 @@ import { tokenLifetimeMs } from '@/utils/tokenLifetime'
 export const renewBeforeExpiryMs = 60_000
 export const retryRenewalAfterMs = 15_000
 const minimumRenewalDelayMs = 5_000
+const sessionChannelName = 'lexora-session'
+const signedOutMessage = 'signed-out'
+
+export type SessionEndReason = 'expired' | 'signedOut'
 
 const roleRank: Record<UserRole, number> = { viewer: 1, member: 2, admin: 3 }
-
-type Renewal = 'renewed' | 'transient' | 'rejected'
 
 function isTransient(status: number): boolean {
   return status === 0 || status === 429 || status >= 500
@@ -27,7 +29,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   let renewalTimer: ReturnType<typeof setTimeout> | undefined
   let restoration: Promise<boolean> | null = null
-  let expiredHandler: (() => void) | null = null
+  let endedHandler: ((reason: SessionEndReason) => void) | null = null
+  // Bumped whenever the session is dropped, so a renewal that was already running cannot bring it back.
+  let epoch = 0
+  const channel =
+    typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(sessionChannelName)
 
   function schedule(delayMs: number): void {
     clearTimeout(renewalTimer)
@@ -46,23 +52,33 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function clear(): void {
+    epoch++
     clearTimeout(renewalTimer)
     accessToken.value = null
     user.value = null
   }
 
-  function expire(): void {
+  function end(reason: SessionEndReason): void {
     const wasAuthenticated = isAuthenticated.value
     clear()
 
     if (wasAuthenticated) {
-      expiredHandler?.()
+      endedHandler?.(reason)
     }
   }
 
+  function expire(): void {
+    end('expired')
+  }
+
   const renewal = singleFlight(() =>
-    withCrossTabLock('lexora-refresh', async (): Promise<Renewal> => {
+    withCrossTabLock('lexora-refresh', async (): Promise<RenewalOutcome> => {
+      const started = epoch
       const result = await authApi.refresh()
+
+      if (started !== epoch) {
+        return 'rejected'
+      }
 
       if (result.success && result.data) {
         apply(result.data)
@@ -73,12 +89,17 @@ export const useAuthStore = defineStore('auth', () => {
     }),
   )
 
-  async function renew(): Promise<boolean> {
-    return (await renewal()) === 'renewed'
+  function renew(): Promise<RenewalOutcome> {
+    return renewal()
   }
 
   async function renewInBackground(): Promise<void> {
+    const started = epoch
     const outcome = await renewal()
+
+    if (started !== epoch) {
+      return
+    }
 
     if (outcome === 'transient' && isAuthenticated.value) {
       schedule(retryRenewalAfterMs)
@@ -88,7 +109,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function restore(): Promise<boolean> {
-    restoration ??= renew()
+    restoration ??= renewal().then((outcome) => {
+      if (outcome === 'transient') {
+        restoration = null
+      }
+
+      return outcome === 'renewed'
+    })
 
     return restoration
   }
@@ -103,20 +130,26 @@ export const useAuthStore = defineStore('auth', () => {
     return result
   }
 
+  function announceSignOut(): void {
+    channel?.postMessage(signedOutMessage)
+  }
+
   async function logout(): Promise<void> {
     if (isAuthenticated.value) {
       await authApi.logout()
     }
 
     clear()
+    announceSignOut()
   }
 
   function forget(): void {
     clear()
+    announceSignOut()
   }
 
-  function onExpired(handler: () => void): void {
-    expiredHandler = handler
+  function onSessionEnded(handler: (reason: SessionEndReason) => void): void {
+    endedHandler = handler
   }
 
   function hasRole(...roles: UserRole[]): boolean {
@@ -126,6 +159,12 @@ export const useAuthStore = defineStore('auth', () => {
   function atLeast(role: UserRole): boolean {
     return user.value !== null && roleRank[user.value.role] >= roleRank[role]
   }
+
+  channel?.addEventListener('message', (event: MessageEvent) => {
+    if (event.data === signedOutMessage) {
+      end('signedOut')
+    }
+  })
 
   bindSession({ accessToken: () => accessToken.value, renew, expire })
 
@@ -139,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
     renew,
     expire,
     forget,
-    onExpired,
+    onSessionEnded,
     hasRole,
     atLeast,
   }

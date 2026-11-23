@@ -9,6 +9,7 @@ import type {
   ConversationMessage,
   QuestionRequest,
 } from '@/api/types/conversation'
+import { resetWhenUserChanges } from './sessionScope'
 
 const listSize = 50
 
@@ -20,6 +21,12 @@ export const useConversationStore = defineStore('conversation', () => {
   const current = ref<Conversation | null>(null)
   const pendingOpens = shallowRef(0)
   const loadingCurrent = computed(() => pendingOpens.value > 0)
+
+  resetWhenUserChanges(() => {
+    knowledgeBaseId.value = null
+    conversations.value = []
+    current.value = null
+  })
 
   async function loadList(baseId: string, signal?: AbortSignal) {
     if (knowledgeBaseId.value !== baseId) {

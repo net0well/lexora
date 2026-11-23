@@ -77,7 +77,7 @@ describe('conversationsApi.stream', () => {
       accessToken: () => token,
       renew: vi.fn(async () => {
         token = 'new-token'
-        return true
+        return 'renewed' as const
       }),
       expire: vi.fn(),
     }
@@ -229,6 +229,49 @@ describe('conversationsApi.stream', () => {
     controller.abort()
 
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('does not ask again when the user stopped the answer during the renewal', async () => {
+    const controller = new AbortController()
+    vi.mocked(session.renew).mockImplementationOnce(async () => {
+      controller.abort()
+      token = 'new-token'
+      return 'renewed'
+    })
+    fetchMock.mockResolvedValueOnce(envelope(401, 'auth.unauthenticated'))
+    const { handlers } = recorder()
+
+    const pending = conversationsApi.stream(
+      'conv-1',
+      { question: 'O que fazer?', profile: null },
+      handlers,
+      controller.signal,
+    )
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores the keep-alive messages that carry no data', async () => {
+    fetchMock.mockResolvedValueOnce(
+      eventStream(
+        ': keep-alive\n\n',
+        sse('delta', { text: 'Isole.' }),
+        'event: delta\ndata:\n\n',
+        sse('done', done),
+      ),
+    )
+    const { events, handlers } = recorder()
+
+    const result = await conversationsApi.stream(
+      'conv-1',
+      { question: 'O que fazer?', profile: null },
+      handlers,
+      new AbortController().signal,
+    )
+
+    expect(result.success).toBe(true)
+    expect(events).toEqual(['delta:Isole.', 'done:answer-1'])
   })
 
   it('keeps the same request when the tab is hidden', async () => {

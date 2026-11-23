@@ -12,7 +12,8 @@
       "emailRequired": "Informe o e-mail.",
       "passwordRequired": "Informe a senha.",
       "expired": "Sua sessão expirou. Entre de novo.",
-      "passwordChanged": "Senha alterada. Entre com a nova senha."
+      "passwordChanged": "Senha alterada. Entre com a nova senha.",
+      "signedOut": "Você saiu em outra aba."
     },
     "logout": "Sair"
   },

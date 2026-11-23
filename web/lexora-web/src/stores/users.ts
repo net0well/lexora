@@ -5,12 +5,18 @@ import { usersApi, type UserQuery } from '@/api/users'
 import type { UserRole } from '@/api/types/auth'
 import type { ApiResult } from '@/api/types/commandResult'
 import type { NewUser, User } from '@/api/types/user'
+import { resetWhenUserChanges } from './sessionScope'
 
 export const useUsersStore = defineStore('users', () => {
   const items = shallowRef<User[]>([])
   const totalItems = shallowRef(0)
   const pendingLoads = shallowRef(0)
   const loading = computed(() => pendingLoads.value > 0)
+
+  resetWhenUserChanges(() => {
+    items.value = []
+    totalItems.value = 0
+  })
 
   async function load(query: UserQuery, signal?: AbortSignal) {
     pendingLoads.value++

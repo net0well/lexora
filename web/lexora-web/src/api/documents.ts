@@ -28,7 +28,14 @@ function sendFile(
   options: UploadOptions,
 ): Promise<ApiResult<UploadedDocument>> {
   return new Promise((resolve, reject) => {
+    // A cancel that came while the session was being renewed must stop the second attempt too.
+    if (options.signal?.aborted) {
+      reject(new DOMException('The upload was cancelled.', 'AbortError'))
+      return
+    }
+
     const xhr = new XMLHttpRequest()
+    const abort = () => xhr.abort()
     xhr.open('POST', url)
     xhr.setRequestHeader('Accept', 'application/json')
 
@@ -45,7 +52,8 @@ function sendFile(
       resolve(parseResult(xhr.status, xhr.getResponseHeader('content-type'), xhr.responseText))
     xhr.onerror = () => resolve(parseResult(0, null, ''))
     xhr.onabort = () => reject(new DOMException('The upload was cancelled.', 'AbortError'))
-    options.signal?.addEventListener('abort', () => xhr.abort(), { once: true })
+    xhr.onloadend = () => options.signal?.removeEventListener('abort', abort)
+    options.signal?.addEventListener('abort', abort, { once: true })
 
     const form = new FormData()
     form.append('file', file, file.name)

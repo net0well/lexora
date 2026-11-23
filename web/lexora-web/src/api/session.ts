@@ -1,6 +1,8 @@
+export type RenewalOutcome = 'renewed' | 'transient' | 'rejected'
+
 export interface SessionBridge {
   accessToken(): string | null
-  renew(): Promise<boolean>
+  renew(): Promise<RenewalOutcome>
   expire(): void
 }
 
