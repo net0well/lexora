@@ -2,6 +2,7 @@ using Lexora.Application.Abstractions.Ai;
 using Lexora.Infrastructure.AI.Adapters;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
+using Lexora.Infrastructure.AI.Providers.Anthropic;
 using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Providers.Ollama;
 using Lexora.Infrastructure.AI.Providers.OpenAi;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddSingleton<IChatClientProvider, OllamaChatClientProvider>();
         services.AddSingleton<IChatClientProvider, OpenAiChatClientProvider>();
         services.AddSingleton<IChatClientProvider, OpenAiCompatibleChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, AnthropicChatClientProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiCompatibleEmbeddingGeneratorProvider>();
