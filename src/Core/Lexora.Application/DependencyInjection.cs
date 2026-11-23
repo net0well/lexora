@@ -3,6 +3,7 @@ using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
 using Lexora.Application.Conversations.Prompts;
+using Lexora.Application.Conversations.Services;
 using Lexora.Application.Documents.Services;
 using Lexora.Application.Ingestion.Services;
 using Lexora.Application.KnowledgeBases.Services;
@@ -66,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IRetrievalService, RetrievalService>();
         services.AddSingleton<IRagPromptBuilder, RagPromptBuilder>();
         services.AddSingleton<ICitationParser, CitationParser>();
+        services.AddScoped<IConversationService, ConversationService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
