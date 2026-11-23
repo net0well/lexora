@@ -12,4 +12,6 @@ public sealed class ConversationRepository(LexoraDbContext context) : IConversat
 
     public async Task AddAsync(Conversation conversation, CancellationToken cancellationToken) =>
         await context.Conversations.AddAsync(conversation, cancellationToken);
+
+    public void Remove(Conversation conversation) => context.Conversations.Remove(conversation);
 }

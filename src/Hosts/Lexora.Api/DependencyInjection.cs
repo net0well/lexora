@@ -36,6 +36,7 @@ public static class DependencyInjection
 
         services.AddExceptionHandler<InputValidationExceptionHandler>();
         services.AddExceptionHandler<RequestTooLargeExceptionHandler>();
+        services.AddExceptionHandler<AiUnavailableExceptionHandler>();
         services.AddExceptionHandler<UnhandledExceptionHandler>();
 
         services.Configure<KestrelServerOptions>(kestrel => kestrel.Limits.MaxRequestBodySize = DefaultMaxRequestBodyBytes);
@@ -53,12 +54,18 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<ChatRateLimitOptions>()
+            .Bind(configuration.GetSection(ChatRateLimitOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.OnRejected = RateLimitRejectionWriter.WriteAsync;
             options.AddPolicy(RateLimitPolicies.Login, context => ClientIpRateLimiter.Partition(context, limits => limits.LoginPermitsPerMinute));
             options.AddPolicy(RateLimitPolicies.Refresh, context => ClientIpRateLimiter.Partition(context, limits => limits.RefreshPermitsPerMinute));
+            options.AddPolicy(RateLimitPolicies.Chat, UserRateLimiter.Partition);
         });
     }
 

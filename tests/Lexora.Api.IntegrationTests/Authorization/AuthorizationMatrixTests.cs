@@ -22,6 +22,8 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("POST", "/api/v1/knowledge-bases", UserRole.Admin),
         ("PUT", "/api/v1/knowledge-bases/{id}", UserRole.Admin),
         ("POST", "/api/v1/knowledge-bases/{id}/archive", UserRole.Admin),
+        ("POST", "/api/v1/knowledge-bases/{id}/reindex", UserRole.Admin),
+        ("POST", "/api/v1/knowledge-bases/{id}/search", UserRole.Viewer),
         ("POST", "/api/v1/knowledge-bases/{id}/documents", UserRole.Member),
         ("GET", "/api/v1/knowledge-bases/{id}/documents", UserRole.Viewer),
         ("GET", "/api/v1/documents/{id}", UserRole.Viewer),
@@ -33,6 +35,12 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("POST", "/api/v1/auth/logout", UserRole.Viewer),
         ("POST", "/api/v1/auth/change-password", UserRole.Viewer),
         ("GET", "/api/v1/ai/profiles", UserRole.Viewer),
+        ("GET", "/api/v1/conversations", UserRole.Viewer),
+        ("GET", "/api/v1/conversations/{id}", UserRole.Viewer),
+        ("POST", "/api/v1/conversations", UserRole.Viewer),
+        ("POST", "/api/v1/conversations/{id}/messages", UserRole.Viewer),
+        ("POST", "/api/v1/conversations/{id}/messages/stream", UserRole.Viewer),
+        ("DELETE", "/api/v1/conversations/{id}", UserRole.Viewer),
     ];
 
     public static TheoryData<string, string, UserRole, UserRole?> Matrix

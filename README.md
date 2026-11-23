@@ -89,7 +89,7 @@ The `ai-local` profile starts Ollama and downloads the embedding model (`OLLAMA_
 
 Chat and embedding providers are named profiles under `Ai:Chat:Profiles` and `Ai:Embedding:Profiles` in `appsettings.json`: `local` (Ollama), `claude` (Anthropic), `openai`, `groq` (any OpenAI-compatible endpoint) and `fake`. The active ones are `Ai:Chat:DefaultProfile` and `Ai:Embedding:Profile` (`AI_CHAT_PROFILE` and `AI_EMBEDDING_PROFILE` in `.env`); switching providers is a configuration change. API keys never go into `appsettings.json`: use user secrets locally (`dotnet user-secrets set "Ai:Chat:Profiles:groq:ApiKey" "<key>" --project src/Hosts/Lexora.Api`) or `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` and `GROQ_API_KEY` in `.env`.
 
-The active profiles must be complete or the hosts do not start. Other chat profiles without their key stay listed as unavailable in `GET /api/v1/ai/profiles`. OpenAI-compatible profiles need a key unless they set `RequiresApiKey` to `false` (LM Studio, vLLM). Changing the embedding profile changes the vector space, so indexed documents must be reprocessed.
+The active profiles must be complete or the hosts do not start. Other chat profiles without their key stay listed as unavailable in `GET /api/v1/ai/profiles`. OpenAI-compatible profiles need a key unless they set `RequiresApiKey` to `false` (LM Studio, vLLM). Changing the embedding profile changes the vector space, so the knowledge bases must be reindexed (`POST /api/v1/knowledge-bases/{id}/reindex`, admin only), which sends every indexed document through the pipeline again.
 
 The provider contract tests in `tests/Lexora.Infrastructure.IntegrationTests` call the real services when they can: Ollama when it answers at `localhost:11434` with the models pulled, and the paid or hosted ones when their key is in that project's user secrets (`dotnet user-secrets set "Ai:Chat:Profiles:groq:ApiKey" "<key>" --project tests/Lexora.Infrastructure.IntegrationTests`). Without them those tests are skipped.
 
@@ -130,6 +130,24 @@ dotnet run --project src/Hosts/Lexora.Worker
 Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes), the first admin's credentials and the S3 keys (the values above match the local SeaweedFS credentials in `deploy/seaweedfs/s3.json`). To keep files on disk instead of S3, set `Storage:Provider` to `Local` with `Storage:Local:RootPath` and `Storage:Local:DownloadBaseUrl` (for example `http://localhost:5080/api/v1/files/`). The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
 
 In Development both hosts use the `fake` chat and embedding profiles. To use real models, start Ollama with `docker compose --profile ai-local up -d ollama ollama-init` and run the hosts with `Ai__Chat__DefaultProfile=local` and `Ai__Embedding__Profile=local` (for example `Ai__Embedding__Profile=local dotnet run --project src/Hosts/Lexora.Worker`). Uploaded documents go through extraction, chunking and embedding in the worker until they reach `indexed`; `GET /api/v1/documents/{id}` shows the progress.
+
+### Search and chat
+
+`POST /api/v1/knowledge-bases/{id}/search` with `{ "query": "...", "mode": "hybrid", "topK": 8 }` returns the best excerpts of a knowledge base. The `hybrid` mode (the default) runs a vector search (pgvector HNSW, cosine) and a full-text search (PostgreSQL `portuguese` configuration) and fuses both rankings with Reciprocal Rank Fusion; `vector` and `keyword` run one side only. At most three excerpts per document are kept.
+
+Questions are asked inside a conversation:
+
+```bash
+curl -X POST http://localhost:5080/api/v1/conversations -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"knowledgeBaseId":"<id>"}'
+curl -X POST http://localhost:5080/api/v1/conversations/<conversationId>/messages -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"question":"What should be done in a chemical spill?"}'
+curl -N -X POST http://localhost:5080/api/v1/conversations/<conversationId>/messages/stream -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"question":"Who must be notified?"}'
+```
+
+The answer cites its sources as `[1]`, `[2]` and comes with the matching citations (document, page or sheet, excerpt). When nothing relevant is found the model is not called and the answer says so, with `grounded: false`. Follow-up questions are rewritten as standalone questions before the search. The streaming route sends server-sent events: `delta` with pieces of the text, then `citations`, then `done` (or `error`); the exchange is saved to the conversation only when the answer is complete. Each user can ask 20 questions per minute (`RateLimiting:Chat:PermitsPerMinute`); a provider outage answers 503 `ai.unavailable`.
+
+Retrieval settings live in the `Rag` section (`CandidatePoolSize`, `MinVectorSimilarity`, `RrfK`, `MaxChunksPerDocument`, `TopK`, `MaxContextTokens`, `HistoryMessages`, `RewriteFollowUpQuestions`). Query embeddings are cached for an hour in HybridCache, with Redis as the second level when `ConnectionStrings:Redis` is set and memory only otherwise.
+
+The prompts are Markdown templates in `src/Core/Lexora.Application/Conversations/Prompts/Templates`: the answer prompt (role, language, grounding, citation and output rules with short examples) and the follow-up rewrite prompt. Document excerpts, file names, questions and history are untrusted text: they go inside XML tags (`<documents>`, `<question>`, `<conversation>`), any of those tags inside the text is escaped so a document cannot close the context and add a fake question, and the rules are repeated after the context. The model has no tools, only sees excerpts of the conversation's knowledge base, and citations are rebuilt from the retrieved excerpts, never from the generated text. No prompt makes a model immune to prompt injection, so these layers limit what a malicious document can do: at most a wrong answer for whoever asked.
 
 ### Migrations
 
@@ -178,7 +196,7 @@ npx @modelcontextprotocol/inspector
 - [x] Storage and document upload
 - [x] Ingestion pipeline
 - [x] AI connectors
-- [ ] Hybrid search and chat with citations
+- [x] Hybrid search and chat with citations
 - [ ] Vue front-end
 - [ ] MCP server
 - [ ] Observability and v1.0.0

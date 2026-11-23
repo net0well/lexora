@@ -50,7 +50,7 @@ public sealed class PipelineFixture : IAsyncLifetime
 
         _worker = new PipelineWorkerFactory(settings, Embeddings);
         _worker.StartServer();
-        _api = new PipelineApiFactory(settings);
+        _api = new PipelineApiFactory(settings, Embeddings);
         _api.StartServer();
     }
 

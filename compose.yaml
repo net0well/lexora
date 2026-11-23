@@ -4,6 +4,7 @@ x-dotnet-env: &dotnet-env
   ASPNETCORE_ENVIRONMENT: Production
   ConnectionStrings__Lexora: Host=postgres;Port=5432;Database=lexora;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};GSS Encryption Mode=Disable
   ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+  ConnectionStrings__Redis: redis:6379
   Persistence__WolverineSchema: wolverine_api
   Storage__Provider: S3
   Storage__S3__ServiceUrl: http://seaweedfs:8333
@@ -168,6 +169,8 @@ services:
     ports:
       - "5080:8080"
     depends_on:
+      redis:
+        condition: service_healthy
       migrator:
         condition: service_completed_successfully
       seaweedfs-init:
@@ -183,6 +186,8 @@ services:
     ports:
       - "5081:8080"
     depends_on:
+      redis:
+        condition: service_healthy
       migrator:
         condition: service_completed_successfully
       seaweedfs-init:

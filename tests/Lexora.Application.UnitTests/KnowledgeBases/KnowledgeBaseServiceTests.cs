@@ -1,8 +1,11 @@
 using Lexora.Application.KnowledgeBases;
 using Lexora.Application.KnowledgeBases.ArchiveKnowledgeBase;
 using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
+using Lexora.Application.KnowledgeBases.ReindexKnowledgeBase;
 using Lexora.Application.KnowledgeBases.Services;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
+using Lexora.Domain.Documents;
+using Lexora.Domain.Documents.Events;
 using Lexora.Domain.KnowledgeBases;
 using Lexora.Domain.KnowledgeBases.Events;
 using Lexora.Shared.Results;
@@ -17,10 +20,13 @@ public sealed class KnowledgeBaseServiceTests
 {
     private readonly FakeTimeProvider _time = new(TestClock.Now);
     private readonly InMemoryKnowledgeBaseRepository _repository = new();
+    private readonly InMemoryDocumentRepository _documents = new();
     private readonly FakeCurrentUser _currentUser = new FakeCurrentUser().SignIn(new UserBuilder().Build());
     private readonly KnowledgeBaseService _service;
 
-    public KnowledgeBaseServiceTests() => _service = new KnowledgeBaseService(_repository, _currentUser, _time);
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    public KnowledgeBaseServiceTests() => _service = new KnowledgeBaseService(_repository, _documents, _currentUser, _time);
 
     [Fact]
     public async Task CreateAsync_WithoutChunking_UsesTheDefaultsAndRecordsTheCreator()
@@ -136,5 +142,43 @@ public sealed class KnowledgeBaseServiceTests
         await _repository.AddAsync(knowledgeBase, TestContext.Current.CancellationToken);
 
         return knowledgeBase;
+    }
+
+    [Fact]
+    public async Task ReindexAsync_Base_SendsOnlyItsIndexedDocumentsBackThroughThePipeline()
+    {
+        var knowledgeBase = new KnowledgeBaseBuilder().Build();
+        await _repository.AddAsync(knowledgeBase, CancellationToken);
+        var indexed = await AddDocumentAsync(knowledgeBase.Id, DocumentStatus.Indexed);
+        var alsoIndexed = await AddDocumentAsync(knowledgeBase.Id, DocumentStatus.Indexed);
+        var failed = await AddDocumentAsync(knowledgeBase.Id, DocumentStatus.Failed);
+        var processing = await AddDocumentAsync(knowledgeBase.Id, DocumentStatus.Chunked);
+        var deleted = await AddDocumentAsync(knowledgeBase.Id, DocumentStatus.Indexed);
+        deleted.Delete(TestClock.Now);
+        var otherBase = await AddDocumentAsync(Guid.CreateVersion7(), DocumentStatus.Indexed);
+
+        var response = (await _service.ReindexAsync(new ReindexKnowledgeBaseCommand(knowledgeBase.Id), CancellationToken)).Value;
+
+        response.ShouldBe(new ReindexKnowledgeBaseResponse(knowledgeBase.Id, 2));
+        foreach (var document in new[] { indexed, alsoIndexed })
+        {
+            (document.Status, document.ProcessingVersion).ShouldBe((DocumentStatus.Uploaded, 2));
+            document.DomainEvents.ShouldHaveSingleItem().ShouldBeOfType<DocumentReprocessRequested>();
+        }
+
+        new[] { failed.Status, processing.Status, otherBase.Status }.ShouldBe([DocumentStatus.Failed, DocumentStatus.Chunked, DocumentStatus.Indexed]);
+    }
+
+    [Fact]
+    public async Task ReindexAsync_UnknownBase_RespondsNotFound() =>
+        (await _service.ReindexAsync(new ReindexKnowledgeBaseCommand(Guid.CreateVersion7()), CancellationToken))
+            .Notifications.ShouldBe([KnowledgeBaseNotifications.NotFound]);
+
+    private async Task<Document> AddDocumentAsync(Guid knowledgeBaseId, DocumentStatus status)
+    {
+        var document = new DocumentBuilder().InKnowledgeBase(knowledgeBaseId).InStatus(status).Build();
+        await _documents.AddAsync(document, CancellationToken);
+
+        return document;
     }
 }

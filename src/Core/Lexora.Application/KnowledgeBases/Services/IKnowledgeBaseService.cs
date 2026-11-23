@@ -1,5 +1,6 @@
 using Lexora.Application.KnowledgeBases.ArchiveKnowledgeBase;
 using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
+using Lexora.Application.KnowledgeBases.ReindexKnowledgeBase;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
 using Lexora.Shared.Results;
 
@@ -12,4 +13,6 @@ public interface IKnowledgeBaseService
     Task<Result<UpdateKnowledgeBaseResponse>> UpdateAsync(UpdateKnowledgeBaseCommand command, CancellationToken cancellationToken);
 
     Task<Result> ArchiveAsync(ArchiveKnowledgeBaseCommand command, CancellationToken cancellationToken);
+
+    Task<Result<ReindexKnowledgeBaseResponse>> ReindexAsync(ReindexKnowledgeBaseCommand command, CancellationToken cancellationToken);
 }

@@ -3,6 +3,9 @@ using System.Net.Http.Headers;
 using Lexora.Api.IntegrationTests.Hosting;
 using Lexora.Application.Abstractions.Ai;
 using Lexora.Application.Abstractions.Processing;
+using Lexora.Application.Conversations.AskQuestion;
+using Lexora.Application.Conversations.GetConversation;
+using Lexora.Application.Conversations.StartConversation;
 using Lexora.Application.Documents.GetDocument;
 using Lexora.Application.Documents.UploadDocument;
 using Lexora.Domain.Documents;
@@ -102,6 +105,32 @@ public sealed class IngestionPipelineTests(PipelineFixture pipeline) : IClassFix
         await EventuallyAsync(async () =>
             (!Directory.Exists(folder) || !Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Any())
             && (await pipeline.ChunksOfAsync(documentId, CancellationToken)).Count == 0);
+    }
+
+    [Fact]
+    public async Task IndexedPdf_QuestionAboutIt_IsAnsweredCitingTheRightPage()
+    {
+        var (client, knowledgeBaseId) = await pipeline.MemberWithKnowledgeBaseAsync(CancellationToken);
+        using var _ = client;
+        var documentId = await UploadAsync(client, knowledgeBaseId, SampleFiles.SafetyManualPdf, await SampleAsync(SampleFiles.SafetyManualPdf));
+        await WaitForAsync(client, documentId, document => document.Status == DocumentStatus.Indexed);
+        using var started = await client.PostJsonAsync("/api/v1/conversations", new { knowledgeBaseId }, CancellationToken);
+        var conversationId = (await started.ReadEnvelopeAsync<StartConversationResponse>(CancellationToken)).Data.ShouldNotBeNull().Id;
+
+        // The fake embeddings carry no meaning, so only words that are all on the first page make the keyword side rank it first.
+        using var asked = await client.PostJsonAsync($"/api/v1/conversations/{conversationId}/messages", new { question = "Vazamentos químicos?" }, CancellationToken);
+        using var streamed = await client.PostJsonAsync($"/api/v1/conversations/{conversationId}/messages/stream", new { question = "E sobre vazamentos químicos, quem comunicar?" }, CancellationToken);
+
+        var answer = (await asked.ReadEnvelopeAsync<AskQuestionResponse>(CancellationToken)).Data.ShouldNotBeNull();
+        answer.Grounded.ShouldBeTrue();
+        answer.Citations.ShouldContain(citation => citation.DocumentId == documentId && citation.PageNumber == 1 && citation.Excerpt.Contains("Vazamentos químicos", StringComparison.Ordinal));
+        streamed.Content.Headers.ContentType!.MediaType.ShouldBe("text/event-stream");
+        var events = await streamed.Content.ReadAsStringAsync(CancellationToken);
+        events.ShouldContain("event: citations");
+        events.ShouldContain("\"grounded\":true");
+        events.ShouldContain("event: done");
+        using var read = await client.GetAsync($"/api/v1/conversations/{conversationId}", CancellationToken);
+        (await read.ReadEnvelopeAsync<GetConversationResponse>(CancellationToken)).Data!.Messages.Count.ShouldBe(4);
     }
 
     private static async Task<byte[]> SampleAsync(string fileName) =>
