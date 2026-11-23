@@ -89,12 +89,23 @@ public sealed class AiOptionsValidatorTests
     [InlineData(AiProviderKind.OpenAI, null, "key", true)]
     [InlineData(AiProviderKind.OpenAI, null, null, false)]
     [InlineData(AiProviderKind.Anthropic, null, null, false)]
-    [InlineData(AiProviderKind.OpenAICompatible, "http://localhost:1234/v1", null, true)]
+    [InlineData(AiProviderKind.OpenAICompatible, "https://api.groq.com/openai/v1", "key", true)]
+    [InlineData(AiProviderKind.OpenAICompatible, "https://api.groq.com/openai/v1", null, false)]
     [InlineData(AiProviderKind.OpenAICompatible, null, "key", false)]
     [InlineData(AiProviderKind.Fake, null, null, true)]
     public void IsComplete_Profile_DependsOnWhatItsProviderNeeds(AiProviderKind provider, string? endpoint, string? apiKey, bool expected) =>
         AiProfileRequirements.IsComplete(new AiProfileSettings { Provider = provider, Model = "model", Endpoint = endpoint is null ? null : new Uri(endpoint), ApiKey = apiKey })
             .ShouldBe(expected);
+
+    [Fact]
+    public void IsComplete_LocalCompatibleServerWithoutKey_IsCompleteWhenItSaysItNeedsNone() =>
+        AiProfileRequirements.IsComplete(new AiProfileSettings
+        {
+            Provider = AiProviderKind.OpenAICompatible,
+            Model = "local-model",
+            Endpoint = new Uri("http://localhost:1234/v1"),
+            RequiresApiKey = false,
+        }).ShouldBeTrue();
 
     private static AiProfileSettings FakeEmbedding() => new() { Provider = AiProviderKind.Fake, Model = "fake-embedding" };
 

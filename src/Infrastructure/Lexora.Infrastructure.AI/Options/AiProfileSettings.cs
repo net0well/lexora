@@ -10,6 +10,8 @@ public sealed class AiProfileSettings
 
     public string? ApiKey { get; init; }
 
+    public bool? RequiresApiKey { get; init; }
+
     public int? TimeoutSeconds { get; init; }
 
     public bool AllowUserSelection { get; init; }

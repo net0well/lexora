@@ -23,7 +23,7 @@ public sealed class AiProfilesControllerTests(ApiFactory api) : ApiTest(api)
         profiles.ChatProfiles[0].ShouldBe(new AiChatProfileResponse("fake", "fake", "fake-chat", Selectable: false, Available: true));
         profiles.ChatProfiles.Single(profile => profile.Name == "local")
             .ShouldBe(new AiChatProfileResponse("local", "ollama", "qwen2.5:7b", Selectable: true, Available: true));
-        profiles.ChatProfiles.Where(profile => profile.Name is "claude" or "openai")
+        profiles.ChatProfiles.Where(profile => profile.Name is "claude" or "openai" or "groq")
             .ShouldAllBe(profile => !profile.Available && !profile.Selectable);
         profiles.Embedding.ShouldBe(new AiEmbeddingProfileResponse("fake", "fake-embedding", 1024));
     }
