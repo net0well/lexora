@@ -16,6 +16,12 @@ public sealed class DocumentRepository(LexoraDbContext context) : IDocumentRepos
     public Task<long> SumActiveSizeAsync(CancellationToken cancellationToken) =>
         context.Documents.Where(document => document.DeletedAt == null).SumAsync(document => document.SizeBytes, cancellationToken);
 
+    public async Task<IReadOnlyList<Document>> ListIndexedAsync(Guid knowledgeBaseId, CancellationToken cancellationToken) =>
+        await context.Documents
+            .Where(document => document.KnowledgeBaseId == knowledgeBaseId && document.DeletedAt == null && document.Status == DocumentStatus.Indexed)
+            .OrderBy(document => document.UploadedAt)
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<Document>> ListStalledAsync(DateTimeOffset updatedBefore, int limit, CancellationToken cancellationToken) =>
         await context.Documents
             .Where(document => document.DeletedAt == null

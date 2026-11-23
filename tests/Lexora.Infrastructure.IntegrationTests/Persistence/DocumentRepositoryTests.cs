@@ -155,6 +155,25 @@ public sealed class DocumentRepositoryTests(DatabaseFixture database) : Database
     }
 
     [Fact]
+    public async Task ListIndexedAsync_Base_ReturnsItsIndexedDocumentsOnly()
+    {
+        var (ownerId, knowledgeBase) = await SaveKnowledgeBaseAsync();
+        var (_, otherBase) = await SaveKnowledgeBaseAsync("Other base", ownerId);
+        var indexed = NewDocument(ownerId, knowledgeBase.Id, DocumentStatus.Indexed);
+        var failed = NewDocument(ownerId, knowledgeBase.Id, DocumentStatus.Failed);
+        var deleted = NewDocument(ownerId, knowledgeBase.Id, DocumentStatus.Indexed);
+        deleted.Delete(TestClock.Now);
+        var elsewhere = NewDocument(ownerId, otherBase.Id, DocumentStatus.Indexed);
+        await SaveAsync(indexed, failed, deleted, elsewhere);
+
+        await using var context = Database.CreateContext();
+        var listed = await new DocumentRepository(context).ListIndexedAsync(knowledgeBase.Id, CancellationToken);
+
+        listed.ShouldHaveSingleItem().Id.ShouldBe(indexed.Id);
+        context.Entry(listed[0]).State.ShouldBe(EntityState.Unchanged);
+    }
+
+    [Fact]
     public async Task FindActiveIdsAsync_MixOfActiveDeletedAndUnknown_ReturnsOnlyTheActiveOnes()
     {
         var (ownerId, knowledgeBase) = await SaveKnowledgeBaseAsync();

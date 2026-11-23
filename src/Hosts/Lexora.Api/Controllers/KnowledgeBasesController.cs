@@ -8,6 +8,7 @@ using Lexora.Application.KnowledgeBases.ArchiveKnowledgeBase;
 using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
 using Lexora.Application.KnowledgeBases.GetKnowledgeBase;
 using Lexora.Application.KnowledgeBases.ListKnowledgeBases;
+using Lexora.Application.KnowledgeBases.ReindexKnowledgeBase;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
 using Lexora.Application.Retrieval.SearchKnowledgeBase;
 using Lexora.Domain.KnowledgeBases;
@@ -47,6 +48,14 @@ public sealed class KnowledgeBasesController(IMessageBus bus) : ControllerBase
     [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken) =>
         (await bus.InvokeAsync<Result<GetKnowledgeBaseResponse>>(new GetKnowledgeBaseQuery(id), cancellationToken)).ToActionResult();
+
+    [HttpPost("{id:guid}/reindex")]
+    [Authorize(Policy = AuthorizationPolicies.RequireAdmin)]
+    [ProducesResponseType<CommandResult<ReindexKnowledgeBaseResponse>>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reindex(Guid id, CancellationToken cancellationToken) =>
+        (await bus.InvokeAsync<Result<ReindexKnowledgeBaseResponse>>(new ReindexKnowledgeBaseCommand(id), cancellationToken))
+            .ToAcceptedResult(response => Url.Action(nameof(Get), new { id = response.KnowledgeBaseId }));
 
     [HttpPost("{id:guid}/search")]
     [ProducesResponseType<CommandResult<SearchKnowledgeBaseResponse>>(StatusCodes.Status200OK)]

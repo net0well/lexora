@@ -2,7 +2,9 @@ using Lexora.Application.Abstractions.Identity;
 using Lexora.Application.KnowledgeBases.ArchiveKnowledgeBase;
 using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
 using Lexora.Application.KnowledgeBases.Mappers;
+using Lexora.Application.KnowledgeBases.ReindexKnowledgeBase;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
+using Lexora.Domain.Documents;
 using Lexora.Domain.KnowledgeBases;
 using Lexora.Shared.Results;
 
@@ -10,6 +12,7 @@ namespace Lexora.Application.KnowledgeBases.Services;
 
 public sealed class KnowledgeBaseService(
     IKnowledgeBaseRepository repository,
+    IDocumentRepository documents,
     ICurrentUser currentUser,
     TimeProvider timeProvider) : IKnowledgeBaseService
 {
@@ -92,5 +95,24 @@ public sealed class KnowledgeBaseService(
         knowledgeBase.Archive(timeProvider.GetUtcNow());
 
         return Result.Success();
+    }
+
+    public async Task<Result<ReindexKnowledgeBaseResponse>> ReindexAsync(ReindexKnowledgeBaseCommand command, CancellationToken cancellationToken)
+    {
+        if (await repository.GetByIdAsync(command.Id, cancellationToken) is null)
+        {
+            return Result.Failure<ReindexKnowledgeBaseResponse>(KnowledgeBaseNotifications.NotFound);
+        }
+
+        var now = timeProvider.GetUtcNow();
+        var indexed = await documents.ListIndexedAsync(command.Id, cancellationToken);
+
+        // Each document goes back through the pipeline with the active embedding profile.
+        foreach (var document in indexed)
+        {
+            document.RequestReprocess(now);
+        }
+
+        return new ReindexKnowledgeBaseResponse(command.Id, indexed.Count);
     }
 }

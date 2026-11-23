@@ -18,6 +18,13 @@ public sealed class InMemoryDocumentRepository : IDocumentRepository
     public Task<long> SumActiveSizeAsync(CancellationToken cancellationToken) =>
         Task.FromResult(_documents.Where(document => document.DeletedAt is null).Sum(document => document.SizeBytes));
 
+    public Task<IReadOnlyList<Document>> ListIndexedAsync(Guid knowledgeBaseId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Document>>(
+        [
+            .. _documents.Where(document =>
+                document.KnowledgeBaseId == knowledgeBaseId && document.DeletedAt is null && document.Status == DocumentStatus.Indexed),
+        ]);
+
     public Task<IReadOnlyList<Document>> ListStalledAsync(DateTimeOffset updatedBefore, int limit, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Document>>(
         [

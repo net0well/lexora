@@ -22,6 +22,7 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("POST", "/api/v1/knowledge-bases", UserRole.Admin),
         ("PUT", "/api/v1/knowledge-bases/{id}", UserRole.Admin),
         ("POST", "/api/v1/knowledge-bases/{id}/archive", UserRole.Admin),
+        ("POST", "/api/v1/knowledge-bases/{id}/reindex", UserRole.Admin),
         ("POST", "/api/v1/knowledge-bases/{id}/search", UserRole.Viewer),
         ("POST", "/api/v1/knowledge-bases/{id}/documents", UserRole.Member),
         ("GET", "/api/v1/knowledge-bases/{id}/documents", UserRole.Viewer),
