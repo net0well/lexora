@@ -2,6 +2,7 @@ using FluentValidation;
 using Lexora.Application.Auth.SeedAdmin;
 using Lexora.Application.Auth.Services;
 using Lexora.Application.Common.Options;
+using Lexora.Application.Conversations.Prompts;
 using Lexora.Application.Documents.Services;
 using Lexora.Application.Ingestion.Services;
 using Lexora.Application.KnowledgeBases.Services;
@@ -63,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IMaintenanceService, MaintenanceService>();
         services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
         services.AddScoped<IRetrievalService, RetrievalService>();
+        services.AddSingleton<IRagPromptBuilder, RagPromptBuilder>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
