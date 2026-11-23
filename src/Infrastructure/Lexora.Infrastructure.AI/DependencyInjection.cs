@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddSingleton<EmbeddingGeneratorRegistry>();
         services.AddSingleton<IChatModel, ChatModelAdapter>();
         services.AddSingleton<IAiProfileCatalog, AiProfileCatalog>();
+        services.AddSingleton<IReranker, NoOpReranker>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
 
         // Without AI the API still uploads and lists documents, so an unreachable model degrades readiness instead of failing it.

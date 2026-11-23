@@ -6,6 +6,7 @@ using Lexora.Application.Documents.Services;
 using Lexora.Application.Ingestion.Services;
 using Lexora.Application.KnowledgeBases.Services;
 using Lexora.Application.Retrieval.Fusion;
+using Lexora.Application.Retrieval.Services;
 using Lexora.Application.Users.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IIngestionService, IngestionService>();
         services.AddScoped<IMaintenanceService, MaintenanceService>();
         services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
+        services.AddScoped<IRetrievalService, RetrievalService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
