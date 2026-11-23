@@ -18,6 +18,7 @@ public sealed class AnswerService(
     ICurrentUser currentUser,
     IRetrievalService retrieval,
     IRagPromptBuilder prompts,
+    IFollowUpQuestionRewriter rewriter,
     IChatModel chat,
     ICitationParser citations,
     IAiProfileCatalog profiles,
@@ -54,7 +55,10 @@ public sealed class AnswerService(
         }
 
         var question = asked.Value.Content;
-        var hits = await retrieval.RetrieveAsync(conversation.KnowledgeBaseId, question, SearchMode.Hybrid, settings.TopK, cancellationToken);
+        var searchQuery = settings.RewriteFollowUpQuestions
+            ? await rewriter.RewriteAsync(question, history, command.Profile, cancellationToken)
+            : question;
+        var hits = await retrieval.RetrieveAsync(conversation.KnowledgeBaseId, searchQuery, SearchMode.Hybrid, settings.TopK, cancellationToken);
 
         if (hits.Count == 0)
         {

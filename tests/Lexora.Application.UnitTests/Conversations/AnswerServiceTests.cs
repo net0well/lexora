@@ -47,6 +47,7 @@ public sealed class AnswerServiceTests
             _currentUser,
             _retrieval,
             new RagPromptBuilder(new WordTokenCounter(), options),
+            new FollowUpQuestionRewriter(_chat),
             _chat,
             new CitationParser(),
             _profiles,
@@ -105,14 +106,21 @@ public sealed class AnswerServiceTests
     }
 
     [Fact]
-    public async Task AnswerAsync_FollowUp_SendsTheEarlierTurnsBeforeTheNewQuestion()
+    public async Task AnswerAsync_FollowUp_SearchesWithTheRewrittenQuestionAndAnswersTheOriginalAfterTheEarlierTurns()
     {
         await AskAsync("Qual o raio de isolamento?");
         _time.Advance(TimeSpan.FromMinutes(1));
+        _chat.Answers.Enqueue("Quais luvas usar em caso de vazamento químico?");
 
         await AskAsync("E quais luvas usar?", profile: "claude");
 
+        await _retrieval.Received(1).RetrieveAsync(_conversation.KnowledgeBaseId, "Quais luvas usar em caso de vazamento químico?", SearchMode.Hybrid, 8, CancellationToken);
+        _chat.Requests.Count.ShouldBe(3);
+        _chat.Requests[1].ShouldSatisfyAllConditions(
+            rewrite => rewrite.SystemPrompt.ShouldBe(FollowUpQuestionRewriter.SystemPrompt),
+            rewrite => rewrite.MaxOutputTokens.ShouldBe(FollowUpQuestionRewriter.MaxOutputTokens));
         var request = _chat.Requests[^1];
+        request.Turns[^1].Content.ShouldEndWith("Question: E quais luvas usar?");
         request.Profile.ShouldBe("claude");
         request.Turns.Select(turn => turn.Role).ShouldBe([ChatTurnRole.User, ChatTurnRole.Assistant, ChatTurnRole.User]);
         request.Turns[0].Content.ShouldBe("Qual o raio de isolamento?");
