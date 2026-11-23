@@ -41,10 +41,22 @@
     "pt-BR": "Português",
     "en": "English"
   },
+  "nav": {
+    "knowledgeBases": "Knowledge bases"
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The address does not exist or you do not have access to it.",
     "home": "Back to start"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "member": "Member",
+    "viewer": "Viewer"
+  },
+  "shell": {
+    "navigation": "Main navigation",
+    "userMenu": "User menu"
   },
   "notifications": {
     "unexpected": "An unexpected error occurred. Try again.",

@@ -26,9 +26,15 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
-    name: 'knowledge-bases',
-    component: () => import('@/views/KnowledgeBasesView.vue'),
+    component: () => import('@/components/layout/AppShell.vue'),
     meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'knowledge-bases',
+        component: () => import('@/views/KnowledgeBasesView.vue'),
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',

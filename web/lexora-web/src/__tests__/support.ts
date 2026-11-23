@@ -15,6 +15,7 @@ export interface MountOptions {
   pinia?: Pinia
   router?: Router
   props?: Record<string, unknown>
+  attachTo?: HTMLElement | string
 }
 
 export async function mountWithApp(component: Component, options: MountOptions = {}) {
@@ -26,6 +27,7 @@ export async function mountWithApp(component: Component, options: MountOptions =
 
   const wrapper = mount(component, {
     props: options.props,
+    attachTo: options.attachTo,
     global: { plugins: [pinia, i18n, router, PrimeVue, ToastService, ConfirmationService] },
   })
   await flushPromises()
