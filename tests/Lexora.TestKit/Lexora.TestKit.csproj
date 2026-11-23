@@ -16,4 +16,8 @@
     <ProjectReference Include="..\..\src\Core\Lexora.Application\Lexora.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Samples\Files\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -48,6 +48,28 @@ public sealed class DocxTextExtractorTests
     }
 
     [Fact]
+    public async Task ExtractAsync_WordDocument_ReadsTheTextAsWordDisplaysIt()
+    {
+        var document = (await ExtractAsync(await File.ReadAllBytesAsync(SampleFiles.PathOf(SampleFiles.VacationPolicyDocx), TestContext.Current.CancellationToken))).Value;
+
+        document.PageCount.ShouldBe(2);
+        document.Sections.Select(section => section.Title).ShouldBe(["Política de Férias", "Tabela de saldos"]);
+        var policy = document.Sections[0].Text;
+        policy.ShouldContain("Cada colaborador tem direito a 30 dias de férias por ano.");
+        policy.ShouldContain("Prazo de solicitação: 45 dias de antecedência");
+        policy.ShouldContain("Aprovação pelo gestor direto\ne registro no portal de RH.");
+        policy.ShouldContain("As férias podem ser divididas em até três partes.");
+        policy.ShouldNotContain("duas");
+        policy.ShouldContain("Consulte o portal de RH ou a página 2.");
+        policy.ShouldNotContain("PAGEREF");
+        policy.ShouldContain("Este documento é revisado anualmente pelo comitê de pessoas.");
+        var table = document.Sections[1].Text;
+        table.ShouldStartWith("Tempo de casa | Dias\nAté 1 ano | Proporcional (2,5 dias por mês)\nMais de 1 ano | 30");
+        table.Split("Dúvidas: ramal 4321.").Length.ShouldBe(2);
+        table.ShouldNotContain("00");
+    }
+
+    [Fact]
     public async Task ExtractAsync_DamagedPackage_FailsAsUnreadable() =>
         (await ExtractAsync([0x50, 0x4B, 0x03, 0x04, .. Encoding.ASCII.GetBytes("broken zip body")])).Notifications
             .ShouldBe([ExtractionFailures.Unreadable]);

@@ -5,6 +5,7 @@ using Lexora.Application.Abstractions.Processing;
 using Lexora.Domain.Documents;
 using Lexora.Shared.Results;
 using Microsoft.Extensions.Options;
+using OpenXml::DocumentFormat.OpenXml;
 using OpenXml::DocumentFormat.OpenXml.Packaging;
 using OpenXml::DocumentFormat.OpenXml.Wordprocessing;
 
@@ -52,21 +53,21 @@ public sealed class DocxTextExtractor(IOptions<DocumentProcessingOptions> option
         string? title = null;
         var text = new StringBuilder();
 
-        foreach (var element in body.ChildElements)
+        foreach (var block in Blocks(body))
         {
-            switch (element)
+            switch (block)
             {
                 case Paragraph paragraph when IsHeading(paragraph, headingStyles):
                     Flush(sections, title, text);
-                    title = paragraph.InnerText.Trim();
+                    title = TextOf(paragraph).Trim();
                     break;
                 case Paragraph paragraph:
-                    AppendLine(text, paragraph.InnerText);
+                    AppendLine(text, TextOf(paragraph));
                     break;
                 case Table table:
                     foreach (var row in table.Elements<TableRow>())
                     {
-                        AppendLine(text, string.Join(" | ", row.Elements<TableCell>().Select(cell => cell.InnerText.Trim())));
+                        AppendLine(text, string.Join(" | ", row.Elements<TableCell>().Select(CellText)));
                     }
 
                     break;
@@ -76,6 +77,77 @@ public sealed class DocxTextExtractor(IOptions<DocumentProcessingOptions> option
         Flush(sections, title, text);
 
         return sections;
+    }
+
+    private static IEnumerable<OpenXmlElement> Blocks(OpenXmlElement container)
+    {
+        foreach (var element in container.ChildElements)
+        {
+            if (element is Paragraph or Table)
+            {
+                yield return element;
+                continue;
+            }
+
+            // Content controls and custom XML wrap ordinary paragraphs and tables.
+            foreach (var nested in Blocks(element))
+            {
+                yield return nested;
+            }
+        }
+    }
+
+    private static string CellText(TableCell cell) =>
+        string.Join(' ', Blocks(cell)
+            .Select(block => TextOf(block).Replace('\n', ' ').Trim())
+            .Where(value => value.Length > 0));
+
+    private static string TextOf(OpenXmlElement element)
+    {
+        var text = new StringBuilder();
+        AppendText(element, text);
+
+        return text.ToString();
+    }
+
+    private static void AppendText(OpenXmlElement element, StringBuilder text)
+    {
+        foreach (var child in element.ChildElements)
+        {
+            switch (child)
+            {
+                case Text value:
+                    text.Append(value.Text);
+                    break;
+                case TabChar or PositionalTab:
+                    text.Append(' ');
+                    break;
+                case Break or CarriageReturn:
+                    text.Append('\n');
+                    break;
+                case NoBreakHyphen:
+                    text.Append('-');
+                    break;
+                case Paragraph:
+                    text.Append('\n');
+                    AppendText(child, text);
+                    text.Append('\n');
+                    break;
+                case AlternateContent alternate:
+                    // Word stores shapes twice, a modern choice and a legacy fallback, with the same text.
+                    if (((OpenXmlElement?)alternate.GetFirstChild<AlternateContentChoice>() ?? alternate.GetFirstChild<AlternateContentFallback>()) is { } branch)
+                    {
+                        AppendText(branch, text);
+                    }
+
+                    break;
+                case DeletedRun or MoveFromRun:
+                    break;
+                default:
+                    AppendText(child, text);
+                    break;
+            }
+        }
     }
 
     private static bool IsHeading(Paragraph paragraph, HashSet<string> headingStyles) =>
