@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Lexora",
+    "tagline": "Answers from your company documents, with the source cited."
+  },
+  "common": {
+    "actions": "Actions",
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading…",
+    "no": "No",
+    "retry": "Try again",
+    "save": "Save",
+    "search": "Search",
+    "yes": "Yes"
+  },
+  "locale": {
+    "label": "Language",
+    "pt-BR": "Português",
+    "en": "English"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address does not exist or you do not have access to it.",
+    "home": "Back to start"
+  },
+  "notifications": {
+    "unexpected": "An unexpected error occurred. Try again.",
+    "network": {
+      "unavailable": "Could not reach the server. Check the connection and try again."
+    }
+  }
+}

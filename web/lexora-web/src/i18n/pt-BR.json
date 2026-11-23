@@ -1,0 +1,186 @@
+{
+  "app": {
+    "name": "Lexora",
+    "tagline": "Respostas dos documentos da sua empresa, com a fonte citada."
+  },
+  "common": {
+    "actions": "Ações",
+    "back": "Voltar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "loading": "Carregando…",
+    "no": "Não",
+    "retry": "Tentar de novo",
+    "save": "Salvar",
+    "search": "Buscar",
+    "yes": "Sim"
+  },
+  "locale": {
+    "label": "Idioma",
+    "pt-BR": "Português",
+    "en": "English"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço não existe ou você não tem acesso a ele.",
+    "home": "Voltar ao início"
+  },
+  "notifications": {
+    "unexpected": "Ocorreu um erro inesperado. Tente de novo.",
+    "network": {
+      "unavailable": "Não foi possível falar com o servidor. Verifique a conexão e tente de novo."
+    },
+    "ai": {
+      "unavailable": "O provedor de IA está indisponível agora. Tente de novo em alguns instantes.",
+      "profile": {
+        "notSelectable": "O perfil de IA escolhido não existe, não está disponível ou não pode ser escolhido."
+      }
+    },
+    "auth": {
+      "forbidden": "Você não tem permissão para esta ação.",
+      "invalidCredentials": "E-mail ou senha incorretos.",
+      "lockedOut": "Muitas tentativas sem sucesso. Tente de novo mais tarde.",
+      "unauthenticated": "Entre para continuar.",
+      "userInactive": "O usuário está inativo.",
+      "password": {
+        "currentInvalid": "A senha atual está incorreta.",
+        "required": "Informe a senha.",
+        "weak": "A senha precisa ter pelo menos 12 caracteres, com letras maiúsculas, minúsculas e um número."
+      },
+      "refreshToken": {
+        "invalid": "A sessão expirou. Entre de novo."
+      }
+    },
+    "conversation": {
+      "notFound": "Conversa não encontrada.",
+      "knowledgeBase": {
+        "required": "Escolha a base de conhecimento."
+      },
+      "limit": {
+        "messages": "A conversa chegou ao limite de mensagens. Comece uma nova."
+      },
+      "message": {
+        "required": "Escreva a pergunta.",
+        "tooLong": "A pergunta é longa demais."
+      },
+      "title": {
+        "required": "Informe o título.",
+        "tooLong": "O título é longo demais."
+      }
+    },
+    "document": {
+      "duplicate": "Este arquivo já existe na base.",
+      "notFound": "Documento não encontrado.",
+      "extraction": {
+        "cellLimit": "A planilha passa do limite de células.",
+        "encrypted": "PDFs protegidos por senha não são aceitos.",
+        "noText": "Nenhum texto encontrado. Documentos digitalizados (OCR) não são aceitos.",
+        "pageLimit": "O documento passa do limite de páginas.",
+        "unreadable": "Não foi possível ler o arquivo."
+      },
+      "file": {
+        "required": "Escolha um arquivo."
+      },
+      "fileName": {
+        "invalid": "O nome do arquivo é inválido."
+      },
+      "format": {
+        "unsupported": "Formato de arquivo não aceito."
+      },
+      "processing": {
+        "stale": "O documento foi reprocessado; esta etapa é de uma versão antiga."
+      },
+      "search": {
+        "tooLong": "O texto da busca é longo demais."
+      },
+      "size": {
+        "empty": "O arquivo está vazio.",
+        "exceeded": "O arquivo passa do tamanho máximo."
+      },
+      "status": {
+        "invalid": "Status inválido.",
+        "invalidTransition": "O documento não pode ir para esse status agora."
+      }
+    },
+    "knowledgeBase": {
+      "archived": "A base está arquivada e não recebe novos documentos.",
+      "notFound": "Base de conhecimento não encontrada.",
+      "chunking": {
+        "invalid": "Os tamanhos de trecho são inválidos."
+      },
+      "description": {
+        "tooLong": "A descrição é longa demais."
+      },
+      "name": {
+        "duplicate": "Já existe uma base com esse nome.",
+        "required": "Informe o nome.",
+        "tooLong": "O nome é longo demais.",
+        "tooShort": "O nome é curto demais."
+      },
+      "status": {
+        "invalid": "Status inválido."
+      }
+    },
+    "paging": {
+      "page": {
+        "invalid": "Página inválida."
+      },
+      "pageSize": {
+        "invalid": "Tamanho de página inválido."
+      }
+    },
+    "request": {
+      "failed": "Não foi possível processar a requisição.",
+      "malformed": "A requisição está malformada.",
+      "methodNotAllowed": "Operação não permitida para este recurso.",
+      "notFound": "Recurso não encontrado.",
+      "rateLimited": "Muitas requisições em pouco tempo. Aguarde um pouco e tente de novo.",
+      "tooLarge": "A requisição passa do tamanho permitido.",
+      "unsupportedMediaType": "Tipo de conteúdo não aceito."
+    },
+    "search": {
+      "mode": {
+        "invalid": "Modo de busca inválido."
+      },
+      "query": {
+        "required": "Escreva o que buscar.",
+        "tooLong": "O texto da busca é longo demais."
+      },
+      "topK": {
+        "invalid": "A quantidade de resultados é inválida."
+      }
+    },
+    "storage": {
+      "limit": {
+        "exceeded": "O limite de armazenamento seria ultrapassado."
+      }
+    },
+    "user": {
+      "lastAdmin": "O último administrador ativo não pode perder o papel nem ser desativado.",
+      "notFound": "Usuário não encontrado.",
+      "selfDeactivation": "Você não pode desativar a própria conta.",
+      "email": {
+        "duplicate": "Já existe um usuário com esse e-mail.",
+        "invalid": "E-mail inválido."
+      },
+      "name": {
+        "required": "Informe o nome.",
+        "tooLong": "O nome é longo demais.",
+        "tooShort": "O nome é curto demais."
+      },
+      "role": {
+        "invalid": "Papel inválido."
+      },
+      "search": {
+        "tooLong": "O texto da busca é longo demais."
+      },
+      "status": {
+        "invalid": "Status inválido."
+      }
+    }
+  }
+}

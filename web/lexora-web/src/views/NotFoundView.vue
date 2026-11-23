@@ -4,9 +4,10 @@ import Button from 'primevue/button'
 
 <template>
   <section class="page page--centered">
-    <h1>404</h1>
+    <h1>{{ $t('notFound.title') }}</h1>
+    <p>{{ $t('notFound.description') }}</p>
     <RouterLink v-slot="{ navigate }" to="/" custom>
-      <Button label="Home" icon="pi pi-home" @click="navigate" />
+      <Button :label="$t('notFound.home')" icon="pi pi-home" @click="navigate" />
     </RouterLink>
   </section>
 </template>

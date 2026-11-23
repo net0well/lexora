@@ -8,12 +8,14 @@ import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
 
 import App from './App.vue'
+import { i18n } from './i18n'
 import { createAppRouter } from './router'
 import { lexoraPreset } from './theme/lexoraPreset'
 
 const app = createApp(App)
 
 app.use(createPinia())
+app.use(i18n)
 app.use(createAppRouter())
 app.use(PrimeVue, {
   theme: {
