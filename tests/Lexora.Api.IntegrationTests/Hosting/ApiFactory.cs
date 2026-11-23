@@ -124,6 +124,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Storage:Local:DownloadBaseUrl", "https://localhost/api/v1/files/");
         builder.UseSetting("RateLimiting:Auth:LoginPermitsPerMinute", "10000");
         builder.UseSetting("RateLimiting:Auth:RefreshPermitsPerMinute", "10000");
+        builder.UseSetting("RateLimiting:Chat:PermitsPerMinute", "10000");
 
         builder.ConfigureServices(services =>
         {

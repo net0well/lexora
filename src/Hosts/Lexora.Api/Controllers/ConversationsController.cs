@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Lexora.Api.Contracts;
 using Lexora.Api.Contracts.Requests;
 using Lexora.Api.Mappers;
+using Lexora.Api.RateLimiting;
 using Lexora.Api.Results;
 using Lexora.Api.Streaming;
 using Lexora.Application.Common.Paging;
@@ -16,6 +17,7 @@ using Lexora.Infrastructure.Identity;
 using Lexora.Shared.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Wolverine;
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
@@ -58,19 +60,23 @@ public sealed class ConversationsController(IMessageBus bus) : ControllerBase
             .ToCreatedResult(conversation => Url.Action(nameof(Get), new { id = conversation.Id }));
 
     [HttpPost("{id:guid}/messages")]
+    [EnableRateLimiting(RateLimitPolicies.Chat)]
     [ProducesResponseType<CommandResult<AskQuestionResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> Ask(Guid id, AskQuestionRequest request, CancellationToken cancellationToken) =>
         (await bus.InvokeAsync<Result<AskQuestionResponse>>(request.ToCommand(id), cancellationToken)).ToActionResult();
 
     [HttpPost("{id:guid}/messages/stream")]
+    [EnableRateLimiting(RateLimitPolicies.Chat)]
     [Produces("text/event-stream", "application/json")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/event-stream")]
     [ProducesResponseType<CommandResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType<CommandResult>(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IResult> Stream(
         Guid id,
