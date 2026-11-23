@@ -13,7 +13,7 @@ Knowledge platform where a company uploads its documents and talks to an AI that
 - **Built-in authentication**: JWT access tokens with rotating refresh tokens, PBKDF2 password hashing, account lockout, roles (Admin, Member, Viewer) and API keys for agents. The first admin is created by a seed command.
 - **Explicit database migrations**: EF Core migrations are applied only by command, never at application startup.
 - **MCP server** (Streamable HTTP) with tools to list knowledge bases, search documents and ask questions with citations.
-- **Vue 3 front-end** with login, document upload with live status and streaming chat.
+- **Vue 3 front-end** with login, knowledge bases, document upload with live status, hybrid search, streaming chat with clickable citations and user administration, in Portuguese and English.
 - Everything runs with **Docker Compose**.
 
 ## Architecture
@@ -66,9 +66,9 @@ flowchart LR
 | AI | Microsoft.Extensions.AI, Ollama, OpenAI, Anthropic, OpenAI-compatible endpoints |
 | Authentication | ASP.NET Core JWT Bearer, PBKDF2 password hashing, API keys |
 | MCP | Official MCP C# SDK |
-| Front-end | Vue 3, Vite, TypeScript, Pinia |
+| Front-end | Vue 3, Vite, TypeScript, Vue Router, Pinia, PrimeVue 4, vue-i18n, Nginx |
 | Observability | OpenTelemetry, Serilog, Seq |
-| Tests | xUnit v3, Shouldly, NSubstitute, Testcontainers |
+| Tests | xUnit v3, Shouldly, NSubstitute, Testcontainers, Vitest, Vue Test Utils |
 
 ## Getting started
 
@@ -103,6 +103,31 @@ The provider contract tests in `tests/Lexora.Infrastructure.IntegrationTests` ca
 | Seq | http://localhost:5341 |
 | SeaweedFS (S3) | http://localhost:8333 |
 | Ollama (`ai-local`) | http://localhost:11434 |
+
+### Web app
+
+Open http://localhost:3000 and sign in with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` from `.env`. A first tour:
+
+1. **Bases de conhecimento** → **Nova base**: give it a name; the chunking settings can stay as they are.
+2. In the base, drop a PDF, DOCX, XLSX, TXT, MD or CSV file (up to 50 MB) on the upload area. The status goes from *Na fila* to *Indexado* by itself; a failed file shows the reason and can be processed again.
+3. **Busca** tab: try the same question in the *Híbrida*, *Semântica* and *Palavras-chave* modes and compare the excerpts.
+4. **Conversar**: ask a question about the document. The answer arrives as it is written, with numbered markers; click a marker or a source below the answer to see the cited excerpt, its page or sheet, and download the original. *Parar* stops an answer; a question the documents do not answer comes back without sources.
+5. Reload the page: the session stays (refresh cookie). **Usuários** creates members and viewers; **Meu perfil** changes the password and ends every session.
+
+The interface is in Portuguese by default; the language selector switches to English. With the local model on CPU the first answer takes longer while Ollama loads `qwen2.5:7b`.
+
+The app is served by Nginx (unprivileged image) on the same origin as the API: `/api` is proxied with buffering off for server-sent events, and every page carries a Content Security Policy that only allows the app's own scripts, styles, images and connections. Answers are rendered as Markdown without HTML or images and sanitized with DOMPurify. Tokens never go to `localStorage`: the access token stays in memory and the rotating refresh token in an `HttpOnly` cookie, renewed by one tab at a time. The API trusts `X-Forwarded-For` only from the web container, which has a fixed address in the compose network (`LEXORA_SUBNET`, `10.231.0.0/24` by default, and `LEXORA_WEB_IP`, `10.231.0.10`); change both in `.env` if that range is already used on your machine.
+
+To work on the front-end with hot reload, keep the API running (in Docker or locally) and start Vite, which proxies `/api` to `http://localhost:5080`:
+
+```bash
+cd web/lexora-web
+npm install
+npm run dev      # http://localhost:5173
+npm run lint
+npm run test
+npm run build
+```
 
 ### Local (without the app containers)
 
