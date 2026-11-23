@@ -41,6 +41,15 @@
       "deleteTitle": "Delete conversation",
       "deleteConfirm": "Delete “{title}”? The messages cannot be recovered.",
       "deleted": "Conversation deleted."
+    },
+    "citations": {
+      "sources": "Sources:",
+      "open": "Open source {index}",
+      "title": "Source {index}",
+      "page": "Page {page}",
+      "sheet": "Sheet {sheet}",
+      "excerpt": "Cited excerpt",
+      "download": "Download the original document"
     }
   },
   "common": {

@@ -5,9 +5,10 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { isAbort } from '@/api/http'
-import type { ConversationMessage } from '@/api/types/conversation'
+import type { Citation, ConversationMessage } from '@/api/types/conversation'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatThread from '@/components/chat/ChatThread.vue'
+import CitationPanel from '@/components/chat/CitationPanel.vue'
 import ConversationList from '@/components/chat/ConversationList.vue'
 import { useAnswerStream } from '@/composables/useAnswerStream'
 import { useNotifications } from '@/composables/useNotifications'
@@ -31,6 +32,13 @@ const { draft, streaming } = answers
 
 const question = shallowRef('')
 const profile = shallowRef<string | null>(null)
+const openCitations = shallowRef<readonly Citation[]>([])
+const openCitation = shallowRef<number | null>(null)
+
+function showCitation(citations: readonly Citation[], index: number): void {
+  openCitations.value = citations
+  openCitation.value = index
+}
 
 const messages = computed(() =>
   conversation.value && conversation.value.id === conversationId ? conversation.value.messages : [],
@@ -172,6 +180,7 @@ watch(
         :draft="draft"
         :streaming="streaming"
         :knowledge-base-name="base?.name ?? ''"
+        @cite="showCitation"
       />
 
       <ChatComposer
@@ -182,6 +191,8 @@ watch(
         @stop="answers.stop()"
       />
     </div>
+
+    <CitationPanel v-model:index="openCitation" :citations="openCitations" />
   </section>
 </template>
 

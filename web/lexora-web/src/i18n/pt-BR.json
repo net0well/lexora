@@ -41,6 +41,15 @@
       "deleteTitle": "Excluir conversa",
       "deleteConfirm": "Excluir “{title}”? As mensagens não podem ser recuperadas.",
       "deleted": "Conversa excluída."
+    },
+    "citations": {
+      "sources": "Fontes:",
+      "open": "Abrir a fonte {index}",
+      "title": "Fonte {index}",
+      "page": "Página {page}",
+      "sheet": "Aba {sheet}",
+      "excerpt": "Trecho citado",
+      "download": "Baixar o documento original"
     }
   },
   "common": {

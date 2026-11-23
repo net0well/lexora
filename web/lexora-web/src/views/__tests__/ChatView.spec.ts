@@ -5,6 +5,7 @@ import App from '@/App.vue'
 import { aiApi } from '@/api/ai'
 import { authApi } from '@/api/auth'
 import { conversationsApi } from '@/api/conversations'
+import { documentsApi } from '@/api/documents'
 import { knowledgeBasesApi } from '@/api/knowledgeBases'
 import type { ApiResult } from '@/api/types/commandResult'
 import type {
@@ -46,11 +47,22 @@ vi.mock('@/api/conversations', () => ({
   },
 }))
 vi.mock('@/api/ai', () => ({ aiApi: { profiles: vi.fn() } }))
+vi.mock('@/api/documents', () => ({
+  documentsApi: {
+    list: vi.fn(),
+    get: vi.fn(),
+    download: vi.fn(),
+    reprocess: vi.fn(),
+    delete: vi.fn(),
+    upload: vi.fn(),
+  },
+}))
 
 const auth = vi.mocked(authApi)
 const bases = vi.mocked(knowledgeBasesApi)
 const conversations = vi.mocked(conversationsApi)
 const ai = vi.mocked(aiApi)
+const documents = vi.mocked(documentsApi)
 
 const base: KnowledgeBase = {
   id: 'kb-1',
@@ -304,5 +316,55 @@ describe('ChatView', () => {
     await input.trigger('keydown', { key: 'Enter' })
     await flushPromises()
     expect(conversations.start).toHaveBeenCalledTimes(1)
+  })
+
+  it('opens the cited excerpt and downloads its document', async () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+    documents.download.mockResolvedValueOnce(
+      ok({
+        url: 'http://localhost:8333/lexora/doc-1?signature=x',
+        expiresAt: '2026-11-20T10:05:00Z',
+      }),
+    )
+    conversations.get.mockResolvedValue(
+      ok(
+        conversation([
+          message({ id: 'q1', role: 'user', content: 'O que fazer?', provider: null, model: null }),
+          message({
+            id: 'a1',
+            content: 'Isole a área num raio de 50 metros [1].',
+            citations: [
+              {
+                index: 1,
+                documentId: 'doc-1',
+                documentName: 'manual-seguranca.pdf',
+                pageNumber: 1,
+                sheetName: null,
+                excerpt: 'Vazamentos químicos: isole a área num raio de 50 metros.',
+                score: 0.03,
+              },
+            ],
+          }),
+        ]),
+      ),
+    )
+    const { wrapper } = await mountWithApp(App, {
+      path: '/knowledge-bases/kb-1/chat/conv-1',
+      attachTo: document.body,
+    })
+
+    await wrapper.find('button[aria-label="Abrir a fonte 1"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('Fonte 1')
+    expect(document.body.textContent).toContain(
+      'Vazamentos químicos: isole a área num raio de 50 metros.',
+    )
+    buttonByText(document.body, 'Baixar o documento original')!.click()
+    await flushPromises()
+    expect(documents.download).toHaveBeenCalledWith('doc-1')
+    expect((click.mock.contexts[0] as HTMLAnchorElement).href).toBe(
+      'http://localhost:8333/lexora/doc-1?signature=x',
+    )
   })
 })

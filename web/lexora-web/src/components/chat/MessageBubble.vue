@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { conversationRules, type Citation, type MessageRole } from '@/api/types/conversation'
+import CitationChip from './CitationChip.vue'
 import MarkdownContent from './MarkdownContent.vue'
 
 const {
@@ -25,7 +26,11 @@ const {
   streaming?: boolean
 }>()
 
+const emit = defineEmits<{ cite: [index: number] }>()
+
 const { t, n } = useI18n()
+
+const citedIndexes = computed(() => citations.map((citation) => citation.index))
 
 const automatic = computed(() => provider === conversationRules.noContextProvider)
 const withoutSources = computed(
@@ -54,7 +59,22 @@ const details = computed(() => {
         <i class="pi pi-spin pi-spinner" aria-hidden="true" />
         {{ t('chat.thinking') }}
       </p>
-      <MarkdownContent v-else :source="content" />
+      <MarkdownContent
+        v-else
+        :source="content"
+        :citations="citedIndexes"
+        @cite="emit('cite', $event)"
+      />
+
+      <div v-if="citations.length && !streaming" class="bubble__sources">
+        <span class="bubble__sources-label">{{ t('chat.citations.sources') }}</span>
+        <CitationChip
+          v-for="citation in citations"
+          :key="citation.index"
+          :citation="citation"
+          @open="emit('cite', $event)"
+        />
+      </div>
 
       <p v-if="withoutSources" class="bubble__warning">
         <i class="pi pi-info-circle" aria-hidden="true" />
@@ -110,6 +130,19 @@ const details = computed(() => {
   margin: 0.625rem 0 0;
   color: var(--p-orange-700);
   font-size: 0.875rem;
+}
+
+.bubble__sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.bubble__sources-label {
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
 }
 
 .bubble__footer {

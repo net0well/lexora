@@ -2,7 +2,7 @@
 import { shallowRef, useTemplateRef, watch, type DeepReadonly } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import type { ConversationMessage } from '@/api/types/conversation'
+import type { Citation, ConversationMessage } from '@/api/types/conversation'
 import type { AnswerDraft } from '@/composables/useAnswerStream'
 import MessageBubble from './MessageBubble.vue'
 
@@ -17,6 +17,8 @@ const {
   streaming?: boolean
   knowledgeBaseName?: string
 }>()
+
+const emit = defineEmits<{ cite: [citations: readonly Citation[], index: number] }>()
 
 const stickToEndDistance = 80
 
@@ -69,6 +71,7 @@ watch(
       :provider="message.provider"
       :model="message.model"
       :latency-ms="message.latencyMs"
+      @cite="emit('cite', message.citations, $event)"
     />
 
     <MessageBubble
@@ -78,6 +81,7 @@ watch(
       :citations="draft.citations"
       :grounded="draft.grounded"
       :streaming="streaming"
+      @cite="emit('cite', draft.citations, $event)"
     />
   </div>
 </template>
