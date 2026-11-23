@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
         services.AddScoped<IRetrievalService, RetrievalService>();
         services.AddSingleton<IRagPromptBuilder, RagPromptBuilder>();
+        services.AddSingleton<ICitationParser, CitationParser>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
