@@ -8,6 +8,7 @@ using Lexora.Infrastructure.AI.Providers.Ollama;
 using Lexora.Infrastructure.AI.Providers.OpenAi;
 using Lexora.Infrastructure.AI.Providers.OpenAiCompatible;
 using Lexora.Infrastructure.AI.Registry;
+using Lexora.Infrastructure.AI.Resilience;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiCompatibleEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
+        services.AddSingleton<AiResiliencePipelineProvider>();
         services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
         services.AddSingleton<IChatModel, ChatModelAdapter>();

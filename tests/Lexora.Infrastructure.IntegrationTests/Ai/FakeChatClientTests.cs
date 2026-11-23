@@ -3,6 +3,7 @@ using Lexora.Infrastructure.AI.Adapters;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Registry;
+using Lexora.Infrastructure.AI.Resilience;
 using Microsoft.Extensions.AI;
 using ChatTurn = Lexora.Application.Abstractions.Ai.ChatTurn;
 
@@ -33,7 +34,7 @@ public sealed class FakeChatClientTests
     {
         var chat = new AiChatSettings { DefaultProfile = "fake", Profiles = { ["fake"] = new AiProfileSettings { Provider = AiProviderKind.Fake, Model = "fake-chat" } } };
         using var registry = new ChatClientRegistry([new FakeChatClientProvider()], Microsoft.Extensions.Options.Options.Create(new AiOptions { Chat = chat }));
-        var adapter = new ChatModelAdapter(registry, TimeProvider.System);
+        var adapter = new ChatModelAdapter(registry, new AiResiliencePipelineProvider(TimeProvider.System), TimeProvider.System);
         var request = new ChatRequest(null, "Answer from the excerpts.", [new ChatTurn(ChatTurnRole.User, "What is the vacation policy?")]);
 
         List<ChatStreamUpdate> updates = [];

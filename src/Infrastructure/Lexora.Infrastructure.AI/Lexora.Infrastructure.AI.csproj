@@ -4,6 +4,7 @@
     <PackageReference Include="Anthropic" />
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="Microsoft.Extensions.Resilience" />
     <PackageReference Include="OllamaSharp" />
   </ItemGroup>
 

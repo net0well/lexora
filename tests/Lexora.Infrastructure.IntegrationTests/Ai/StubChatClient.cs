@@ -15,6 +15,8 @@ public sealed class StubChatClient : IChatClient
 
     public Action? OnCall { get; set; }
 
+    public Exception? FailAfterFirstUpdate { get; set; }
+
     public bool Disposed { get; private set; }
 
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -38,10 +40,16 @@ public sealed class StubChatClient : IChatClient
             throw failure;
         }
 
-        foreach (var update in Updates)
+        for (var index = 0; index < Updates.Count; index++)
         {
             await Task.Yield();
-            yield return update;
+
+            if (index == 1 && FailAfterFirstUpdate is { } interruption)
+            {
+                throw interruption;
+            }
+
+            yield return Updates[index];
         }
     }
 
