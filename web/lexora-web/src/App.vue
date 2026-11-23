@@ -1,5 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import ConfirmDialog from 'primevue/confirmdialog'
+import Toast from 'primevue/toast'
+</script>
 
 <template>
-  <h1>Lexora</h1>
+  <Toast position="top-right" />
+  <ConfirmDialog />
+  <RouterView />
 </template>
