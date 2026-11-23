@@ -8,4 +8,7 @@ public static class DocumentStorageKeys
 
     public static string OriginalOf(Guid knowledgeBaseId, Guid documentId, DocumentFormat format) =>
         $"{PrefixOf(knowledgeBaseId, documentId)}original{DocumentFormats.ExtensionOf(format)}";
+
+    public static string ExtractedOf(Guid knowledgeBaseId, Guid documentId, int processingVersion) =>
+        $"{PrefixOf(knowledgeBaseId, documentId)}v{processingVersion}/extracted.json";
 }

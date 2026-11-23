@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Lexora.Application;
 using Lexora.Infrastructure.Messaging.Policies;
 using Lexora.Infrastructure.Messaging.Routing;
@@ -55,11 +56,24 @@ public static class DependencyInjection
 
         ErrorHandlingPolicies.Apply(options);
 
-        if (role == MessagingHostRole.Api)
+        switch (role)
         {
-            ApiRouting.Apply(options);
+            case MessagingHostRole.Api:
+                ApiRouting.Apply(options);
+                break;
+            case MessagingHostRole.Worker:
+                WorkerRouting.Apply(options, MessagingSettings(configuration));
+                break;
         }
 
         return options;
+    }
+
+    private static MessagingOptions MessagingSettings(IConfiguration configuration)
+    {
+        var settings = configuration.GetSection(MessagingOptions.SectionName).Get<MessagingOptions>() ?? new MessagingOptions();
+        Validator.ValidateObject(settings, new ValidationContext(settings), validateAllProperties: true);
+
+        return settings;
     }
 }

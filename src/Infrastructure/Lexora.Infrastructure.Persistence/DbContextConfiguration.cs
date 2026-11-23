@@ -15,7 +15,6 @@ public static class DbContextConfiguration
             {
                 npgsql.UseVector();
                 npgsql.MigrationsHistoryTable(SchemaHelper.MigrationsHistoryTable, SchemaHelper.Schema);
-                npgsql.EnableRetryOnFailure();
             })
             .UseSnakeCaseNamingConvention();
     }

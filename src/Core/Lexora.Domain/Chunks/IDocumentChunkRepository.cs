@@ -11,4 +11,6 @@ public interface IDocumentChunkRepository
         CancellationToken cancellationToken);
 
     Task<int> DeleteOtherVersionsAsync(Guid documentId, int keepVersion, CancellationToken cancellationToken);
+
+    Task<int> DeleteByDocumentAsync(Guid documentId, CancellationToken cancellationToken);
 }

@@ -18,6 +18,11 @@ public sealed class RefreshTokenRepository(LexoraDbContext context) : IRefreshTo
             .Where(token => token.UserId == userId && token.RevokedAt == null)
             .ToListAsync(cancellationToken);
 
+    public Task<int> DeleteFinishedBeforeAsync(DateTimeOffset before, CancellationToken cancellationToken) =>
+        context.RefreshTokens
+            .Where(token => token.ExpiresAt < before || token.RevokedAt < before)
+            .ExecuteDeleteAsync(cancellationToken);
+
     public async Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken) =>
         await context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
 }

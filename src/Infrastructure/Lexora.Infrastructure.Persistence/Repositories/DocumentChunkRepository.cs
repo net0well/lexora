@@ -24,6 +24,9 @@ public sealed class DocumentChunkRepository(LexoraDbContext context) : IDocument
             .ToListAsync(cancellationToken);
     }
 
+    public Task<int> DeleteByDocumentAsync(Guid documentId, CancellationToken cancellationToken) =>
+        context.DocumentChunks.Where(chunk => chunk.DocumentId == documentId).ExecuteDeleteAsync(cancellationToken);
+
     public Task<int> DeleteOtherVersionsAsync(Guid documentId, int keepVersion, CancellationToken cancellationToken) =>
         context.DocumentChunks
             .Where(chunk => chunk.DocumentId == documentId && chunk.ProcessingVersion != keepVersion)

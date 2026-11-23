@@ -8,5 +8,7 @@ public interface IFileStorage
 
     Task DeleteByPrefixAsync(string prefix, CancellationToken cancellationToken);
 
+    IAsyncEnumerable<StoredObject> ListAsync(string prefix, CancellationToken cancellationToken);
+
     Task<FileDownload> CreateDownloadAsync(string key, string fileName, string contentType, CancellationToken cancellationToken);
 }

@@ -78,20 +78,23 @@ Prerequisites: Docker, .NET 10 SDK, `dotnet-ef`, Node.js LTS.
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
-docker compose --profile ai-local up -d
+docker compose --profile ai-local up -d --build
 ```
 
 Fill `.env` first: `JWT_SIGNING_KEY` (generate one with `openssl rand -base64 64`), `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (at least 12 characters with upper and lower case letters and a number). The `migrator` service applies the EF Core migrations, sets up the messaging tables and creates the first admin before the API starts; running it again changes nothing.
+
+The `ai-local` profile starts Ollama and downloads the embedding model (`OLLAMA_EMBEDDING_MODEL`, `bge-m3` by default, about 1.2 GB) before the worker starts. To run without a local model, set `AI_EMBEDDING_PROFILE=fake` in `.env` and leave the profile out (`docker compose up -d --build`); the `fake` profile produces deterministic vectors that are fine for trying the pipeline but useless for real search.
 
 | Service | URL |
 |---|---|
 | Web app | http://localhost:3000 |
 | API (Swagger) | http://localhost:5080/swagger |
+| Worker (health) | http://localhost:5081/health/ready |
 | MCP server | http://localhost:5090/mcp |
 | RabbitMQ | http://localhost:15672 |
 | Seq | http://localhost:5341 |
 | SeaweedFS (S3) | http://localhost:8333 |
+| Ollama (`ai-local`) | http://localhost:11434 |
 
 ### Local (without the app containers)
 
@@ -117,6 +120,8 @@ dotnet run --project src/Hosts/Lexora.Worker
 ```
 
 Secrets stay in user secrets, never in `appsettings.json`: the JWT signing key (both hosts refuse to start without one of at least 32 bytes), the first admin's credentials and the S3 keys (the values above match the local SeaweedFS credentials in `deploy/seaweedfs/s3.json`). To keep files on disk instead of S3, set `Storage:Provider` to `Local` with `Storage:Local:RootPath` and `Storage:Local:DownloadBaseUrl` (for example `http://localhost:5080/api/v1/files/`). The next three commands apply the EF Core migrations, create the messaging tables and create the first admin. Swagger is available at `/swagger` in Development.
+
+In Development both hosts use the `fake` embedding profile. To index with a real model, start Ollama with `docker compose --profile ai-local up -d ollama ollama-init` and run the worker with `Ai__Embedding__Profile=local dotnet run --project src/Hosts/Lexora.Worker`. Uploaded documents go through extraction, chunking and embedding in the worker until they reach `indexed`; `GET /api/v1/documents/{id}` shows the progress.
 
 ### Migrations
 
@@ -163,7 +168,7 @@ npx @modelcontextprotocol/inspector
 - [x] Persistence and migrations
 - [x] Wolverine, authentication, admin seed and REST API
 - [x] Storage and document upload
-- [ ] Ingestion pipeline
+- [x] Ingestion pipeline
 - [ ] AI connectors
 - [ ] Hybrid search and chat with citations
 - [ ] Vue front-end

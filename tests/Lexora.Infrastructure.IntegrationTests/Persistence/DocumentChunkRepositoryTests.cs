@@ -77,6 +77,22 @@ public sealed class DocumentChunkRepositoryTests(DatabaseFixture database) : Dat
         (await context.DocumentChunks.Select(chunk => chunk.ProcessingVersion).ToListAsync(CancellationToken)).ShouldAllBe(version => version == 2);
     }
 
+    [Fact]
+    public async Task DeleteByDocumentAsync_Document_RemovesEveryVersionOfItsChunksOnly()
+    {
+        var document = await SaveDocumentAsync();
+        var other = new DocumentBuilder().InKnowledgeBase(document.KnowledgeBaseId).UploadedBy(document.UploadedBy).InStatus(DocumentStatus.Chunked).Build();
+        await SaveAsync(other, NewChunk(document, 1, 0), NewChunk(document, 2, 0), NewChunk(other, 1, 0));
+
+        await using (var context = Database.CreateContext())
+        {
+            (await new DocumentChunkRepository(context).DeleteByDocumentAsync(document.Id, CancellationToken)).ShouldBe(2);
+        }
+
+        await using var reader = Database.CreateContext();
+        (await reader.DocumentChunks.Select(chunk => chunk.DocumentId).ToListAsync(CancellationToken)).ShouldBe([other.Id]);
+    }
+
     private async Task<Document> SaveDocumentAsync()
     {
         var owner = await SaveUserAsync();

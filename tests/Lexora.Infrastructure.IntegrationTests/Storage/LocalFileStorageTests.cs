@@ -1,4 +1,5 @@
 using System.Text;
+using Lexora.Application.Abstractions.Storage;
 using Lexora.Infrastructure.Storage;
 using Lexora.Infrastructure.Storage.Local;
 using Microsoft.AspNetCore.DataProtection;
@@ -62,6 +63,23 @@ public sealed class LocalFileStorageTests : IDisposable
         await Should.ThrowAsync<FileNotFoundException>(() => _storage.OpenReadAsync("knowledge-bases/kb/documents/one/original.pdf", CancellationToken));
         Directory.Exists(Path.Combine(_root, "knowledge-bases", "kb", "documents", "one")).ShouldBeFalse();
         (await _storage.OpenReadAsync("knowledge-bases/kb/documents/two/original.pdf", CancellationToken)).Dispose();
+    }
+
+    [Fact]
+    public async Task ListAsync_Prefix_ReturnsTheKeysBelowItWithTheirModificationTime()
+    {
+        await SaveAsync("knowledge-bases/kb/documents/one/original.pdf");
+        await SaveAsync("knowledge-bases/kb/documents/one/v1/extracted.json");
+        await SaveAsync("other/file.txt");
+
+        List<StoredObject> listed = [];
+        await foreach (var stored in _storage.ListAsync("knowledge-bases/", CancellationToken))
+        {
+            listed.Add(stored);
+        }
+
+        listed.Select(stored => stored.Key).ShouldBe(["knowledge-bases/kb/documents/one/original.pdf", "knowledge-bases/kb/documents/one/v1/extracted.json"], ignoreOrder: true);
+        listed.ShouldAllBe(stored => stored.LastModified > DateTimeOffset.UtcNow.AddMinutes(-1));
     }
 
     [Fact]
