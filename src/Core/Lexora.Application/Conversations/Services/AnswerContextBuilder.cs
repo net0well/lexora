@@ -26,6 +26,14 @@ public sealed class AnswerContextBuilder(
             : question;
         var hits = await retrieval.RetrieveAsync(knowledgeBaseId, searchQuery, SearchMode.Hybrid, settings.TopK, cancellationToken);
 
-        return new AnswerContext(question, hits.Count == 0 ? null : prompts.Build(question, hits, history));
+        if (hits.Count == 0)
+        {
+            return new AnswerContext(question, Prompt: null);
+        }
+
+        // Excerpts that do not fit the context budget are left out; with none left, there is nothing to ground an answer on.
+        var prompt = prompts.Build(question, hits, history);
+
+        return new AnswerContext(question, prompt.Excerpts.Count == 0 ? null : prompt);
     }
 }
