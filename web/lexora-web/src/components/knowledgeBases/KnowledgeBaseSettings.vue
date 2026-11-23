@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
 import { useConfirm } from 'primevue/useconfirm'
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { KnowledgeBase, KnowledgeBaseFields } from '@/api/types/knowledgeBase'
@@ -9,19 +9,19 @@ import { useNotifications } from '@/composables/useNotifications'
 import { useKnowledgeBasesStore } from '@/stores/knowledgeBases'
 import KnowledgeBaseForm from './KnowledgeBaseForm.vue'
 
-const props = defineProps<{ base: KnowledgeBase }>()
+const { base } = defineProps<{ base: KnowledgeBase }>()
 
 const { t } = useI18n()
 const confirm = useConfirm()
 const store = useKnowledgeBasesStore()
 const { notify, success } = useNotifications()
-const saving = ref(false)
+const saving = shallowRef(false)
 
 async function save(fields: KnowledgeBaseFields): Promise<void> {
   saving.value = true
 
   try {
-    const result = await store.update(props.base.id, fields)
+    const result = await store.update(base.id, fields)
 
     if (result.success) {
       success(t('knowledgeBases.settings.saved'))
@@ -41,7 +41,7 @@ function confirmReindex(): void {
     rejectProps: { label: t('common.cancel'), severity: 'secondary', text: true },
     acceptProps: { label: t('knowledgeBases.settings.reindex') },
     accept: async () => {
-      const result = await store.reindex(props.base.id)
+      const result = await store.reindex(base.id)
 
       if (result.success && result.data) {
         success(
@@ -61,12 +61,12 @@ function confirmReindex(): void {
 function confirmArchive(): void {
   confirm.require({
     header: t('knowledgeBases.settings.archiveTitle'),
-    message: t('knowledgeBases.settings.archiveConfirm', { name: props.base.name }),
+    message: t('knowledgeBases.settings.archiveConfirm', { name: base.name }),
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: t('common.cancel'), severity: 'secondary', text: true },
     acceptProps: { label: t('knowledgeBases.settings.archive'), severity: 'danger' },
     accept: async () => {
-      const result = await store.archive(props.base.id)
+      const result = await store.archive(base.id)
 
       if (result.success) {
         success(t('knowledgeBases.settings.archived'))
@@ -81,7 +81,7 @@ function confirmArchive(): void {
 <template>
   <div class="settings">
     <section class="settings__section">
-      <h2>{{ t('knowledgeBases.settings.general') }}</h2>
+      <h2 class="settings__heading">{{ t('knowledgeBases.settings.general') }}</h2>
       <KnowledgeBaseForm
         :key="base.id"
         id-prefix="edit-knowledge-base"
@@ -93,11 +93,11 @@ function confirmArchive(): void {
     </section>
 
     <section class="settings__section">
-      <h2>{{ t('knowledgeBases.settings.maintenance') }}</h2>
+      <h2 class="settings__heading">{{ t('knowledgeBases.settings.maintenance') }}</h2>
       <div class="settings__action">
         <div>
           <strong>{{ t('knowledgeBases.settings.reindex') }}</strong>
-          <p>{{ t('knowledgeBases.settings.reindexHint') }}</p>
+          <p class="settings__hint">{{ t('knowledgeBases.settings.reindexHint') }}</p>
         </div>
         <Button
           :label="t('knowledgeBases.settings.reindex')"
@@ -110,7 +110,7 @@ function confirmArchive(): void {
       <div v-if="base.status === 'active'" class="settings__action">
         <div>
           <strong>{{ t('knowledgeBases.settings.archive') }}</strong>
-          <p>{{ t('knowledgeBases.settings.archiveHint') }}</p>
+          <p class="settings__hint">{{ t('knowledgeBases.settings.archiveHint') }}</p>
         </div>
         <Button
           :label="t('knowledgeBases.settings.archive')"
@@ -138,7 +138,7 @@ function confirmArchive(): void {
   background: var(--p-content-background);
 }
 
-.settings__section h2 {
+.settings__heading {
   font-size: 1rem;
 }
 
@@ -154,7 +154,7 @@ function confirmArchive(): void {
   border-top: 1px solid var(--p-content-border-color);
 }
 
-.settings__action p {
+.settings__hint {
   margin: 0.25rem 0 0;
   color: var(--p-text-muted-color);
 }

@@ -3,7 +3,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import type { MenuItem } from 'primevue/menuitem'
-import { computed, ref } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -21,7 +21,7 @@ interface NavigationLink {
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
-const menu = ref<InstanceType<typeof Menu> | null>(null)
+const menu = useTemplateRef('menu')
 
 const initials = computed(() =>
   (auth.user?.name ?? '')
@@ -78,7 +78,7 @@ async function signOut(): Promise<void> {
           active-class="shell__link--active"
         >
           <i :class="link.icon" aria-hidden="true" />
-          <span>{{ t(link.label) }}</span>
+          <span class="shell__link-label">{{ t(link.label) }}</span>
         </RouterLink>
       </nav>
 
@@ -102,7 +102,7 @@ async function signOut(): Promise<void> {
           <template #start>
             <div class="shell__menu-header">
               <strong>{{ auth.user?.name }}</strong>
-              <span>{{ auth.user?.email }}</span>
+              <span class="shell__email">{{ auth.user?.email }}</span>
               <span class="shell__role">{{ auth.user ? t(`roles.${auth.user.role}`) : '' }}</span>
             </div>
           </template>
@@ -190,7 +190,8 @@ async function signOut(): Promise<void> {
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
-.shell__menu-header span {
+.shell__email,
+.shell__role {
   color: var(--p-text-muted-color);
 }
 
@@ -208,7 +209,7 @@ async function signOut(): Promise<void> {
     padding: 0 0.75rem;
   }
 
-  .shell__link span,
+  .shell__link-label,
   .shell__user-name {
     display: none;
   }

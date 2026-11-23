@@ -34,3 +34,21 @@ export async function mountWithApp(component: Component, options: MountOptions =
 
   return { wrapper, router, pinia, i18n }
 }
+
+export function buttonByText(root: ParentNode, text: string): HTMLButtonElement | undefined {
+  return [...root.querySelectorAll<HTMLButtonElement>('button')].find(
+    (button) => button.textContent?.trim() === text,
+  )
+}
+
+export function clickText(root: ParentNode, text: string): void {
+  const target = [...root.querySelectorAll<HTMLElement>('*')]
+    .filter((element) => element.textContent?.trim() === text)
+    .pop()
+
+  if (!target) {
+    throw new Error(`Nothing shows the text "${text}".`)
+  }
+
+  target.click()
+}

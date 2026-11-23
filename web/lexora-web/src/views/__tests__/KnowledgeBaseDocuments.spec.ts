@@ -97,12 +97,20 @@ describe('knowledge base documents tab', () => {
   it('lets a member upload but not a viewer', async () => {
     auth.refresh.mockResolvedValue(sessionAs('viewer'))
     const viewer = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
-    expect(viewer.wrapper.find('.uploader').exists()).toBe(false)
+    expect(
+      viewer.wrapper
+        .find('[role="button"][aria-label="Arraste arquivos para cá ou clique para escolher"]')
+        .exists(),
+    ).toBe(false)
     expect(viewer.wrapper.find('[aria-label="Excluir"]').exists()).toBe(false)
 
     auth.refresh.mockResolvedValue(sessionAs('member'))
     const member = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
-    expect(member.wrapper.find('.uploader').exists()).toBe(true)
+    expect(
+      member.wrapper
+        .find('[role="button"][aria-label="Arraste arquivos para cá ou clique para escolher"]')
+        .exists(),
+    ).toBe(true)
     expect(member.wrapper.find('[aria-label="Excluir"]').exists()).toBe(true)
   })
 
@@ -112,7 +120,11 @@ describe('knowledge base documents tab', () => {
 
     const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
 
-    expect(wrapper.find('.uploader').exists()).toBe(false)
+    expect(
+      wrapper
+        .find('[role="button"][aria-label="Arraste arquivos para cá ou clique para escolher"]')
+        .exists(),
+    ).toBe(false)
     expect(wrapper.text()).toContain('A base está arquivada e não recebe documentos.')
   })
 
@@ -131,7 +143,7 @@ describe('knowledge base documents tab', () => {
       ),
     )
     const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
-    const input = wrapper.find<HTMLInputElement>('.uploader__input')
+    const input = wrapper.find<HTMLInputElement>('input[type="file"]')
     Object.defineProperty(input.element, 'files', {
       value: [new File(['x'.repeat(10)], 'politica.docx')],
     })

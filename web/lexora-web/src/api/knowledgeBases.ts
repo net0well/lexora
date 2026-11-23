@@ -16,9 +16,13 @@ export interface KnowledgeBaseQuery {
 }
 
 export const knowledgeBasesApi = {
-  list: (query: KnowledgeBaseQuery = {}) =>
-    http.get<PagedResponse<KnowledgeBaseListItem>>('/knowledge-bases', { query: { ...query } }),
-  get: (id: string) => http.get<KnowledgeBase>(`/knowledge-bases/${id}`),
+  list: (query: KnowledgeBaseQuery = {}, signal?: AbortSignal) =>
+    http.get<PagedResponse<KnowledgeBaseListItem>>('/knowledge-bases', {
+      query: { ...query },
+      signal,
+    }),
+  get: (id: string, signal?: AbortSignal) =>
+    http.get<KnowledgeBase>(`/knowledge-bases/${id}`, { signal }),
   create: (fields: KnowledgeBaseFields) =>
     http.post<SavedKnowledgeBase>('/knowledge-bases', fields),
   update: (id: string, fields: KnowledgeBaseFields) =>

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 
 import { knowledgeBasesApi, type KnowledgeBaseQuery } from '@/api/knowledgeBases'
 import type {
@@ -9,17 +9,19 @@ import type {
 } from '@/api/types/knowledgeBase'
 
 export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
-  const items = ref<KnowledgeBaseListItem[]>([])
-  const totalItems = ref(0)
-  const loadingList = ref(false)
+  const items = shallowRef<KnowledgeBaseListItem[]>([])
+  const totalItems = shallowRef(0)
+  const pendingLists = shallowRef(0)
+  const loadingList = computed(() => pendingLists.value > 0)
   const current = ref<KnowledgeBase | null>(null)
-  const loadingCurrent = ref(false)
+  const pendingOpens = shallowRef(0)
+  const loadingCurrent = computed(() => pendingOpens.value > 0)
 
-  async function load(query: KnowledgeBaseQuery) {
-    loadingList.value = true
+  async function load(query: KnowledgeBaseQuery, signal?: AbortSignal) {
+    pendingLists.value++
 
     try {
-      const result = await knowledgeBasesApi.list(query)
+      const result = await knowledgeBasesApi.list(query, signal)
 
       if (result.success && result.data) {
         items.value = result.data.items
@@ -28,24 +30,24 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
 
       return result
     } finally {
-      loadingList.value = false
+      pendingLists.value--
     }
   }
 
-  async function open(id: string) {
+  async function open(id: string, signal?: AbortSignal) {
     if (current.value?.id !== id) {
       current.value = null
     }
 
-    loadingCurrent.value = true
+    pendingOpens.value++
 
     try {
-      const result = await knowledgeBasesApi.get(id)
+      const result = await knowledgeBasesApi.get(id, signal)
       current.value = result.success ? result.data : null
 
       return result
     } finally {
-      loadingCurrent.value = false
+      pendingOpens.value--
     }
   }
 
@@ -86,8 +88,10 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
   return {
     items,
     totalItems,
+    pendingLists,
     loadingList,
     current,
+    pendingOpens,
     loadingCurrent,
     load,
     open,

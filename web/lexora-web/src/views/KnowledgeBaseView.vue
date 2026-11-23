@@ -10,13 +10,14 @@ import Tag from 'primevue/tag'
 import { storeToRefs } from 'pinia'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
 
+import { isAbort } from '@/api/http'
 import DocumentTable from '@/components/documents/DocumentTable.vue'
 import DocumentUploader from '@/components/documents/DocumentUploader.vue'
 import KnowledgeBaseSettings from '@/components/knowledgeBases/KnowledgeBaseSettings.vue'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQueryState } from '@/composables/useQueryState'
 import { useUpload } from '@/composables/useUpload'
 import { useAuthStore } from '@/stores/auth'
 import { useDocumentsStore } from '@/stores/documents'
@@ -28,11 +29,10 @@ interface TabEntry {
   icon: string
 }
 
-const props = defineProps<{ id: string }>()
+const { id } = defineProps<{ id: string }>()
 
 const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
+const query = useQueryState()
 const format = useFormat()
 const auth = useAuthStore()
 const store = useKnowledgeBasesStore()
@@ -46,7 +46,7 @@ const {
   cancel: cancelUpload,
   clearFinished: clearUploads,
 } = useUpload({
-  knowledgeBaseId: () => props.id,
+  knowledgeBaseId: () => id,
   onUploaded: (document, knowledgeBaseId) => {
     documents.added(document, knowledgeBaseId)
     store.countDocuments(knowledgeBaseId, 1)
@@ -68,22 +68,31 @@ const tabs = computed<TabEntry[]>(() => {
 })
 
 const activeTab = computed(() => {
-  const requested = route.query.tab
+  const requested = query.text('tab')
 
   return tabs.value.find((tab) => tab.value === requested)?.value ?? tabs.value[0]?.value ?? ''
 })
 
 function selectTab(value: string | number): void {
-  void router.replace({ query: { ...route.query, tab: String(value) } })
+  query.update({ tab: String(value) })
 }
 
 watch(
-  () => props.id,
-  async (id) => {
-    const result = await store.open(id)
+  () => id,
+  async (current, _previous, onCleanup) => {
+    const controller = new AbortController()
+    onCleanup(() => controller.abort())
 
-    if (!result.success && result.status !== 404) {
-      notify(result.notifications)
+    try {
+      const result = await store.open(current, controller.signal)
+
+      if (!result.success && result.status !== 404) {
+        notify(result.notifications)
+      }
+    } catch (error) {
+      if (!isAbort(error)) {
+        throw error
+      }
     }
   },
   { immediate: true },
@@ -110,7 +119,7 @@ watch(
     <template v-else>
       <header class="kb-header">
         <div class="kb-header__title">
-          <h1>{{ base.name }}</h1>
+          <h1 class="kb-header__name">{{ base.name }}</h1>
           <Tag
             v-if="base.status === 'archived'"
             :value="t('knowledgeBases.archived')"
@@ -175,7 +184,7 @@ watch(
   gap: 0.75rem;
 }
 
-.kb-header__title h1 {
+.kb-header__name {
   margin: 0;
 }
 

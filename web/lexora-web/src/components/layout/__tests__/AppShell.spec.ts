@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from '@/App.vue'
 import { authApi } from '@/api/auth'
-import { mountWithApp } from '@/__tests__/support'
+import { clickText, mountWithApp } from '@/__tests__/support'
 import { session } from '@/__tests__/tokens'
 
 vi.mock('@/api/auth', () => ({
@@ -29,19 +29,16 @@ describe('AppShell', () => {
   it('shows the signed in user and the navigation', async () => {
     const { wrapper } = await mountWithApp(App, { path: '/' })
 
-    expect(wrapper.find('.shell__user').text()).toContain('Ana Souza')
-    expect(wrapper.find('.shell__user').text()).toContain('AS')
+    expect(wrapper.find('button[aria-label="Menu do usuário"]').text()).toContain('Ana Souza')
+    expect(wrapper.find('button[aria-label="Menu do usuário"]').text()).toContain('AS')
     expect(wrapper.find('nav').text()).toContain('Bases de conhecimento')
   })
 
   it('signs out from the user menu', async () => {
     const { wrapper, router } = await mountWithApp(App, { path: '/', attachTo: document.body })
 
-    await wrapper.find('.shell__user').trigger('click')
-    const signOut = [...document.querySelectorAll<HTMLElement>('.p-menu-item-link')].find((item) =>
-      item.textContent?.includes('Sair'),
-    )
-    signOut?.click()
+    await wrapper.find('button[aria-label="Menu do usuário"]').trigger('click')
+    clickText(document.body, 'Sair')
 
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('login'))
     expect(api.logout).toHaveBeenCalledTimes(1)

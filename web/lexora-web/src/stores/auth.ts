@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, shallowRef } from 'vue'
 
 import { authApi } from '@/api/auth'
 import { withCrossTabLock } from '@/api/crossTabLock'
 import { bindSession } from '@/api/session'
 import { singleFlight } from '@/api/singleFlight'
 import type { AuthenticatedUser, LoginRequest, Session, UserRole } from '@/api/types/auth'
-import { tokenLifetimeMs } from './tokenLifetime'
+import { tokenLifetimeMs } from '@/utils/tokenLifetime'
 
 export const renewBeforeExpiryMs = 60_000
 export const retryRenewalAfterMs = 15_000
@@ -21,8 +21,8 @@ function isTransient(status: number): boolean {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref<string | null>(null)
-  const user = ref<AuthenticatedUser | null>(null)
+  const accessToken = shallowRef<string | null>(null)
+  const user = shallowRef<AuthenticatedUser | null>(null)
   const isAuthenticated = computed(() => accessToken.value !== null && user.value !== null)
 
   let renewalTimer: ReturnType<typeof setTimeout> | undefined

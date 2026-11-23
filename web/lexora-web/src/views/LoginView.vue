@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -20,9 +20,9 @@ const auth = useAuthStore()
 const { describe } = useNotifications()
 
 const form = reactive({ email: '', password: '' })
-const submitted = ref(false)
-const submitting = ref(false)
-const error = ref<string | null>(null)
+const submitted = shallowRef(false)
+const submitting = shallowRef(false)
+const error = shallowRef<string | null>(null)
 
 const emailMissing = computed(() => submitted.value && !form.email.trim())
 const passwordMissing = computed(() => submitted.value && !form.password)
@@ -60,7 +60,7 @@ async function submit(): Promise<void> {
       <header class="login__header">
         <AppLogo size="2.75rem" />
         <div>
-          <h1>{{ t('app.name') }}</h1>
+          <h1 class="login__title">{{ t('app.name') }}</h1>
           <p class="login__tagline">{{ t('app.tagline') }}</p>
         </div>
       </header>
@@ -142,7 +142,7 @@ async function submit(): Promise<void> {
   gap: 0.875rem;
 }
 
-.login__header h1 {
+.login__title {
   margin: 0;
 }
 

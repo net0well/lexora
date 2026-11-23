@@ -66,8 +66,8 @@ function stateText(item: DeepReadonly<UploadItem>): string {
       @dragleave.prevent="dragging = false"
       @drop.prevent="dropped"
     >
-      <i class="pi pi-cloud-upload" aria-hidden="true" />
-      <strong>{{ t('documents.upload.drop') }}</strong>
+      <i class="pi pi-cloud-upload uploader__icon" aria-hidden="true" />
+      <strong class="uploader__title">{{ t('documents.upload.drop') }}</strong>
       <span>{{
         t('documents.upload.hint', { max: format.bytes(documentRules.maxFileSizeBytes) })
       }}</span>
@@ -158,12 +158,12 @@ function stateText(item: DeepReadonly<UploadItem>): string {
   outline: none;
 }
 
-.uploader__zone i {
+.uploader__icon {
   font-size: 1.75rem;
   color: var(--p-primary-600);
 }
 
-.uploader__zone strong {
+.uploader__title {
   color: var(--p-text-color);
 }
 

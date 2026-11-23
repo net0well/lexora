@@ -3,21 +3,24 @@ import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { knowledgeBaseRules, type KnowledgeBaseFields } from '@/api/types/knowledgeBase'
 
-const props = withDefaults(
-  defineProps<{
-    initial?: KnowledgeBaseFields | null
-    submitting?: boolean
-    submitLabel: string
-    cancelable?: boolean
-    idPrefix?: string
-  }>(),
-  { initial: null, submitting: false, cancelable: false, idPrefix: 'knowledge-base' },
-)
+const {
+  initial = null,
+  submitting = false,
+  submitLabel,
+  cancelable = false,
+  idPrefix = 'knowledge-base',
+} = defineProps<{
+  initial?: KnowledgeBaseFields | null
+  submitting?: boolean
+  submitLabel: string
+  cancelable?: boolean
+  idPrefix?: string
+}>()
 
 const emit = defineEmits<{
   submit: [fields: KnowledgeBaseFields]
@@ -27,13 +30,14 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const rules = knowledgeBaseRules
 
+// The form edits a copy taken once; the parent remounts it (by key) to start from other values.
 const form = reactive({
-  name: props.initial?.name ?? '',
-  description: props.initial?.description ?? '',
-  chunkMaxTokens: props.initial?.chunkMaxTokens ?? rules.defaultChunkMaxTokens,
-  chunkOverlapTokens: props.initial?.chunkOverlapTokens ?? rules.defaultChunkOverlapTokens,
+  name: initial?.name ?? '',
+  description: initial?.description ?? '',
+  chunkMaxTokens: initial?.chunkMaxTokens ?? rules.defaultChunkMaxTokens,
+  chunkOverlapTokens: initial?.chunkOverlapTokens ?? rules.defaultChunkOverlapTokens,
 })
-const touched = ref(false)
+const touched = shallowRef(false)
 
 const errors = computed(() => {
   if (!touched.value) {

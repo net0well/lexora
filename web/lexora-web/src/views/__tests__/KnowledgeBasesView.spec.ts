@@ -55,10 +55,39 @@ describe('KnowledgeBasesView', () => {
 
     const { wrapper } = await mountWithApp(App, { path: '/' })
 
-    expect(bases.list).toHaveBeenCalledWith({ status: 'active', page: 1, pageSize: 24 })
+    expect(bases.list).toHaveBeenCalledWith(
+      { status: 'active', page: 1, pageSize: 24 },
+      expect.any(AbortSignal),
+    )
     expect(wrapper.text()).toContain('Manuais de segurança')
     expect(wrapper.text()).toContain('3 documentos')
-    expect(wrapper.find('a.kb-card').attributes('href')).toBe('/knowledge-bases/kb-1')
+    expect(
+      wrapper
+        .findAll('a')
+        .find((link) => link.text().includes('Manuais de segurança'))
+        ?.attributes('href'),
+    ).toBe('/knowledge-bases/kb-1')
+  })
+
+  it('keeps the filter and the page in the address', async () => {
+    auth.refresh.mockResolvedValue(sessionAs('viewer'))
+    const { wrapper, router } = await mountWithApp(App, { path: '/?status=archived&page=2' })
+
+    expect(bases.list).toHaveBeenCalledWith(
+      { status: 'archived', page: 2, pageSize: 24 },
+      expect.any(AbortSignal),
+    )
+
+    await wrapper
+      .find('[aria-label="Filtrar por status"]')
+      .findAll('[role="button"], button')
+      .find((option) => option.text() === 'Ativas')!
+      .trigger('click')
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/'))
+    expect(bases.list).toHaveBeenLastCalledWith(
+      { status: 'active', page: 1, pageSize: 24 },
+      expect.any(AbortSignal),
+    )
   })
 
   it('lets only an admin create a base', async () => {
@@ -100,7 +129,9 @@ describe('KnowledgeBasesView', () => {
     const name = document.querySelector<HTMLInputElement>('#new-knowledge-base-name')!
     name.value = 'Políticas'
     name.dispatchEvent(new Event('input'))
-    document.querySelector<HTMLFormElement>('.kb-form')!.dispatchEvent(new Event('submit'))
+    document
+      .querySelector<HTMLFormElement>('[role="dialog"] form')!
+      .dispatchEvent(new Event('submit'))
     await flushPromises()
 
     expect(bases.create).toHaveBeenCalledWith({

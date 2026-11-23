@@ -15,6 +15,7 @@ import { isAbort } from '@/api/http'
 import type { DocumentFormat, DocumentListItem, DocumentStatus } from '@/api/types/document'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
+import { useQueryState } from '@/composables/useQueryState'
 import { useDocumentsStore } from '@/stores/documents'
 import DocumentStatusTag from './DocumentStatusTag.vue'
 
@@ -27,6 +28,14 @@ const emit = defineEmits<{ deleted: [document: DocumentListItem] }>()
 
 const pageSize = 20
 const searchDelayMs = 300
+
+const filterableStatuses: readonly DocumentStatus[] = [
+  'uploaded',
+  'extracted',
+  'chunked',
+  'indexed',
+  'failed',
+]
 
 const formatIcons: Record<DocumentFormat, string> = {
   pdf: 'pi pi-file-pdf',
@@ -43,16 +52,21 @@ const format = useFormat()
 const store = useDocumentsStore()
 const { items, totalItems, loading } = storeToRefs(store)
 const { notify, success } = useNotifications()
+const query = useQueryState()
 
-const status = shallowRef<DocumentStatus | null>(null)
-const search = shallowRef('')
-const appliedSearch = shallowRef('')
-const page = shallowRef(1)
+const status = computed<DocumentStatus | null>(() => {
+  const value = query.text('status') as DocumentStatus
+
+  return filterableStatuses.includes(value) ? value : null
+})
+const appliedSearch = computed(() => query.text('search'))
+const page = computed(() => query.positiveInteger('page'))
+const search = shallowRef(appliedSearch.value)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const statusOptions = computed(() => [
   { value: null, label: t('documents.table.allStatuses') },
-  ...(['uploaded', 'extracted', 'chunked', 'indexed', 'failed'] as const).map((value) => ({
+  ...filterableStatuses.map((value) => ({
     value,
     label: t(`documents.status.${value}`),
   })),
@@ -78,8 +92,12 @@ async function load(signal: AbortSignal): Promise<void> {
   }
 }
 
+function changeStatus(value: DocumentStatus | null): void {
+  query.update({ status: value, page: null })
+}
+
 function changePage(event: DataTablePageEvent): void {
-  page.value = event.page + 1
+  query.update({ page: event.page === 0 ? null : event.page + 1 })
 }
 
 async function download(document: DocumentListItem): Promise<void> {
@@ -119,11 +137,15 @@ function confirmDelete(document: DocumentListItem): void {
 watch(search, (value) => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
-    appliedSearch.value = value.trim()
+    if (value.trim() !== appliedSearch.value) {
+      query.update({ search: value.trim(), page: null })
+    }
   }, searchDelayMs)
 })
-watch([status, appliedSearch], () => {
-  page.value = 1
+watch(appliedSearch, (value) => {
+  if (value !== search.value.trim()) {
+    search.value = value
+  }
 })
 watch(
   [() => knowledgeBaseId, status, appliedSearch, page],
@@ -149,11 +171,12 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         />
       </IconField>
       <Select
-        v-model="status"
+        :model-value="status"
         :options="statusOptions"
         option-label="label"
         option-value="value"
         :aria-label="t('documents.table.statusFilter')"
+        @update:model-value="changeStatus"
       />
     </div>
 
@@ -177,8 +200,11 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       <Column :header="t('documents.table.name')">
         <template #body="{ data }">
           <span class="documents__name">
-            <i :class="formatIcons[(data as DocumentListItem).format]" aria-hidden="true" />
-            <span :title="(data as DocumentListItem).fileName">{{
+            <i
+              :class="['documents__icon', formatIcons[(data as DocumentListItem).format]]"
+              aria-hidden="true"
+            />
+            <span class="documents__file-name" :title="(data as DocumentListItem).fileName">{{
               (data as DocumentListItem).fileName
             }}</span>
           </span>
@@ -244,13 +270,13 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
   max-width: 32rem;
 }
 
-.documents__name span {
+.documents__file-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.documents__name i {
+.documents__icon {
   color: var(--p-primary-600);
 }
 

@@ -5,7 +5,7 @@ import App from '@/App.vue'
 import { authApi } from '@/api/auth'
 import { knowledgeBasesApi } from '@/api/knowledgeBases'
 import type { KnowledgeBase } from '@/api/types/knowledgeBase'
-import { mountWithApp } from '@/__tests__/support'
+import { buttonByText, mountWithApp } from '@/__tests__/support'
 import { ok, sessionAs } from '@/__tests__/tokens'
 
 vi.mock('@/api/auth', () => ({
@@ -54,10 +54,33 @@ describe('KnowledgeBaseView', () => {
 
     const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
 
-    expect(bases.get).toHaveBeenCalledWith('kb-1')
+    expect(bases.get).toHaveBeenCalledWith('kb-1', expect.any(AbortSignal))
     expect(wrapper.find('h1').text()).toBe('Manuais de segurança')
     expect(wrapper.text()).toContain('1 documento')
     expect(wrapper.text()).not.toContain('Configurações')
+  })
+
+  it('drops the answer of a base the user already left', async () => {
+    auth.refresh.mockResolvedValue(sessionAs('viewer'))
+    let answerFirst!: () => void
+    bases.get.mockImplementation((id, signal) =>
+      id === 'kb-1'
+        ? new Promise((resolve, reject) => {
+            answerFirst = () => resolve(ok(manuals))
+            signal?.addEventListener('abort', () =>
+              reject(new DOMException('Aborted', 'AbortError')),
+            )
+          })
+        : Promise.resolve(ok({ ...manuals, id: 'kb-2', name: 'Políticas' })),
+    )
+    const { wrapper, router } = await mountWithApp(App, { path: '/knowledge-bases/kb-1' })
+
+    await router.push('/knowledge-bases/kb-2')
+    await flushPromises()
+    answerFirst()
+    await flushPromises()
+
+    expect(wrapper.find('h1').text()).toBe('Políticas')
   })
 
   it('tells when the base does not exist', async () => {
@@ -90,7 +113,7 @@ describe('KnowledgeBaseView', () => {
 
     const { wrapper } = await mountWithApp(App, { path: '/knowledge-bases/kb-1?tab=settings' })
     await wrapper.find('#edit-knowledge-base-name').setValue('Manuais')
-    await wrapper.find('.kb-form').trigger('submit')
+    await wrapper.find('form').trigger('submit')
     await flushPromises()
 
     expect(bases.update).toHaveBeenCalledWith('kb-1', expect.objectContaining({ name: 'Manuais' }))
@@ -110,10 +133,10 @@ describe('KnowledgeBaseView', () => {
       .find((button) => button.text() === 'Arquivar')!
       .trigger('click')
     await flushPromises()
-    const accept = [
-      ...document.querySelectorAll<HTMLButtonElement>('.p-confirmdialog button'),
-    ].find((button) => button.textContent?.includes('Arquivar'))
-    accept!.click()
+    buttonByText(
+      document.querySelector('[role="alertdialog"], [role="dialog"]')!,
+      'Arquivar',
+    )!.click()
     await flushPromises()
 
     expect(bases.archive).toHaveBeenCalledWith('kb-1')

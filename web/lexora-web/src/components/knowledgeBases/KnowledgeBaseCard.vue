@@ -14,8 +14,8 @@ const format = useFormat()
 <template>
   <RouterLink :to="{ name: 'knowledge-base', params: { id: item.id } }" class="kb-card">
     <div class="kb-card__title">
-      <i class="pi pi-book" aria-hidden="true" />
-      <h2>{{ item.name }}</h2>
+      <i class="pi pi-book kb-card__icon" aria-hidden="true" />
+      <h2 class="kb-card__name">{{ item.name }}</h2>
       <Tag
         v-if="item.status === 'archived'"
         :value="t('knowledgeBases.archived')"
@@ -63,11 +63,11 @@ const format = useFormat()
   gap: 0.5rem;
 }
 
-.kb-card__title i {
+.kb-card__icon {
   color: var(--p-primary-600);
 }
 
-.kb-card__title h2 {
+.kb-card__name {
   flex: 1;
   margin: 0;
   overflow: hidden;
