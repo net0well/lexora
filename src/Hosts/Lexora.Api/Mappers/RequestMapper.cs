@@ -3,6 +3,7 @@ using Lexora.Application.Auth.ChangePassword;
 using Lexora.Application.Auth.Login;
 using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
+using Lexora.Application.Retrieval.SearchKnowledgeBase;
 using Lexora.Application.Users.ChangeUserRole;
 using Lexora.Application.Users.CreateUser;
 using Lexora.Application.Users.ResetUserPassword;
@@ -23,6 +24,9 @@ public static class RequestMapper
 
     public static CreateKnowledgeBaseCommand ToCommand(this CreateKnowledgeBaseRequest request) =>
         new(request.Name, request.Description, request.ChunkMaxTokens, request.ChunkOverlapTokens);
+
+    public static SearchKnowledgeBaseQuery ToQuery(this SearchKnowledgeBaseRequest request, Guid knowledgeBaseId) =>
+        new(knowledgeBaseId, request.Query ?? string.Empty, request.Mode, request.TopK);
 
     public static UpdateKnowledgeBaseCommand ToCommand(this UpdateKnowledgeBaseRequest request, Guid knowledgeBaseId) =>
         new(knowledgeBaseId, request.Name, request.Description, request.ChunkMaxTokens, request.ChunkOverlapTokens);

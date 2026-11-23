@@ -9,6 +9,7 @@ using Lexora.Application.KnowledgeBases.CreateKnowledgeBase;
 using Lexora.Application.KnowledgeBases.GetKnowledgeBase;
 using Lexora.Application.KnowledgeBases.ListKnowledgeBases;
 using Lexora.Application.KnowledgeBases.UpdateKnowledgeBase;
+using Lexora.Application.Retrieval.SearchKnowledgeBase;
 using Lexora.Domain.KnowledgeBases;
 using Lexora.Infrastructure.Identity;
 using Lexora.Shared.Results;
@@ -46,6 +47,14 @@ public sealed class KnowledgeBasesController(IMessageBus bus) : ControllerBase
     [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken) =>
         (await bus.InvokeAsync<Result<GetKnowledgeBaseResponse>>(new GetKnowledgeBaseQuery(id), cancellationToken)).ToActionResult();
+
+    [HttpPost("{id:guid}/search")]
+    [ProducesResponseType<CommandResult<SearchKnowledgeBaseResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<CommandResult>(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> Search(Guid id, SearchKnowledgeBaseRequest request, CancellationToken cancellationToken) =>
+        (await bus.InvokeAsync<Result<SearchKnowledgeBaseResponse>>(request.ToQuery(id), cancellationToken)).ToActionResult();
 
     [HttpPost]
     [Authorize(Policy = AuthorizationPolicies.RequireAdmin)]

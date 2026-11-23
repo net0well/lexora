@@ -26,6 +26,7 @@ public static class NotificationStatusCodeMapper
             NotificationType.NotFound => StatusCodes.Status404NotFound,
             NotificationType.Conflict => StatusCodes.Status409Conflict,
             NotificationType.BusinessRule => StatusCodes.Status422UnprocessableEntity,
+            NotificationType.Unavailable => StatusCodes.Status503ServiceUnavailable,
             _ => StatusCodes.Status500InternalServerError,
         };
     }

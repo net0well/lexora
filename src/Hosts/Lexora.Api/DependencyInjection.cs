@@ -36,6 +36,7 @@ public static class DependencyInjection
 
         services.AddExceptionHandler<InputValidationExceptionHandler>();
         services.AddExceptionHandler<RequestTooLargeExceptionHandler>();
+        services.AddExceptionHandler<AiUnavailableExceptionHandler>();
         services.AddExceptionHandler<UnhandledExceptionHandler>();
 
         services.Configure<KestrelServerOptions>(kestrel => kestrel.Limits.MaxRequestBodySize = DefaultMaxRequestBodyBytes);

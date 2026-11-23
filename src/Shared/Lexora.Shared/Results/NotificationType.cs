@@ -7,5 +7,6 @@ public enum NotificationType
     Conflict = 3,
     Unauthorized = 4,
     Forbidden = 5,
-    BusinessRule = 6
+    BusinessRule = 6,
+    Unavailable = 7
 }

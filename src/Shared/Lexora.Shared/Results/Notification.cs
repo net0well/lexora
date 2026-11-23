@@ -13,4 +13,6 @@ public sealed record Notification(string Key, string Message, NotificationType T
     public static Notification Forbidden(string key, string message) => new(key, message, NotificationType.Forbidden);
 
     public static Notification BusinessRule(string key, string message) => new(key, message, NotificationType.BusinessRule);
+
+    public static Notification Unavailable(string key, string message) => new(key, message, NotificationType.Unavailable);
 }
