@@ -38,6 +38,7 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("GET", "/api/v1/conversations/{id}", UserRole.Viewer),
         ("POST", "/api/v1/conversations", UserRole.Viewer),
         ("POST", "/api/v1/conversations/{id}/messages", UserRole.Viewer),
+        ("POST", "/api/v1/conversations/{id}/messages/stream", UserRole.Viewer),
         ("DELETE", "/api/v1/conversations/{id}", UserRole.Viewer),
     ];
 
