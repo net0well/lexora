@@ -240,6 +240,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         :options="roleFilterOptions"
         option-label="label"
         option-value="value"
+        :placeholder="t('users.filters.allRoles')"
         :aria-label="t('users.filters.role')"
         @update:model-value="changeFilter({ role: $event })"
       />
@@ -248,6 +249,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         :options="statusFilterOptions"
         option-label="label"
         option-value="value"
+        :placeholder="t('users.filters.allStatuses')"
         :aria-label="t('users.filters.status')"
         @update:model-value="changeFilter({ status: $event })"
       />
@@ -265,7 +267,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       @page="changePage"
     >
       <template #empty>
-        <span class="users__empty">{{ t('users.empty') }}</span>
+        <span v-if="!loading" class="users__empty">{{ t('users.empty') }}</span>
       </template>
 
       <Column :header="t('users.columns.user')">

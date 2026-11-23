@@ -94,13 +94,15 @@ function stateText(item: DeepReadonly<UploadItem>): string {
           <span class="uploader__name" :title="item.name">{{ item.name }}</span>
           <span class="uploader__size">{{ format.bytes(item.size) }}</span>
         </div>
-        <ProgressBar
-          v-if="item.state === 'uploading' || item.state === 'queued'"
-          :value="item.progress"
-          :show-value="false"
-          class="uploader__progress"
-        />
-        <span class="uploader__state">{{ stateText(item) }}</span>
+        <div class="uploader__status">
+          <ProgressBar
+            v-if="item.state === 'uploading' || item.state === 'queued'"
+            :value="item.progress"
+            :show-value="false"
+            class="uploader__progress"
+          />
+          <span class="uploader__state">{{ stateText(item) }}</span>
+        </div>
         <Button
           v-if="item.state === 'uploading' || item.state === 'queued'"
           icon="pi pi-times"
@@ -182,7 +184,7 @@ function stateText(item: DeepReadonly<UploadItem>): string {
 
 .uploader__item {
   display: grid;
-  grid-template-columns: minmax(10rem, 1fr) minmax(6rem, 12rem) auto auto;
+  grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 22rem) auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
@@ -217,9 +219,14 @@ function stateText(item: DeepReadonly<UploadItem>): string {
   color: var(--p-green-700);
 }
 
+.uploader__status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .uploader__item--failed .uploader__state,
 .uploader__item--rejected .uploader__state {
-  grid-column: 2 / span 2;
   color: var(--p-red-600);
 }
 

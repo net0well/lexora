@@ -220,6 +220,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         :options="statusOptions"
         option-label="label"
         option-value="value"
+        :placeholder="t('documents.table.allStatuses')"
         :aria-label="t('documents.table.statusFilter')"
         @update:model-value="changeStatus"
       />
@@ -237,7 +238,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
       @page="changePage"
     >
       <template #empty>
-        <span class="documents__empty">{{
+        <span v-if="!loading" class="documents__empty">{{
           t(filtered ? 'documents.table.emptyFiltered' : 'documents.table.empty')
         }}</span>
       </template>
