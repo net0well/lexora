@@ -2,14 +2,18 @@ using JasperFx;
 using JasperFx.CodeGeneration;
 using JasperFx.Resources;
 using Lexora.Api.IntegrationTests.Hosting;
+using Lexora.Application.Abstractions.Ai;
 using Lexora.Shared.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Lexora.Api.IntegrationTests.Pipeline;
 
 public static class PipelineHostConfiguration
 {
-    public static void Apply(IWebHostBuilder builder, PipelineSettings settings)
+    public static void Apply(IWebHostBuilder builder, PipelineSettings settings, IEmbeddingModel embeddings)
     {
         builder.UseEnvironment(ApiFactory.EnvironmentName);
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", settings.DatabaseConnectionString);
@@ -32,5 +36,7 @@ public static class PipelineHostConfiguration
 
             services.AddResourceSetupOnStartup();
         });
+
+        builder.ConfigureTestServices(services => services.Replace(ServiceDescriptor.Singleton(embeddings)));
     }
 }
