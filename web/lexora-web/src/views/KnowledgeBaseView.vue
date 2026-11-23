@@ -20,10 +20,10 @@ import KnowledgeBaseSearch from '@/components/search/KnowledgeBaseSearch.vue'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
 import { useQueryState } from '@/composables/useQueryState'
-import { useUpload } from '@/composables/useUpload'
 import { useAuthStore } from '@/stores/auth'
 import { useDocumentsStore } from '@/stores/documents'
 import { useKnowledgeBasesStore } from '@/stores/knowledgeBases'
+import { useUploadsStore } from '@/stores/uploads'
 
 interface TabEntry {
   value: string
@@ -42,18 +42,15 @@ const { current: base, loadingCurrent } = storeToRefs(store)
 const documents = useDocumentsStore()
 const { notify } = useNotifications()
 
-const {
-  items: uploads,
-  add: addUploads,
-  cancel: cancelUpload,
-  clearFinished: clearUploads,
-} = useUpload({
-  knowledgeBaseId: () => id,
-  onUploaded: (document, knowledgeBaseId) => {
+const uploadQueue = useUploadsStore()
+const uploads = computed(() => uploadQueue.itemsFor(id))
+
+function addUploads(files: File[]): void {
+  uploadQueue.add(id, files, (document, knowledgeBaseId) => {
     documents.added(document, knowledgeBaseId)
     store.countDocuments(knowledgeBaseId, 1)
-  },
-})
+  })
+}
 
 const canUpload = computed(() => auth.atLeast('member') && base.value?.status === 'active')
 
@@ -159,8 +156,8 @@ watch(
                 v-if="canUpload"
                 :items="uploads"
                 @add="addUploads"
-                @cancel="cancelUpload"
-                @clear="clearUploads"
+                @cancel="uploadQueue.cancel(id, $event)"
+                @clear="uploadQueue.clearFinished(id)"
               />
               <Message v-else-if="base.status === 'archived'" severity="secondary">
                 {{ t('documents.upload.archived') }}

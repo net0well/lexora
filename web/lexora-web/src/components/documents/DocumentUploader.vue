@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
 import ProgressBar from 'primevue/progressbar'
-import { computed, shallowRef, useTemplateRef, type DeepReadonly } from 'vue'
+import { computed, shallowRef, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { documentRules } from '@/api/types/document'
 import { useFormat } from '@/composables/useFormat'
-import type { UploadItem } from '@/composables/useUpload'
+import { useNotifications } from '@/composables/useNotifications'
+import type { UploadItem } from '@/stores/uploads'
 
-const { items } = defineProps<{ items: readonly DeepReadonly<UploadItem>[] }>()
+const { items } = defineProps<{ items: readonly UploadItem[] }>()
 
 const emit = defineEmits<{
   add: [files: File[]]
@@ -18,6 +19,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const format = useFormat()
+const { describe } = useNotifications()
 const input = useTemplateRef<HTMLInputElement>('input')
 const dragging = shallowRef(false)
 
@@ -41,12 +43,24 @@ function dropped(event: DragEvent): void {
   emit('add', [...(event.dataTransfer?.files ?? [])])
 }
 
-function stateText(item: DeepReadonly<UploadItem>): string {
+function stateText(item: UploadItem): string {
   if (item.state === 'uploading') {
     return t('documents.upload.uploading', { progress: item.progress })
   }
 
-  return item.error ?? t(`documents.upload.${item.state}`)
+  if (item.rejection === 'size') {
+    return t('documents.upload.tooLarge', { max: format.bytes(documentRules.maxFileSizeBytes) })
+  }
+
+  if (item.rejection) {
+    return t(`documents.upload.${item.rejection}`)
+  }
+
+  if (item.state === 'failed') {
+    return item.notifications.map(describe).join(' ') || t('notifications.unexpected')
+  }
+
+  return t(`documents.upload.${item.state}`)
 }
 </script>
 
