@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddSingleton<IRagPromptBuilder, RagPromptBuilder>();
         services.AddSingleton<ICitationParser, CitationParser>();
         services.AddScoped<IConversationService, ConversationService>();
+        services.AddScoped<IAnswerService, AnswerService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
