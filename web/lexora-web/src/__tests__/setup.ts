@@ -1,4 +1,7 @@
+import { enableAutoUnmount } from '@vue/test-utils'
 import { afterEach, beforeEach, vi } from 'vitest'
+
+enableAutoUnmount(afterEach)
 
 Object.defineProperty(window, 'matchMedia', {
   configurable: true,
@@ -15,7 +18,16 @@ Object.defineProperty(window, 'matchMedia', {
     }) as MediaQueryList,
 })
 
+class NoResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: NoResizeObserver })
+
 beforeEach(() => {
+  document.body.innerHTML = ''
   vi.stubGlobal(
     'fetch',
     vi.fn(() => Promise.reject(new TypeError('Tests do not reach the network.'))),

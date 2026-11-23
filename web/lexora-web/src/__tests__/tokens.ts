@@ -1,4 +1,5 @@
 import type { Session, UserRole } from '@/api/types/auth'
+import type { ApiResult } from '@/api/types/commandResult'
 
 function base64Url(value: unknown): string {
   return btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
@@ -14,4 +15,12 @@ export function session(role: UserRole = 'admin', token = accessToken()): Sessio
     expiresAt: new Date(Date.now() + 900_000).toISOString(),
     user: { id: 'user-1', email: 'ana@lexora.local', name: 'Ana', role },
   }
+}
+
+export function ok<T>(data: T, status = 200): ApiResult<T> {
+  return { success: true, data, notifications: [], status }
+}
+
+export function sessionAs(role: UserRole): ApiResult<Session> {
+  return ok(session(role))
 }

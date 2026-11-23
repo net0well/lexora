@@ -36,6 +36,57 @@
     "warning": "Atenção",
     "success": "Pronto"
   },
+  "knowledgeBases": {
+    "subtitle": "Cada base reúne os documentos de um assunto. O chat responde só com os documentos da base escolhida.",
+    "new": "Nova base",
+    "created": "Base “{name}” criada.",
+    "archived": "Arquivada",
+    "noDescription": "Sem descrição.",
+    "documentCount": "Nenhum documento | 1 documento | {count} documentos",
+    "updatedAt": "Atualizada em {date}",
+    "createdAt": "Criada em {date}",
+    "notFound": "Base de conhecimento não encontrada.",
+    "empty": "Nenhuma base de conhecimento ainda.",
+    "emptyArchived": "Nenhuma base arquivada.",
+    "emptyAdminHint": "Crie a primeira base para enviar documentos.",
+    "filter": {
+      "label": "Filtrar por status",
+      "active": "Ativas",
+      "archived": "Arquivadas"
+    },
+    "tabs": {
+      "documents": "Documentos",
+      "search": "Busca",
+      "settings": "Configurações"
+    },
+    "form": {
+      "name": "Nome",
+      "description": "Descrição",
+      "chunking": "Divisão em trechos",
+      "chunkingHint": "Tamanho máximo de cada trecho e quanto ele repete do anterior, em tokens. A mudança vale para documentos enviados ou reprocessados depois.",
+      "chunkMaxTokens": "Tamanho do trecho",
+      "chunkOverlapTokens": "Sobreposição",
+      "nameLength": "O nome precisa ter de {min} a {max} caracteres.",
+      "descriptionLength": "A descrição pode ter até {max} caracteres.",
+      "chunkMaxTokensRange": "Use um valor de {min} a {max}.",
+      "chunkOverlapRange": "Use um valor de 0 a {max} (metade do tamanho do trecho)."
+    },
+    "settings": {
+      "general": "Dados da base",
+      "saved": "Alterações salvas.",
+      "maintenance": "Manutenção",
+      "reindex": "Reindexar",
+      "reindexTitle": "Reindexar a base",
+      "reindexHint": "Processa de novo todos os documentos indexados. Use depois de trocar o modelo de embeddings.",
+      "reindexConfirm": "Todos os documentos indexados vão ser processados de novo e ficam fora da busca até terminar. Continuar?",
+      "reindexed": "Nenhum documento para reindexar. | 1 documento enviado para reprocessar. | {count} documentos enviados para reprocessar.",
+      "archive": "Arquivar",
+      "archiveTitle": "Arquivar a base",
+      "archiveHint": "A base deixa de receber documentos. Busca e chat continuam funcionando.",
+      "archiveConfirm": "Arquivar “{name}”? Ela deixa de receber documentos.",
+      "archived": "Base arquivada."
+    }
+  },
   "locale": {
     "label": "Idioma",
     "pt-BR": "Português",

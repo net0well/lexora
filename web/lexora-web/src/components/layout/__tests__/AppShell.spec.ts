@@ -20,7 +20,6 @@ const api = vi.mocked(authApi)
 describe('AppShell', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    document.body.innerHTML = ''
     const signedIn = session('member')
     signedIn.user.name = 'Ana Souza'
     api.refresh.mockResolvedValue({ success: true, data: signedIn, notifications: [], status: 200 })
@@ -46,6 +45,5 @@ describe('AppShell', () => {
 
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('login'))
     expect(api.logout).toHaveBeenCalledTimes(1)
-    wrapper.unmount()
   })
 })

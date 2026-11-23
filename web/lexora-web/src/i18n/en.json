@@ -36,6 +36,57 @@
     "warning": "Warning",
     "success": "Done"
   },
+  "knowledgeBases": {
+    "subtitle": "Each base gathers the documents of one subject. The chat answers only from the documents of the chosen base.",
+    "new": "New base",
+    "created": "Base “{name}” created.",
+    "archived": "Archived",
+    "noDescription": "No description.",
+    "documentCount": "No documents | 1 document | {count} documents",
+    "updatedAt": "Updated on {date}",
+    "createdAt": "Created on {date}",
+    "notFound": "Knowledge base not found.",
+    "empty": "No knowledge bases yet.",
+    "emptyArchived": "No archived bases.",
+    "emptyAdminHint": "Create the first base to upload documents.",
+    "filter": {
+      "label": "Filter by status",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "tabs": {
+      "documents": "Documents",
+      "search": "Search",
+      "settings": "Settings"
+    },
+    "form": {
+      "name": "Name",
+      "description": "Description",
+      "chunking": "Chunking",
+      "chunkingHint": "Maximum size of each chunk and how much it repeats from the previous one, in tokens. The change applies to documents uploaded or reprocessed afterwards.",
+      "chunkMaxTokens": "Chunk size",
+      "chunkOverlapTokens": "Overlap",
+      "nameLength": "The name must have {min} to {max} characters.",
+      "descriptionLength": "The description can have up to {max} characters.",
+      "chunkMaxTokensRange": "Use a value from {min} to {max}.",
+      "chunkOverlapRange": "Use a value from 0 to {max} (half the chunk size)."
+    },
+    "settings": {
+      "general": "Base details",
+      "saved": "Changes saved.",
+      "maintenance": "Maintenance",
+      "reindex": "Reindex",
+      "reindexTitle": "Reindex the base",
+      "reindexHint": "Processes every indexed document again. Use it after changing the embedding model.",
+      "reindexConfirm": "Every indexed document will be processed again and stays out of the search until it finishes. Continue?",
+      "reindexed": "No documents to reindex. | 1 document sent to reprocessing. | {count} documents sent to reprocessing.",
+      "archive": "Archive",
+      "archiveTitle": "Archive the base",
+      "archiveHint": "The base stops receiving documents. Search and chat keep working.",
+      "archiveConfirm": "Archive “{name}”? It stops receiving documents.",
+      "archived": "Base archived."
+    }
+  },
   "locale": {
     "label": "Language",
     "pt-BR": "Português",
