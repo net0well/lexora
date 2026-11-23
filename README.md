@@ -222,7 +222,7 @@ npx @modelcontextprotocol/inspector
 - [x] Ingestion pipeline
 - [x] AI connectors
 - [x] Hybrid search and chat with citations
-- [ ] Vue front-end
+- [x] Vue front-end
 - [ ] MCP server
 - [ ] Observability and v1.0.0
 
