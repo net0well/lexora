@@ -28,6 +28,12 @@ public static class DependencyInjection
         services.AddOptions<SeedAdminOptions>()
             .Bind(configuration.GetSection(SeedAdminOptions.SectionName));
 
+        services.AddOptions<IngestionOptions>()
+            .Bind(configuration.GetSection(IngestionOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(ingestion => ingestion.StalledAfter > TimeSpan.Zero, $"'{IngestionOptions.SectionName}:StalledAfter' must be positive.")
+            .ValidateOnStart();
+
         services.AddOptions<DocumentOptions>()
             .Bind(configuration.GetSection(DocumentOptions.SectionName))
             .ValidateDataAnnotations()

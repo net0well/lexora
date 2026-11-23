@@ -1,4 +1,5 @@
 using Lexora.Application.Abstractions.Processing;
+using Lexora.Application.Common.Options;
 using Lexora.Application.Documents;
 using Lexora.Application.Ingestion;
 using Lexora.Application.Ingestion.Services;
@@ -8,6 +9,7 @@ using Lexora.TestKit;
 using Lexora.TestKit.Builders;
 using Lexora.TestKit.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
@@ -15,7 +17,7 @@ namespace Lexora.Application.UnitTests.Ingestion;
 
 internal sealed class IngestionHarness
 {
-    public IngestionHarness()
+    public IngestionHarness(int embeddingBatchSize = 32)
     {
         Storage = new InMemoryFileStorage(Time);
         Chunker.Chunk(Arg.Any<ExtractedDocument>(), Arg.Any<ChunkingSettings>())
@@ -27,7 +29,9 @@ internal sealed class IngestionHarness
             Chunks,
             Extractor,
             Chunker,
+            Embeddings,
             Storage,
+            Options.Create(new IngestionOptions { EmbeddingBatchSize = embeddingBatchSize }),
             Time,
             NullLogger<IngestionService>.Instance);
     }
@@ -44,6 +48,8 @@ internal sealed class IngestionHarness
 
     public ITextChunker Chunker { get; } = Substitute.For<ITextChunker>();
 
+    public FakeEmbeddingModel Embeddings { get; } = new();
+
     public InMemoryFileStorage Storage { get; }
 
     public IngestionService Service { get; }
@@ -59,6 +65,16 @@ internal sealed class IngestionHarness
 
         using var original = new MemoryStream([1, 2, 3]);
         await Storage.SaveAsync(document.StorageKey, original, document.ContentType, CancellationToken.None);
+
+        return document;
+    }
+
+    public async Task<Document> AddChunkedAsync(int chunkCount)
+    {
+        var sections = Enumerable.Range(0, chunkCount).Select(index => new ExtractedSection(index % 2 == 0 ? "Safety" : null, 1, null, $"chunk {index}"));
+        var document = await AddExtractedAsync(new ExtractedDocument([.. sections], PageCount: 1));
+        await Service.ChunkAsync(document.Id, document.ProcessingVersion, CancellationToken.None);
+        document.ClearDomainEvents();
 
         return document;
     }
