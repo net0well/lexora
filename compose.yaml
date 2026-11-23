@@ -13,6 +13,9 @@ x-dotnet-env: &dotnet-env
   Storage__S3__SecretKey: ${S3_SECRET_KEY}
   Storage__S3__ForcePathStyle: "true"
   Jwt__SigningKey: ${JWT_SIGNING_KEY}
+  Ai__Embedding__Profile: ${AI_EMBEDDING_PROFILE:-local}
+  Ai__Embedding__Profiles__local__Endpoint: http://ollama:11434
+  Ai__Embedding__Profiles__local__Model: ${OLLAMA_EMBEDDING_MODEL:-bge-m3}
 
 services:
   postgres:
@@ -104,6 +107,32 @@ services:
       timeout: 5s
       retries: 12
 
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai-local"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  ollama-init:
+    image: ollama/ollama:latest
+    profiles: ["ai-local"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - ollama pull ${OLLAMA_EMBEDDING_MODEL:-bge-m3}
+    restart: "no"
+
   migrator:
     build:
       context: .
@@ -137,9 +166,28 @@ services:
       seaweedfs-init:
         condition: service_completed_successfully
 
+  worker:
+    build:
+      context: .
+      dockerfile: src/Hosts/Lexora.Worker/Dockerfile
+    environment:
+      <<: *dotnet-env
+      Persistence__WolverineSchema: wolverine_worker
+    ports:
+      - "5081:8080"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      seaweedfs-init:
+        condition: service_completed_successfully
+      ollama-init:
+        condition: service_completed_successfully
+        required: false
+
 volumes:
   postgres-data:
   rabbitmq-data:
   redis-data:
   seaweedfs-data:
   seq-data:
+  ollama-data:
