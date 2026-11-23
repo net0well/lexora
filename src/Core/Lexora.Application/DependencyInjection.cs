@@ -5,6 +5,7 @@ using Lexora.Application.Common.Options;
 using Lexora.Application.Documents.Services;
 using Lexora.Application.Ingestion.Services;
 using Lexora.Application.KnowledgeBases.Services;
+using Lexora.Application.Retrieval.Fusion;
 using Lexora.Application.Users.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,11 @@ public static class DependencyInjection
 
         services.AddOptions<SeedAdminOptions>()
             .Bind(configuration.GetSection(SeedAdminOptions.SectionName));
+
+        services.AddOptions<RagOptions>()
+            .Bind(configuration.GetSection(RagOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddOptions<IngestionOptions>()
             .Bind(configuration.GetSection(IngestionOptions.SectionName))
@@ -54,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IIngestionService, IngestionService>();
         services.AddScoped<IMaintenanceService, MaintenanceService>();
+        services.AddSingleton<IRankFusion, ReciprocalRankFusion>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }
