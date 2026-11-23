@@ -1,12 +1,19 @@
 using Lexora.Application.Abstractions.Ai;
 using Lexora.Infrastructure.AI.Adapters;
+using Lexora.Infrastructure.AI.Health;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
+using Lexora.Infrastructure.AI.Providers.Anthropic;
 using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Providers.Ollama;
+using Lexora.Infrastructure.AI.Providers.OpenAi;
+using Lexora.Infrastructure.AI.Providers.OpenAiCompatible;
 using Lexora.Infrastructure.AI.Registry;
+using Lexora.Infrastructure.AI.Resilience;
+using Lexora.Shared.Health;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 namespace Lexora.Infrastructure.AI;
@@ -20,10 +27,26 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddSingleton<IValidateOptions<AiOptions>, AiOptionsValidator>();
 
+        services.AddSingleton<IChatClientProvider, OllamaChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, OpenAiChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, OpenAiCompatibleChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, AnthropicChatClientProvider>();
+        services.AddSingleton<IChatClientProvider, FakeChatClientProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, OllamaEmbeddingGeneratorProvider>();
+        services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiEmbeddingGeneratorProvider>();
+        services.AddSingleton<IEmbeddingGeneratorProvider, OpenAiCompatibleEmbeddingGeneratorProvider>();
         services.AddSingleton<IEmbeddingGeneratorProvider, HashingEmbeddingGeneratorProvider>();
+        services.AddSingleton<AiResiliencePipelineProvider>();
+        services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
+        services.AddSingleton<IChatModel, ChatModelAdapter>();
+        services.AddSingleton<IAiProfileCatalog, AiProfileCatalog>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
+
+        // Without AI the API still uploads and lists documents, so an unreachable model degrades readiness instead of failing it.
+        services.AddHealthChecks()
+            .AddCheck<ChatProfileHealthCheck>("ai-chat", HealthStatus.Degraded, [HealthCheckTags.Ready])
+            .AddCheck<EmbeddingProfileHealthCheck>("ai-embedding", HealthStatus.Degraded, [HealthCheckTags.Ready]);
 
         return services;
     }

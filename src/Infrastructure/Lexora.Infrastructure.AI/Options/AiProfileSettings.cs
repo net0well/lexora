@@ -10,7 +10,15 @@ public sealed class AiProfileSettings
 
     public string? ApiKey { get; init; }
 
+    public bool? RequiresApiKey { get; init; }
+
     public int? TimeoutSeconds { get; init; }
+
+    public bool AllowUserSelection { get; init; }
+
+    public float? Temperature { get; init; }
+
+    public int? MaxOutputTokens { get; init; }
 
     public int MaxBatchSize { get; init; } = 32;
 

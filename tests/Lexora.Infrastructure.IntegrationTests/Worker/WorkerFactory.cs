@@ -41,6 +41,7 @@ public sealed class WorkerFactory(DatabaseFixture database) : WebApplicationFact
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", database.ConnectionString);
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.RabbitMq}", RabbitMqConnectionString ?? "amqp://guest:guest@localhost:5672");
         builder.UseSetting("Jwt:SigningKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)));
+        builder.UseSetting("Ai:Chat:DefaultProfile", "fake");
         builder.UseSetting("Ai:Embedding:Profile", "fake");
         builder.UseSetting("Storage:Provider", "Local");
         builder.UseSetting("Storage:Local:RootPath", StorageRoot);

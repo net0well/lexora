@@ -1,6 +1,8 @@
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers;
+using Lexora.Infrastructure.AI.Telemetry;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Lexora.Infrastructure.AI.Registry;
@@ -9,7 +11,7 @@ public sealed class EmbeddingGeneratorRegistry : IDisposable
 {
     private readonly Lazy<IEmbeddingGenerator<string, Embedding<float>>> _generator;
 
-    public EmbeddingGeneratorRegistry(IEnumerable<IEmbeddingGeneratorProvider> providers, IOptions<AiOptions> options)
+    public EmbeddingGeneratorRegistry(IEnumerable<IEmbeddingGeneratorProvider> providers, IOptions<AiOptions> options, ILoggerFactory loggerFactory)
     {
         var embedding = options.Value.Embedding;
 
@@ -19,7 +21,8 @@ public sealed class EmbeddingGeneratorRegistry : IDisposable
         Provider = providers.SingleOrDefault(provider => provider.Kind == Profile.Provider)
             ?? throw new InvalidOperationException($"No embedding provider is registered for '{Profile.Provider}'.");
 
-        _generator = new Lazy<IEmbeddingGenerator<string, Embedding<float>>>(() => Provider.Create(ProfileName, Profile));
+        _generator = new Lazy<IEmbeddingGenerator<string, Embedding<float>>>(
+            () => AiInstrumentation.Instrument(Provider.Create(ProfileName, Profile), options.Value, loggerFactory));
     }
 
     public string ProfileName { get; }

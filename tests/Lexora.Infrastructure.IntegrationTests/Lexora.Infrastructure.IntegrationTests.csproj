@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <UserSecretsId>cf9a743c-0aa7-4386-b2f1-e6ab2fd37bd1</UserSecretsId>
+  </PropertyGroup>
+
   <ItemGroup>
     <Using Include="Shouldly" />
     <Using Include="Xunit" />

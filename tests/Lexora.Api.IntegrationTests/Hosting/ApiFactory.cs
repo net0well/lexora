@@ -117,6 +117,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", _database.GetConnectionString());
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.RabbitMq}", "amqp://guest:guest@localhost:5672");
         builder.UseSetting("Jwt:SigningKey", _signingKey);
+        builder.UseSetting("Ai:Chat:DefaultProfile", "fake");
         builder.UseSetting("Ai:Embedding:Profile", "fake");
         builder.UseSetting("Storage:Provider", "Local");
         builder.UseSetting("Storage:Local:RootPath", StorageRoot);

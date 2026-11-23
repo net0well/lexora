@@ -10,14 +10,8 @@ public sealed class OllamaEmbeddingGeneratorProvider : IEmbeddingGeneratorProvid
 
     public bool AcceptsDimensions => false;
 
-    public IEmbeddingGenerator<string, Embedding<float>> Create(string profileName, AiProfileSettings settings)
-    {
-        var http = new HttpClient(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
-        {
-            BaseAddress = settings.Endpoint,
-            Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds ?? AiEmbeddingSettings.DefaultTimeoutSeconds),
-        };
-
-        return new OllamaApiClient(http, settings.Model);
-    }
+    public IEmbeddingGenerator<string, Embedding<float>> Create(string profileName, AiProfileSettings settings) =>
+        new OllamaApiClient(
+            ProviderHttpClient.Create(settings.Endpoint, TimeSpan.FromSeconds(settings.TimeoutSeconds ?? AiEmbeddingSettings.DefaultTimeoutSeconds)),
+            settings.Model);
 }

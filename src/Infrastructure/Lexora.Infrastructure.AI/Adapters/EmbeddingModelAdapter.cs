@@ -1,11 +1,11 @@
-using System.Net;
 using Lexora.Application.Abstractions.Ai;
 using Lexora.Infrastructure.AI.Registry;
+using Lexora.Infrastructure.AI.Resilience;
 using Microsoft.Extensions.AI;
 
 namespace Lexora.Infrastructure.AI.Adapters;
 
-public sealed class EmbeddingModelAdapter(EmbeddingGeneratorRegistry registry) : IEmbeddingModel
+public sealed class EmbeddingModelAdapter(EmbeddingGeneratorRegistry registry, AiResiliencePipelineProvider pipelines) : IEmbeddingModel
 {
     public EmbeddingSpace Space { get; } = new(registry.Profile.Provider.ToString(), registry.Profile.Model, registry.Dimensions);
 
@@ -45,22 +45,17 @@ public sealed class EmbeddingModelAdapter(EmbeddingGeneratorRegistry registry) :
     {
         try
         {
-            return await registry.Generator.GenerateAsync(batch, options, cancellationToken);
+            return await pipelines.ForEmbedding(registry.ProfileName).ExecuteAsync(
+                async token => await registry.Generator.GenerateAsync(batch, options, token),
+                cancellationToken);
         }
-        catch (HttpRequestException exception) when (IsTransient(exception.StatusCode))
+        catch (Exception exception) when (AiFailureClassifier.IsUnavailable(exception, cancellationToken))
         {
-            throw Unavailable(exception);
-        }
-        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
-        {
-            throw Unavailable(exception);
+            throw new AiProviderUnavailableException(
+                registry.Profile.Provider.ToString(),
+                registry.ProfileName,
+                AiFailureClassifier.RetryAfterOf(exception),
+                exception);
         }
     }
-
-    // A missing status code means the provider could not be reached at all, which is as transient as a 5xx.
-    private static bool IsTransient(HttpStatusCode? status) =>
-        status is null or HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout || (int)status >= 500;
-
-    private AiProviderUnavailableException Unavailable(Exception exception) =>
-        new(registry.Profile.Provider.ToString(), registry.ProfileName, retryAfter: null, exception);
 }

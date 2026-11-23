@@ -3,6 +3,8 @@ using Lexora.Infrastructure.AI.Adapters;
 using Lexora.Infrastructure.AI.Options;
 using Lexora.Infrastructure.AI.Providers.Fake;
 using Lexora.Infrastructure.AI.Registry;
+using Lexora.Infrastructure.AI.Resilience;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Lexora.Infrastructure.IntegrationTests.Ai;
@@ -45,7 +47,7 @@ public sealed class HashingEmbeddingGeneratorTests
                 Profiles = { ["fake"] = new AiProfileSettings { Provider = AiProviderKind.Fake, Model = "fake-embedding" } },
             },
         };
-        var adapter = new EmbeddingModelAdapter(new EmbeddingGeneratorRegistry([new HashingEmbeddingGeneratorProvider()], Options.Create(options)));
+        var adapter = new EmbeddingModelAdapter(new EmbeddingGeneratorRegistry([new HashingEmbeddingGeneratorProvider()], Options.Create(options), NullLoggerFactory.Instance), new AiResiliencePipelineProvider(TimeProvider.System));
 
         var vectors = await adapter.EmbedAsync(["one", "two"], EmbeddingPurpose.Document, TestContext.Current.CancellationToken);
 
