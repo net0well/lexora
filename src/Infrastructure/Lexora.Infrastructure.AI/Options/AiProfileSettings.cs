@@ -12,6 +12,12 @@ public sealed class AiProfileSettings
 
     public int? TimeoutSeconds { get; init; }
 
+    public bool AllowUserSelection { get; init; }
+
+    public float? Temperature { get; init; }
+
+    public int? MaxOutputTokens { get; init; }
+
     public int MaxBatchSize { get; init; } = 32;
 
     public string QueryPrefix { get; init; } = string.Empty;

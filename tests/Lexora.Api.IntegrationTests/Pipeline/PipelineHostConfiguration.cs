@@ -15,6 +15,7 @@ public static class PipelineHostConfiguration
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.Database}", settings.DatabaseConnectionString);
         builder.UseSetting($"ConnectionStrings:{ConnectionStringNames.RabbitMq}", settings.RabbitMqConnectionString);
         builder.UseSetting("Jwt:SigningKey", settings.SigningKey);
+        builder.UseSetting("Ai:Chat:DefaultProfile", "fake");
         builder.UseSetting("Ai:Embedding:Profile", "fake");
         builder.UseSetting("Storage:Provider", "Local");
         builder.UseSetting("Storage:Local:RootPath", settings.StorageRoot);
