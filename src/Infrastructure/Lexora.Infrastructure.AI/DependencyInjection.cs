@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddSingleton<ChatClientRegistry>();
         services.AddSingleton<EmbeddingGeneratorRegistry>();
         services.AddSingleton<IChatModel, ChatModelAdapter>();
+        services.AddSingleton<IAiProfileCatalog, AiProfileCatalog>();
         services.AddSingleton<IEmbeddingModel, EmbeddingModelAdapter>();
 
         return services;
