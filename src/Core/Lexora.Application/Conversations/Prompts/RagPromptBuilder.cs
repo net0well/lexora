@@ -11,9 +11,10 @@ namespace Lexora.Application.Conversations.Prompts;
 
 public sealed class RagPromptBuilder(ITokenCounter tokens, IOptions<RagOptions> options) : IRagPromptBuilder
 {
-    private static readonly Lazy<string> _systemPrompt = new(LoadSystemPrompt);
+    private static readonly PromptTemplate _system = PromptTemplate.Load("answer-system");
+    private static readonly PromptTemplate _user = PromptTemplate.Load("answer-user");
 
-    public static string SystemPrompt => _systemPrompt.Value;
+    public static string SystemPrompt => _system.Text;
 
     public RagPrompt Build(string question, IReadOnlyList<SearchHit> hits, IReadOnlyList<ConversationMessage> history)
     {
@@ -26,7 +27,7 @@ public sealed class RagPromptBuilder(ITokenCounter tokens, IOptions<RagOptions> 
         List<ChatTurn> turns =
         [
             .. history.Select(message => new ChatTurn(message.Role == MessageRole.User ? ChatTurnRole.User : ChatTurnRole.Assistant, message.Content)),
-            new ChatTurn(ChatTurnRole.User, Question(question, excerpts)),
+            new ChatTurn(ChatTurnRole.User, Question(question.Trim(), excerpts)),
         ];
 
         return new RagPrompt(SystemPrompt, turns, excerpts);
@@ -40,7 +41,7 @@ public sealed class RagPromptBuilder(ITokenCounter tokens, IOptions<RagOptions> 
 
         foreach (var hit in hits)
         {
-            var cost = tokens.Count(Block(excerpts.Count + 1, hit));
+            var cost = tokens.Count(Document(excerpts.Count + 1, hit));
 
             if (used + cost <= budget)
             {
@@ -52,45 +53,47 @@ public sealed class RagPromptBuilder(ITokenCounter tokens, IOptions<RagOptions> 
         return excerpts;
     }
 
-    private static string Question(string question, List<RagExcerpt> excerpts)
-    {
-        var text = new StringBuilder("<context>\n");
-        text.AppendJoin("\n\n", excerpts.Select(excerpt => Block(excerpt.Number, excerpt.Hit)));
-        text.Append("\n</context>\n\nQuestion: ").Append(question.Trim());
+    private static string Question(string question, List<RagExcerpt> excerpts) =>
+        _user.Render(new Dictionary<string, string>
+        {
+            ["documents"] = string.Join('\n', excerpts.Select(excerpt => Document(excerpt.Number, excerpt.Hit))),
+            ["question"] = PromptText.Neutralize(question),
+            ["language"] = LanguageName(QuestionLanguageDetector.Detect(question)),
+        });
 
-        return text.ToString();
-    }
-
-    private static string Block(int number, SearchHit hit)
+    private static string Document(int number, SearchHit hit)
     {
-        var header = new StringBuilder();
-        header.Append(CultureInfo.InvariantCulture, $"[{number}] Document: {hit.DocumentName}");
+        var document = new StringBuilder();
+        document.Append(CultureInfo.InvariantCulture, $"<document index=\"{number}\">\n");
+        document.Append("<source>").Append(PromptText.Neutralize(hit.DocumentName)).Append("</source>\n");
 
         if (hit.PageNumber is { } page)
         {
-            header.Append(CultureInfo.InvariantCulture, $" | Page: {page}");
+            document.Append(CultureInfo.InvariantCulture, $"<page>{page}</page>\n");
         }
 
         if (!string.IsNullOrWhiteSpace(hit.SheetName))
         {
-            header.Append(CultureInfo.InvariantCulture, $" | Sheet: {hit.SheetName}");
+            document.Append("<sheet>").Append(PromptText.Neutralize(hit.SheetName)).Append("</sheet>\n");
         }
 
         if (!string.IsNullOrWhiteSpace(hit.SectionTitle))
         {
-            header.Append(CultureInfo.InvariantCulture, $" | Section: {hit.SectionTitle}");
+            document.Append("<section>").Append(PromptText.Neutralize(hit.SectionTitle)).Append("</section>\n");
         }
 
-        return header.Append('\n').Append(hit.Content).ToString();
+        return document
+            .Append("<document_content>\n")
+            .Append(PromptText.Neutralize(hit.Content))
+            .Append("\n</document_content>\n</document>")
+            .ToString();
     }
 
-    private static string LoadSystemPrompt()
+    private static string LanguageName(QuestionLanguage language) => language switch
     {
-        using var stream = typeof(RagPromptBuilder).Assembly.GetManifestResourceStream(
-            "Lexora.Application.Conversations.Prompts.Templates.rag-system-prompt.txt")
-            ?? throw new InvalidOperationException("The RAG system prompt resource is missing.");
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-
-        return reader.ReadToEnd().Trim();
-    }
+        QuestionLanguage.Portuguese => "Portuguese",
+        QuestionLanguage.Spanish => "Spanish",
+        QuestionLanguage.English => "English",
+        _ => "the language of the question",
+    };
 }

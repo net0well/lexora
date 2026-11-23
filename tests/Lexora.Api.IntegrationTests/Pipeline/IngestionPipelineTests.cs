@@ -117,7 +117,8 @@ public sealed class IngestionPipelineTests(PipelineFixture pipeline) : IClassFix
         using var started = await client.PostJsonAsync("/api/v1/conversations", new { knowledgeBaseId }, CancellationToken);
         var conversationId = (await started.ReadEnvelopeAsync<StartConversationResponse>(CancellationToken)).Data.ShouldNotBeNull().Id;
 
-        using var asked = await client.PostJsonAsync($"/api/v1/conversations/{conversationId}/messages", new { question = "O que fazer em vazamentos químicos?" }, CancellationToken);
+        // The fake embeddings carry no meaning, so only words that are all on the first page make the keyword side rank it first.
+        using var asked = await client.PostJsonAsync($"/api/v1/conversations/{conversationId}/messages", new { question = "Vazamentos químicos?" }, CancellationToken);
         using var streamed = await client.PostJsonAsync($"/api/v1/conversations/{conversationId}/messages/stream", new { question = "E sobre vazamentos químicos, quem comunicar?" }, CancellationToken);
 
         var answer = (await asked.ReadEnvelopeAsync<AskQuestionResponse>(CancellationToken)).Data.ShouldNotBeNull();

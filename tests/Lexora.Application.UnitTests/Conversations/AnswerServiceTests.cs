@@ -76,7 +76,7 @@ public sealed class AnswerServiceTests : IAsyncLifetime
         response.MessageId.ShouldBe(_conversation.Messages[1].Id);
         var request = _chat.Requests.ShouldHaveSingleItem();
         request.SystemPrompt.ShouldBe(RagPromptBuilder.SystemPrompt);
-        request.Turns.ShouldHaveSingleItem().Content.ShouldEndWith("Question: Qual o raio de isolamento?");
+        request.Turns.ShouldHaveSingleItem().Content.ShouldContain("<question>\nQual o raio de isolamento?\n</question>");
         await _retrieval.Received(1).RetrieveAsync(_conversation.KnowledgeBaseId, "Qual o raio de isolamento?", SearchMode.Hybrid, 8, CancellationToken);
     }
 
@@ -122,7 +122,7 @@ public sealed class AnswerServiceTests : IAsyncLifetime
             rewrite => rewrite.SystemPrompt.ShouldBe(FollowUpQuestionRewriter.SystemPrompt),
             rewrite => rewrite.MaxOutputTokens.ShouldBe(FollowUpQuestionRewriter.MaxOutputTokens));
         var request = _chat.Requests[^1];
-        request.Turns[^1].Content.ShouldEndWith("Question: E quais luvas usar?");
+        request.Turns[^1].Content.ShouldContain("<question>\nE quais luvas usar?\n</question>");
         request.Profile.ShouldBe("claude");
         request.Turns.Select(turn => turn.Role).ShouldBe([ChatTurnRole.User, ChatTurnRole.Assistant, ChatTurnRole.User]);
         request.Turns[0].Content.ShouldBe("Qual o raio de isolamento?");
