@@ -147,6 +147,8 @@ The answer cites its sources as `[1]`, `[2]` and comes with the matching citatio
 
 Retrieval settings live in the `Rag` section (`CandidatePoolSize`, `MinVectorSimilarity`, `RrfK`, `MaxChunksPerDocument`, `TopK`, `MaxContextTokens`, `HistoryMessages`, `RewriteFollowUpQuestions`). Query embeddings are cached for an hour in HybridCache, with Redis as the second level when `ConnectionStrings:Redis` is set and memory only otherwise.
 
+The prompts are Markdown templates in `src/Core/Lexora.Application/Conversations/Prompts/Templates`: the answer prompt (role, language, grounding, citation and output rules with short examples) and the follow-up rewrite prompt. Document excerpts, file names, questions and history are untrusted text: they go inside XML tags (`<documents>`, `<question>`, `<conversation>`), any of those tags inside the text is escaped so a document cannot close the context and add a fake question, and the rules are repeated after the context. The model has no tools, only sees excerpts of the conversation's knowledge base, and citations are rebuilt from the retrieved excerpts, never from the generated text. No prompt makes a model immune to prompt injection, so these layers limit what a malicious document can do: at most a wrong answer for whoever asked.
+
 ### Migrations
 
 Migrations are managed with the `dotnet ef` CLI, from the repository root. Every command takes the same parameters:
