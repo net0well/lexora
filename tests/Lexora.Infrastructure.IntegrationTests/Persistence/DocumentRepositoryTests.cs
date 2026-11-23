@@ -138,6 +138,37 @@ public sealed class DocumentRepositoryTests(DatabaseFixture database) : Database
         await Should.ThrowAsync<DbUpdateConcurrencyException>(() => second.SaveChangesAsync(CancellationToken));
     }
 
+    [Fact]
+    public async Task ListStalledAsync_DocumentsStuckBeforeTheCutoff_AreReturnedOldestFirst()
+    {
+        var (ownerId, knowledgeBase) = await SaveKnowledgeBaseAsync();
+        var older = new DocumentBuilder().InKnowledgeBase(knowledgeBase.Id).UploadedBy(ownerId).InStatus(DocumentStatus.Extracted).UploadedAt(TestClock.Now.AddHours(-3)).Build();
+        var old = new DocumentBuilder().InKnowledgeBase(knowledgeBase.Id).UploadedBy(ownerId).InStatus(DocumentStatus.Uploaded).UploadedAt(TestClock.Now.AddHours(-2)).Build();
+        var recent = new DocumentBuilder().InKnowledgeBase(knowledgeBase.Id).UploadedBy(ownerId).InStatus(DocumentStatus.Chunked).UploadedAt(TestClock.Now).Build();
+        var indexed = new DocumentBuilder().InKnowledgeBase(knowledgeBase.Id).UploadedBy(ownerId).InStatus(DocumentStatus.Indexed).UploadedAt(TestClock.Now.AddDays(-1)).Build();
+        await SaveAsync(older, old, recent, indexed);
+
+        await using var context = Database.CreateContext();
+        var stalled = await new DocumentRepository(context).ListStalledAsync(TestClock.Now.AddHours(-1), 10, CancellationToken);
+
+        stalled.Select(document => document.Id).ShouldBe([older.Id, old.Id]);
+    }
+
+    [Fact]
+    public async Task FindActiveIdsAsync_MixOfActiveDeletedAndUnknown_ReturnsOnlyTheActiveOnes()
+    {
+        var (ownerId, knowledgeBase) = await SaveKnowledgeBaseAsync();
+        var active = NewDocument(ownerId, knowledgeBase.Id, DocumentStatus.Indexed);
+        var deleted = NewDocument(ownerId, knowledgeBase.Id, DocumentStatus.Indexed);
+        deleted.Delete(TestClock.Now);
+        await SaveAsync(active, deleted);
+
+        await using var context = Database.CreateContext();
+        var ids = await new DocumentRepository(context).FindActiveIdsAsync([active.Id, deleted.Id, Guid.CreateVersion7()], CancellationToken);
+
+        ids.ShouldBe([active.Id]);
+    }
+
     private async Task<(Guid OwnerId, KnowledgeBase KnowledgeBase)> SaveKnowledgeBaseAsync(string name = "Contracts", Guid? ownerId = null)
     {
         var owner = ownerId ?? (await SaveUserAsync()).Id;

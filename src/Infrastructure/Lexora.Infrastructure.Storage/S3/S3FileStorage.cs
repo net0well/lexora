@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.CompilerServices;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Lexora.Application.Abstractions.Storage;
@@ -69,6 +70,24 @@ public sealed class S3FileStorage(
                         Objects = [.. batch.Select(item => new KeyVersion { Key = item.Key })],
                     },
                     cancellationToken);
+            }
+
+            request.ContinuationToken = page.IsTruncated == true ? page.NextContinuationToken : null;
+        }
+        while (request.ContinuationToken is not null);
+    }
+
+    public async IAsyncEnumerable<StoredObject> ListAsync(string prefix, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var request = new ListObjectsV2Request { BucketName = _bucket, Prefix = prefix };
+
+        do
+        {
+            var page = await clients.Internal.ListObjectsV2Async(request, cancellationToken);
+
+            foreach (var item in page.S3Objects ?? [])
+            {
+                yield return new StoredObject(item.Key, new DateTimeOffset((item.LastModified ?? DateTime.UtcNow).ToUniversalTime(), TimeSpan.Zero));
             }
 
             request.ContinuationToken = page.IsTruncated == true ? page.NextContinuationToken : null;

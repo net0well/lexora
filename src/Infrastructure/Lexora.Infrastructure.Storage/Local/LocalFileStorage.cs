@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Lexora.Application.Abstractions.Storage;
 using Microsoft.Extensions.Options;
 
@@ -56,6 +57,31 @@ public sealed class LocalFileStorage(
         RemoveEmptyDirectories(directory);
 
         return Task.CompletedTask;
+    }
+
+    public async IAsyncEnumerable<StoredObject> ListAsync(string prefix, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var start = PathOf(prefix);
+        var directory = prefix.EndsWith('/') ? start : Path.GetDirectoryName(start)!;
+
+        if (!Directory.Exists(directory))
+        {
+            yield break;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (file.StartsWith(start, StringComparison.Ordinal))
+            {
+                var key = Path.GetRelativePath(_root, file).Replace(Path.DirectorySeparatorChar, '/');
+
+                yield return new StoredObject(key, new DateTimeOffset(File.GetLastWriteTimeUtc(file), TimeSpan.Zero));
+            }
+        }
+
+        await Task.CompletedTask;
     }
 
     public Task<FileDownload> CreateDownloadAsync(string key, string fileName, string contentType, CancellationToken cancellationToken)

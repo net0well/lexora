@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<ISeedAdminService, SeedAdminService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IIngestionService, IngestionService>();
+        services.AddScoped<IMaintenanceService, MaintenanceService>();
         services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
         services.AddScoped<IUserService, UserService>();
     }

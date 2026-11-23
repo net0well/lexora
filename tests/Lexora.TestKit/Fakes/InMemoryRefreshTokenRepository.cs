@@ -17,6 +17,9 @@ public sealed class InMemoryRefreshTokenRepository : IRefreshTokenRepository
     public Task<IReadOnlyList<RefreshToken>> ListUnrevokedByUserAsync(Guid userId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<RefreshToken>>([.. _tokens.Where(token => token.UserId == userId && token.RevokedAt is null)]);
 
+    public Task<int> DeleteFinishedBeforeAsync(DateTimeOffset before, CancellationToken cancellationToken) =>
+        Task.FromResult(_tokens.RemoveAll(token => token.ExpiresAt < before || token.RevokedAt < before));
+
     public Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
     {
         _tokens.Add(refreshToken);

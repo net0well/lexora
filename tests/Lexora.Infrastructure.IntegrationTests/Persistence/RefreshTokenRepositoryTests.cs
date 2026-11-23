@@ -1,6 +1,7 @@
 using Lexora.Domain.RefreshTokens;
 using Lexora.Infrastructure.Persistence.Repositories;
 using Lexora.TestKit;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lexora.Infrastructure.IntegrationTests.Persistence;
 
@@ -27,6 +28,25 @@ public sealed class RefreshTokenRepositoryTests(DatabaseFixture database) : Data
         loaded.RevocationReason.ShouldBe(RefreshTokenRevocationReason.Rotated);
         loaded.ReplacedByTokenId.ShouldBe(replacement.Id);
         loaded.WasRotated.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteFinishedBeforeAsync_Cutoff_RemovesTokensExpiredOrRevokedBeforeIt()
+    {
+        var user = await SaveUserAsync();
+        var expired = RefreshToken.Issue(user.Id, "expired", TestClock.Now.AddDays(-40), TestClock.Now.AddDays(-47));
+        var revoked = RefreshToken.Issue(user.Id, "revoked", _expiresAt, TestClock.Now.AddDays(-45));
+        revoked.Revoke(RefreshTokenRevocationReason.Logout, TestClock.Now.AddDays(-40));
+        var active = RefreshToken.Issue(user.Id, "active", _expiresAt, TestClock.Now);
+        await SaveAsync(expired, revoked, active);
+
+        await using (var context = Database.CreateContext())
+        {
+            (await new RefreshTokenRepository(context).DeleteFinishedBeforeAsync(TestClock.Now.AddDays(-30), CancellationToken)).ShouldBe(2);
+        }
+
+        await using var reader = Database.CreateContext();
+        (await reader.RefreshTokens.Select(token => token.TokenHash).ToListAsync(CancellationToken)).ShouldBe(["active"]);
     }
 
     [Fact]

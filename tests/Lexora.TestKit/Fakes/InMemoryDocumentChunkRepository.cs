@@ -24,6 +24,9 @@ public sealed class InMemoryDocumentChunkRepository : IDocumentChunkRepository
                 .Take(batchSize),
         ]);
 
+    public Task<int> DeleteByDocumentAsync(Guid documentId, CancellationToken cancellationToken) =>
+        Task.FromResult(_chunks.RemoveAll(chunk => chunk.DocumentId == documentId));
+
     public Task<int> DeleteOtherVersionsAsync(Guid documentId, int keepVersion, CancellationToken cancellationToken) =>
         Task.FromResult(_chunks.RemoveAll(chunk => chunk.DocumentId == documentId && chunk.ProcessingVersion != keepVersion));
 }

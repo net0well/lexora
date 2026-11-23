@@ -8,5 +8,7 @@ public interface IRefreshTokenRepository
 
     Task<IReadOnlyList<RefreshToken>> ListUnrevokedByUserAsync(Guid userId, CancellationToken cancellationToken);
 
+    Task<int> DeleteFinishedBeforeAsync(DateTimeOffset before, CancellationToken cancellationToken);
+
     Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken);
 }

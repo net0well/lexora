@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text;
+using Lexora.Application.Abstractions.Storage;
 using Lexora.Infrastructure.Storage;
 using Lexora.Infrastructure.Storage.S3;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -59,6 +60,23 @@ public sealed class S3FileStorageTests(SeaweedFsFixture seaweedFs) : IClassFixtu
         await Should.ThrowAsync<FileNotFoundException>(() => storage.OpenReadAsync(Prefix + "original.pdf", CancellationToken));
         await Should.ThrowAsync<FileNotFoundException>(() => storage.OpenReadAsync(Prefix + "extracted-v1.json", CancellationToken));
         (await storage.OpenReadAsync(other, CancellationToken)).Dispose();
+    }
+
+    [Fact]
+    public async Task ListAsync_Prefix_ReturnsTheKeysBelowItWithTheirModificationTime()
+    {
+        var storage = seaweedFs.CreateStorage(_time);
+        await SaveAsync(storage, Prefix + "original.pdf", "original");
+        await SaveAsync(storage, Prefix + "v1/extracted.json", "extracted");
+
+        List<StoredObject> listed = [];
+        await foreach (var stored in storage.ListAsync(Prefix, CancellationToken))
+        {
+            listed.Add(stored);
+        }
+
+        listed.Select(stored => stored.Key).ShouldBe([Prefix + "original.pdf", Prefix + "v1/extracted.json"], ignoreOrder: true);
+        listed.ShouldAllBe(stored => stored.LastModified > DateTimeOffset.UtcNow.AddMinutes(-5) && stored.LastModified.Offset == TimeSpan.Zero);
     }
 
     [Fact]
