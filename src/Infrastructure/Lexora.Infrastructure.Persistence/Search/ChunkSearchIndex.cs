@@ -34,8 +34,18 @@ public sealed class ChunkSearchIndex(LexoraDbContext context) : IChunkSearchInde
         return [.. rows.Select(ToCandidate)];
     }
 
-    public Task<IReadOnlyList<ChunkSearchCandidate>> KeywordSearchAsync(Guid knowledgeBaseId, string queryText, int limit, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task<IReadOnlyList<ChunkSearchCandidate>> KeywordSearchAsync(Guid knowledgeBaseId, string queryText, int limit, CancellationToken cancellationToken)
+    {
+        var rows = await context.Database
+            .SqlQueryRaw<ChunkSearchRow>(
+                SearchSql.Keyword,
+                new NpgsqlParameter("query_text", queryText),
+                new NpgsqlParameter("knowledge_base_id", knowledgeBaseId),
+                new NpgsqlParameter("limit", limit))
+            .ToListAsync(cancellationToken);
+
+        return [.. rows.Select(ToCandidate)];
+    }
 
     private static ChunkSearchCandidate ToCandidate(ChunkSearchRow row) =>
         new(row.ChunkId, row.DocumentId, row.DocumentName, row.Content, row.PageNumber, row.SheetName, row.SectionTitle, row.Score);

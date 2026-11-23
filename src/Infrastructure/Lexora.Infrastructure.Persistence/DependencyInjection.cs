@@ -1,4 +1,5 @@
 using JasperFx.Core;
+using Lexora.Application.Abstractions.Search;
 using Lexora.Application.Documents.Abstractions;
 using Lexora.Application.KnowledgeBases.Abstractions;
 using Lexora.Application.Users.Abstractions;
@@ -12,6 +13,7 @@ using Lexora.Domain.RefreshTokens;
 using Lexora.Domain.Users;
 using Lexora.Infrastructure.Persistence.Queries;
 using Lexora.Infrastructure.Persistence.Repositories;
+using Lexora.Infrastructure.Persistence.Search;
 using Lexora.Shared.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -84,5 +86,6 @@ public static class DependencyInjection
         services.AddScoped<IDocumentQueries, DocumentQueries>();
         services.AddScoped<IKnowledgeBaseQueries, KnowledgeBaseQueries>();
         services.AddScoped<IUserQueries, UserQueries>();
+        services.AddScoped<IChunkSearchIndex, ChunkSearchIndex>();
     }
 }
