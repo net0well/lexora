@@ -140,7 +140,6 @@ public sealed class IngestionService(
         }
 
         document.CompleteIndexing(message.ProcessingVersion, embeddings.Space.Key, now);
-        logger.DocumentIndexed(document.Id, message.ProcessingVersion, document.ChunkCount, embeddings.Space.Key);
 
         return null;
     }
@@ -190,6 +189,5 @@ public sealed class IngestionService(
     private void Fail(Document document, string reason)
     {
         document.Fail(document.ProcessingVersion, reason, timeProvider.GetUtcNow());
-        logger.DocumentProcessingFailed(document.Id, document.ProcessingVersion, reason);
     }
 }
