@@ -31,6 +31,47 @@
     "search": "Search",
     "yes": "Yes"
   },
+  "documents": {
+    "upload": {
+      "drop": "Drop files here or click to choose",
+      "hint": "PDF, DOCX, XLSX, TXT, MD or CSV, up to {max} each.",
+      "format": "Format not accepted. Use PDF, DOCX, XLSX, TXT, MD or CSV.",
+      "tooLarge": "The file is larger than {max}.",
+      "empty": "The file is empty.",
+      "queued": "Queued",
+      "uploading": "Uploading… {progress}%",
+      "done": "Uploaded. Processing started.",
+      "cancel": "Cancel upload",
+      "clearFinished": "Clear finished",
+      "archived": "The base is archived and does not accept documents."
+    },
+    "table": {
+      "name": "File",
+      "size": "Size",
+      "status": "Status",
+      "updatedAt": "Updated on",
+      "empty": "No documents in this base.",
+      "emptyFiltered": "No documents match these filters.",
+      "search": "Search by name",
+      "statusFilter": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "uploaded": "Queued",
+      "extracted": "Processing",
+      "chunked": "Creating embeddings",
+      "indexed": "Indexed",
+      "failed": "Failed",
+      "deleted": "Deleted"
+    },
+    "actions": {
+      "download": "Download",
+      "delete": "Delete",
+      "deleteTitle": "Delete document",
+      "deleteConfirm": "Delete “{name}”? It leaves the search and the chat.",
+      "deleted": "Document deleted."
+    }
+  },
   "feedback": {
     "error": "Error",
     "warning": "Warning",

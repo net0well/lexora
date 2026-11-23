@@ -31,6 +31,47 @@
     "search": "Buscar",
     "yes": "Sim"
   },
+  "documents": {
+    "upload": {
+      "drop": "Arraste arquivos para cá ou clique para escolher",
+      "hint": "PDF, DOCX, XLSX, TXT, MD ou CSV, até {max} cada.",
+      "format": "Formato não aceito. Use PDF, DOCX, XLSX, TXT, MD ou CSV.",
+      "tooLarge": "O arquivo passa de {max}.",
+      "empty": "O arquivo está vazio.",
+      "queued": "Na fila",
+      "uploading": "Enviando… {progress}%",
+      "done": "Enviado. O processamento começou.",
+      "cancel": "Cancelar envio",
+      "clearFinished": "Limpar concluídos",
+      "archived": "A base está arquivada e não recebe documentos."
+    },
+    "table": {
+      "name": "Arquivo",
+      "size": "Tamanho",
+      "status": "Status",
+      "updatedAt": "Atualizado em",
+      "empty": "Nenhum documento nesta base.",
+      "emptyFiltered": "Nenhum documento com esses filtros.",
+      "search": "Buscar por nome",
+      "statusFilter": "Filtrar por status",
+      "allStatuses": "Todos os status"
+    },
+    "status": {
+      "uploaded": "Na fila",
+      "extracted": "Processando",
+      "chunked": "Gerando embeddings",
+      "indexed": "Indexado",
+      "failed": "Falhou",
+      "deleted": "Excluído"
+    },
+    "actions": {
+      "download": "Baixar",
+      "delete": "Excluir",
+      "deleteTitle": "Excluir documento",
+      "deleteConfirm": "Excluir “{name}”? Ele sai da busca e do chat.",
+      "deleted": "Documento excluído."
+    }
+  },
   "feedback": {
     "error": "Erro",
     "warning": "Atenção",

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -11,10 +12,14 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import DocumentTable from '@/components/documents/DocumentTable.vue'
+import DocumentUploader from '@/components/documents/DocumentUploader.vue'
 import KnowledgeBaseSettings from '@/components/knowledgeBases/KnowledgeBaseSettings.vue'
 import { useFormat } from '@/composables/useFormat'
 import { useNotifications } from '@/composables/useNotifications'
+import { useUpload } from '@/composables/useUpload'
 import { useAuthStore } from '@/stores/auth'
+import { useDocumentsStore } from '@/stores/documents'
 import { useKnowledgeBasesStore } from '@/stores/knowledgeBases'
 
 interface TabEntry {
@@ -32,10 +37,28 @@ const format = useFormat()
 const auth = useAuthStore()
 const store = useKnowledgeBasesStore()
 const { current: base, loadingCurrent } = storeToRefs(store)
+const documents = useDocumentsStore()
 const { notify } = useNotifications()
 
+const {
+  items: uploads,
+  add: addUploads,
+  cancel: cancelUpload,
+  clearFinished: clearUploads,
+} = useUpload({
+  knowledgeBaseId: () => props.id,
+  onUploaded: (document, knowledgeBaseId) => {
+    documents.added(document, knowledgeBaseId)
+    store.countDocuments(knowledgeBaseId, 1)
+  },
+})
+
+const canUpload = computed(() => auth.atLeast('member') && base.value?.status === 'active')
+
 const tabs = computed<TabEntry[]>(() => {
-  const entries: TabEntry[] = []
+  const entries: TabEntry[] = [
+    { value: 'documents', label: t('knowledgeBases.tabs.documents'), icon: 'pi pi-file' },
+  ]
 
   if (auth.atLeast('admin')) {
     entries.push({ value: 'settings', label: t('knowledgeBases.tabs.settings'), icon: 'pi pi-cog' })
@@ -110,6 +133,25 @@ watch(
           </Tab>
         </TabList>
         <TabPanels>
+          <TabPanel value="documents">
+            <div class="documents-tab">
+              <DocumentUploader
+                v-if="canUpload"
+                :items="uploads"
+                @add="addUploads"
+                @cancel="cancelUpload"
+                @clear="clearUploads"
+              />
+              <Message v-else-if="base.status === 'archived'" severity="secondary">
+                {{ t('documents.upload.archived') }}
+              </Message>
+              <DocumentTable
+                :knowledge-base-id="base.id"
+                :can-manage="auth.atLeast('member')"
+                @deleted="store.countDocuments(base.id, -1)"
+              />
+            </div>
+          </TabPanel>
           <TabPanel v-if="auth.atLeast('admin')" value="settings">
             <KnowledgeBaseSettings :base="base" />
           </TabPanel>
@@ -145,6 +187,12 @@ watch(
 .kb-header__meta {
   margin: 0;
   color: var(--p-text-muted-color);
+}
+
+.documents-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 :deep(.p-tab) {

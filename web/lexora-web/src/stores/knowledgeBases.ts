@@ -77,6 +77,12 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
     return knowledgeBasesApi.reindex(id)
   }
 
+  function countDocuments(id: string, delta: number): void {
+    if (current.value?.id === id) {
+      current.value.documentCount = Math.max(current.value.documentCount + delta, 0)
+    }
+  }
+
   return {
     items,
     totalItems,
@@ -89,5 +95,6 @@ export const useKnowledgeBasesStore = defineStore('knowledgeBases', () => {
     update,
     archive,
     reindex,
+    countDocuments,
   }
 })

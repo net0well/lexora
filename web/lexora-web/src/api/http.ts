@@ -76,7 +76,7 @@ export function parseResult<T>(
 
   return failure(
     status,
-    status === 502 || status === 503 || status === 504 ? networkUnavailable : unexpectedFailure,
+    [0, 502, 503, 504].includes(status) ? networkUnavailable : unexpectedFailure,
   )
 }
 
@@ -88,13 +88,35 @@ export async function readResult<T>(response: Response): Promise<ApiResult<T>> {
   )
 }
 
-interface Attempt<T> {
-  result: ApiResult<T>
-  token: string | null
+export async function withSessionRetry<T>(
+  attempt: (accessToken: string | null) => Promise<ApiResult<T>>,
+): Promise<ApiResult<T>> {
+  const session = boundSession()
+  const token = session?.accessToken() ?? null
+  const first = await attempt(token)
+
+  if (first.status !== 401 || !session) {
+    return first
+  }
+
+  const current = session.accessToken()
+  const renewedElsewhere = current !== null && current !== token
+
+  if (!renewedElsewhere && !(await session.renew())) {
+    session.expire()
+
+    return first
+  }
+
+  return attempt(session.accessToken())
 }
 
-async function send<T>(method: string, path: string, options: RequestOptions): Promise<Attempt<T>> {
-  const token = options.authenticate === false ? null : (boundSession()?.accessToken() ?? null)
+async function send<T>(
+  method: string,
+  path: string,
+  options: RequestOptions,
+  token: string | null,
+): Promise<ApiResult<T>> {
   const headers: Record<string, string> = { Accept: 'application/json' }
 
   if (options.body !== undefined) {
@@ -114,38 +136,24 @@ async function send<T>(method: string, path: string, options: RequestOptions): P
       signal: options.signal,
     })
 
-    return { result: await readResult<T>(response), token }
+    return await readResult<T>(response)
   } catch (error) {
     if (isAbort(error)) {
       throw error
     }
 
-    return { result: failure(0, networkUnavailable), token }
+    return failure(0, networkUnavailable)
   }
 }
 
-export async function request<T>(
+export function request<T>(
   method: string,
   path: string,
   options: RequestOptions = {},
 ): Promise<ApiResult<T>> {
-  const first = await send<T>(method, path, options)
-  const session = boundSession()
-
-  if (first.result.status !== 401 || options.authenticate === false || !session) {
-    return first.result
-  }
-
-  const current = session.accessToken()
-  const renewedElsewhere = current !== null && current !== first.token
-
-  if (!renewedElsewhere && !(await session.renew())) {
-    session.expire()
-
-    return first.result
-  }
-
-  return (await send<T>(method, path, options)).result
+  return options.authenticate === false
+    ? send<T>(method, path, options, null)
+    : withSessionRetry((token) => send<T>(method, path, options, token))
 }
 
 export const http = {
