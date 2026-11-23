@@ -32,6 +32,7 @@ public sealed class AuthorizationMatrixTests(ApiFactory api) : ApiTest(api)
         ("GET", "/api/v1/auth/me", UserRole.Viewer),
         ("POST", "/api/v1/auth/logout", UserRole.Viewer),
         ("POST", "/api/v1/auth/change-password", UserRole.Viewer),
+        ("GET", "/api/v1/ai/profiles", UserRole.Viewer),
     ];
 
     public static TheoryData<string, string, UserRole, UserRole?> Matrix
