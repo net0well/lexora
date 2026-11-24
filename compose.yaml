@@ -14,6 +14,7 @@ x-dotnet-env: &dotnet-env
   Storage__S3__SecretKey: ${S3_SECRET_KEY}
   Storage__S3__ForcePathStyle: "true"
   Jwt__SigningKey: ${JWT_SIGNING_KEY}
+  Hosting__ForwardedHeaders__KnownProxies__0: ${LEXORA_WEB_IP:-10.231.0.10}
   Ai__Chat__DefaultProfile: ${AI_CHAT_PROFILE:-local}
   Ai__Chat__Profiles__local__Endpoint: http://ollama:11434
   Ai__Chat__Profiles__local__Model: ${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
@@ -195,6 +196,24 @@ services:
       ollama-init:
         condition: service_completed_successfully
         required: false
+
+  web:
+    build:
+      context: web/lexora-web
+      target: final
+    ports:
+      - "3000:8080"
+    depends_on:
+      - api
+    networks:
+      default:
+        ipv4_address: ${LEXORA_WEB_IP:-10.231.0.10}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${LEXORA_SUBNET:-10.231.0.0/24}
 
 volumes:
   postgres-data:

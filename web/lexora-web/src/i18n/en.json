@@ -1,0 +1,328 @@
+{
+  "app": {
+    "name": "Lexora",
+    "tagline": "Answers from your company documents, with the source cited."
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "E-mail",
+      "password": "Password",
+      "submit": "Sign in",
+      "emailRequired": "Enter the e-mail.",
+      "passwordRequired": "Enter the password.",
+      "expired": "Your session expired. Sign in again.",
+      "passwordChanged": "Password changed. Sign in with the new password.",
+      "signedOut": "You signed out in another tab."
+    },
+    "logout": "Sign out"
+  },
+  "chat": {
+    "start": "Chat",
+    "newConversation": "New conversation",
+    "empty": "Ask something about the documents of “{name}”. Every answer cites the excerpt it came from.",
+    "placeholder": "Write your question",
+    "sendHint": "Enter sends · Shift+Enter breaks the line",
+    "send": "Send",
+    "stop": "Stop",
+    "thinking": "Searching the documents and writing the answer…",
+    "withoutSources": "This answer has no source in the documents of the base.",
+    "automatic": "Automatic answer: no excerpt of the documents answered the question.",
+    "answerDetails": "{model} · {seconds} s",
+    "profile": {
+      "label": "AI model",
+      "default": "Default ({name})",
+      "unavailable": "{name} (unavailable)"
+    },
+    "list": {
+      "label": "Conversations",
+      "new": "New conversation",
+      "empty": "No conversations yet.",
+      "untitled": "Untitled",
+      "delete": "Delete the conversation “{title}”",
+      "deleteTitle": "Delete conversation",
+      "deleteConfirm": "Delete “{title}”? The messages cannot be recovered.",
+      "deleted": "Conversation deleted."
+    },
+    "citations": {
+      "sources": "Sources:",
+      "open": "Open source {index}",
+      "title": "Source {index}",
+      "page": "Page {page}",
+      "sheet": "Sheet {sheet}",
+      "excerpt": "Cited excerpt",
+      "download": "Download the original document"
+    }
+  },
+  "common": {
+    "actions": "Actions",
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading…",
+    "no": "No",
+    "retry": "Try again",
+    "save": "Save",
+    "search": "Search",
+    "yes": "Yes"
+  },
+  "documents": {
+    "upload": {
+      "drop": "Drop files here or click to choose",
+      "hint": "PDF, DOCX, XLSX, TXT, MD or CSV, up to {max} each.",
+      "format": "Format not accepted. Use PDF, DOCX, XLSX, TXT, MD or CSV.",
+      "tooLarge": "The file is larger than {max}.",
+      "empty": "The file is empty.",
+      "queued": "Queued",
+      "uploading": "Uploading… {progress}%",
+      "done": "Uploaded. Processing started.",
+      "cancel": "Cancel upload",
+      "clearFinished": "Clear finished",
+      "archived": "The base is archived and does not accept documents."
+    },
+    "table": {
+      "name": "File",
+      "size": "Size",
+      "status": "Status",
+      "updatedAt": "Updated on",
+      "empty": "No documents in this base.",
+      "emptyFiltered": "No documents match these filters.",
+      "search": "Search by name",
+      "statusFilter": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "uploaded": "Queued",
+      "extracted": "Processing",
+      "chunked": "Creating embeddings",
+      "indexed": "Indexed",
+      "failed": "Failed",
+      "deleted": "Deleted",
+      "chunkedProgress": "Creating embeddings {done}/{total}"
+    },
+    "actions": {
+      "download": "Download",
+      "delete": "Delete",
+      "deleteTitle": "Delete document",
+      "deleteConfirm": "Delete “{name}”? It leaves the search and the chat.",
+      "deleted": "Document deleted.",
+      "reprocess": "Process again",
+      "reprocessTitle": "Process the document again",
+      "reprocessConfirm": "“{name}” will be processed again and stays out of the search until it finishes. Continue?",
+      "reprocessed": "Document sent to processing again."
+    },
+    "failure": "Reason: {reason}"
+  },
+  "feedback": {
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Done"
+  },
+  "knowledgeBases": {
+    "subtitle": "Each base gathers the documents of one subject. The chat answers only from the documents of the chosen base.",
+    "new": "New base",
+    "created": "Base “{name}” created.",
+    "archived": "Archived",
+    "noDescription": "No description.",
+    "documentCount": "No documents | 1 document | {count} documents",
+    "updatedAt": "Updated on {date}",
+    "createdAt": "Created on {date}",
+    "notFound": "Knowledge base not found.",
+    "empty": "No knowledge bases yet.",
+    "emptyArchived": "No archived bases.",
+    "emptyAdminHint": "Create the first base to upload documents.",
+    "filter": {
+      "label": "Filter by status",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "tabs": {
+      "documents": "Documents",
+      "search": "Search",
+      "settings": "Settings"
+    },
+    "form": {
+      "name": "Name",
+      "description": "Description",
+      "chunking": "Chunking",
+      "chunkingHint": "Maximum size of each chunk and how much it repeats from the previous one, in tokens. The change applies to documents uploaded or reprocessed afterwards.",
+      "chunkMaxTokens": "Chunk size",
+      "chunkOverlapTokens": "Overlap",
+      "nameLength": "The name must have {min} to {max} characters.",
+      "descriptionLength": "The description can have up to {max} characters.",
+      "chunkMaxTokensRange": "Use a value from {min} to {max}.",
+      "chunkOverlapRange": "Use a value from 0 to {max} (half the chunk size)."
+    },
+    "settings": {
+      "general": "Base details",
+      "saved": "Changes saved.",
+      "maintenance": "Maintenance",
+      "reindex": "Reindex",
+      "reindexTitle": "Reindex the base",
+      "reindexHint": "Processes every indexed document again. Use it after changing the embedding model.",
+      "reindexConfirm": "Every indexed document will be processed again and stays out of the search until it finishes. Continue?",
+      "reindexed": "No documents to reindex. | 1 document sent to reprocessing. | {count} documents sent to reprocessing.",
+      "archive": "Archive",
+      "archiveTitle": "Archive the base",
+      "archiveHint": "The base stops receiving documents. Search and chat keep working.",
+      "archiveConfirm": "Archive “{name}”? It stops receiving documents.",
+      "archived": "Base archived."
+    }
+  },
+  "locale": {
+    "label": "Language",
+    "pt-BR": "Português",
+    "en": "English"
+  },
+  "nav": {
+    "knowledgeBases": "Knowledge bases",
+    "profile": "My profile",
+    "users": "Users"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address does not exist or you do not have access to it.",
+    "home": "Back to start"
+  },
+  "passwordRules": {
+    "label": "Password rules",
+    "length": "At least {min} characters",
+    "upper": "An upper case letter",
+    "lower": "A lower case letter",
+    "digit": "A number",
+    "email": "Does not contain the e-mail",
+    "met": "met",
+    "missing": "missing"
+  },
+  "profile": {
+    "title": "My profile",
+    "details": "Your details",
+    "name": "Name",
+    "email": "E-mail",
+    "role": "Role",
+    "password": {
+      "title": "Change password",
+      "hint": "After the change every session of yours ends and you sign in again with the new password.",
+      "current": "Current password",
+      "next": "New password",
+      "confirmation": "Repeat the new password",
+      "submit": "Change password",
+      "currentRequired": "Enter the current password.",
+      "weak": "The new password does not meet the rules below.",
+      "confirmationMismatch": "The passwords do not match."
+    }
+  },
+  "roles": {
+    "admin": "Administrator",
+    "member": "Member",
+    "viewer": "Viewer"
+  },
+  "search": {
+    "placeholder": "Ask or type terms to search the documents",
+    "submit": "Search",
+    "modeLabel": "Search type",
+    "modes": {
+      "hybrid": "Hybrid",
+      "vector": "Semantic",
+      "keyword": "Keywords"
+    },
+    "modeHints": {
+      "hybrid": "Combines the meaning of the question with the exact words.",
+      "vector": "Finds excerpts with the same meaning, even in other words.",
+      "keyword": "Finds excerpts that have every typed word."
+    },
+    "match": {
+      "vector": "Semantic",
+      "keyword": "Keywords",
+      "both": "Semantic and keywords"
+    },
+    "score": "Score {score}",
+    "page": "Page {page}",
+    "sheet": "Sheet {sheet}",
+    "results": "No excerpts found | 1 excerpt found | {count} excerpts found",
+    "empty": "Nothing found. Try other words or the semantic search.",
+    "idle": "Search the documents of this base to see the most relevant excerpts.",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "queryRequired": "Type what to search for.",
+    "queryTooLong": "Use up to {max} characters."
+  },
+  "shell": {
+    "navigation": "Main navigation",
+    "userMenu": "User menu"
+  },
+  "users": {
+    "subtitle": "Who uses Lexora and what each person can do.",
+    "new": "New user",
+    "created": "User “{name}” created.",
+    "empty": "No users match these filters.",
+    "neverSignedIn": "Never signed in",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last sign in"
+    },
+    "filters": {
+      "search": "Search by name or e-mail",
+      "role": "Filter by role",
+      "status": "Filter by status",
+      "allRoles": "All roles",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "name": "Name",
+      "email": "E-mail",
+      "role": "Role",
+      "password": "Initial password",
+      "emailInvalid": "Enter a valid e-mail.",
+      "nameLength": "The name must have {min} to {max} characters.",
+      "passwordWeak": "The password does not meet the rules below."
+    },
+    "role": {
+      "label": "Role of {name}",
+      "title": "Change role",
+      "confirm": "Change the role of {name} to {role}?",
+      "changed": "Role of {name} changed."
+    },
+    "deactivate": {
+      "label": "Deactivate {name}",
+      "title": "Deactivate user",
+      "confirm": "Deactivate {name}? Open sessions end and the access is blocked.",
+      "action": "Deactivate",
+      "done": "{name} was deactivated."
+    },
+    "activate": {
+      "label": "Activate {name}",
+      "title": "Activate user",
+      "confirm": "Activate {name} again?",
+      "action": "Activate",
+      "done": "{name} was activated."
+    },
+    "reset": {
+      "action": "Reset the password of {name}",
+      "title": "Reset the password of {name}",
+      "hint": "The open sessions of the user end. Give the new password to them through a safe channel.",
+      "password": "New password",
+      "submit": "Reset password",
+      "done": "Password of {name} reset."
+    }
+  },
+  "notifications": {
+    "unexpected": "An unexpected error occurred. Try again.",
+    "network": {
+      "unavailable": "Could not reach the server. Check the connection and try again."
+    },
+    "stream": {
+      "interrupted": "The answer stopped before it was complete. Try again."
+    }
+  }
+}
